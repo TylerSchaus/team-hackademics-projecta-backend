@@ -1,4 +1,4 @@
-package com.hackademics.model;
+package com.hackademics.Model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
