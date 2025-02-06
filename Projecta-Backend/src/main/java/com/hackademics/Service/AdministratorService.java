@@ -1,18 +1,17 @@
-package com.hackademics.Service;
-import com.hackademics.Model.Administrator;
-import com.hackademics.Repository.AdministratorRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
+package com.hackademics.service;
 import java.util.List;
 import java.util.Optional;
+
+import org.springframework.stereotype.Service;
+
+import com.hackademics.model.Administrator;
+import com.hackademics.repository.AdministratorRepository;
 
 @Service
 public class AdministratorService {
 
     private final AdministratorRepository administratorRepository;
 
-    @Autowired
     public AdministratorService(AdministratorRepository administratorRepository) {
         this.administratorRepository = administratorRepository;
     }

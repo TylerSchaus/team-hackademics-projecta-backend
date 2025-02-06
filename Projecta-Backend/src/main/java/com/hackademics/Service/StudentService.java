@@ -1,18 +1,18 @@
-package com.hackademics.Service;
-import com.hackademics.Model.Student;
-import com.hackademics.Repository.StudentRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+package com.hackademics.service;
 
 import java.util.List;
 import java.util.Optional;
+
+import org.springframework.stereotype.Service;
+
+import com.hackademics.model.Student;
+import com.hackademics.repository.StudentRepository;
 
 @Service
 public class StudentService {
 
     private final StudentRepository studentRepository;
 
-    @Autowired
     public StudentService(StudentRepository studentRepository) {
         this.studentRepository = studentRepository;
     }
