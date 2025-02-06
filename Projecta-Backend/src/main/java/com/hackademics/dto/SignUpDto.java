@@ -1,24 +1,24 @@
-package com.hackademics.model;
+package com.hackademics.dto;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.MappedSuperclass;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 
-@MappedSuperclass
-public abstract class User{
-    @Column(nullable = false)
+public class SignUpDto {
+    
+    @NotBlank(message = "First name is required")
     private String firstName;
 
-    @Column(nullable = false)
+    @NotBlank(message = "Last name is required")
     private String lastName;
 
-    @Column(nullable = false, unique = true)
+    @Email(message = "Invalid email format")
+    @NotBlank(message = "Email is required")
     private String email;
 
-    @Column(nullable = false)
+    @NotBlank(message = "Password is required")
+    @Size(min = 8, message = "Password must be at least 8 characters long")
     private String password;
-
-    @Column(/*nullable = false*/)
-    private String gender;
 
     // Getters and Setters
 
@@ -53,13 +53,4 @@ public abstract class User{
     public void setPassword(String password) {
         this.password = password;
     }
-
-    public String getGender() {
-        return gender;
-    }
-
-    public void setGender(String gender) {
-        this.gender = gender;
-    }
-
 }
