@@ -1,14 +1,12 @@
-package com.hackademics.Model;
+package com.hackademics.model;
 
 import jakarta.persistence.Column;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.MappedSuperclass;
 
 @MappedSuperclass
 public abstract class User{
     @Column(nullable = false)
-    private String fistName;
+    private String firstName;
 
     @Column(nullable = false)
     private String lastName;
@@ -19,18 +17,17 @@ public abstract class User{
     @Column(nullable = false)
     private String password;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(/*nullable = false*/)
     private String gender;
 
     // Getters and Setters
 
-    public String getFistName() {
-        return fistName;
+    public String getFirstName() {
+        return firstName;
     }
 
-    public void setFistName(String fistName) {
-        this.fistName = fistName;
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
     }
 
     public String getLastName() {

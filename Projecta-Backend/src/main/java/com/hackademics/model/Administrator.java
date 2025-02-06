@@ -1,4 +1,4 @@
-package com.hackademics.Model;
+package com.hackademics.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -7,7 +7,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 
 @Entity
-public class Administrator {
+public class Administrator extends User {
     
     @Id
     @Column(nullable=false, unique= true)

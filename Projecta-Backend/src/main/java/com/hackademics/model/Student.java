@@ -1,4 +1,4 @@
-package com.hackademics.Model;
+package com.hackademics.model;
 
 import java.util.Date;
 
@@ -9,17 +9,17 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 
 @Entity
-public class Student {
+public class Student extends User{
     
     @Id
     @Column(nullable = false, unique = true)
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long studentId;
 
-    @Column(nullable = false)
+    @Column(/*nullable = false*/)
     private Date birthDate;
 
-    @Column(nullable = false)
+    @Column(/*nullable = false*/)
     private Date enrollmentDate;
 
     @Column
