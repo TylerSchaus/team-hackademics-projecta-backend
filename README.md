@@ -19,6 +19,14 @@ It should take 1-5 seconds to launch and then display the following line:
 
 If you see this, the application is running. To terminate the application, in your terminal use the command **Ctrl + C**, and then if it asks you to terminate the batch job, press **'y'** and then **enter**. 
 
+## Full Tech Stack: 
+- Java
+- Spring Boot Framework ( including Rest API capabilities)
+- JWT Authentication
+- MySQL Databases
+- Aiven
+- Fly.io
+
 ## Group Members 
 - Tyler Schaus 
 - Misha Gavura
