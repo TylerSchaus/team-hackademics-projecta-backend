@@ -22,8 +22,8 @@ public class AdministratorService {
     }
 
     // Get an administrator by ID
-    public Optional<Administrator> getAdministratorById(Long adminId) {
-        return administratorRepository.findById(adminId);
+    public Optional<Administrator> getAdministratorByEmail(String adminEmail) {
+        return administratorRepository.findByEmail(adminEmail);
     }
 
     // Create a new administrator
@@ -32,13 +32,13 @@ public class AdministratorService {
     }
 
     // Update an existing administrator
-    public Administrator updateAdministrator(Long adminId, Administrator updatedAdministrator) {
-        return administratorRepository.findById(adminId)
+    public Administrator updateAdministrator(Long id, Administrator updatedAdministrator) {
+        return administratorRepository.findById(id)
                 .map(administrator -> {
                     // Update fields if needed
                     return administratorRepository.save(administrator);
                 })
-                .orElseThrow(() -> new RuntimeException("Administrator not found with id: " + adminId));
+                .orElseThrow(() -> new RuntimeException("Administrator not found with ID: " + id));
     }
 
     // Delete an administrator by ID

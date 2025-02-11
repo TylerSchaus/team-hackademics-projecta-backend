@@ -22,9 +22,9 @@ public class StudentService {
         return studentRepository.findAll();
     }
 
-    // Get a student by ID
-    public Optional<Student> getStudentById(Long studentId) {
-        return studentRepository.findById(studentId);
+    // Get a student by Email
+    public Optional<Student> getStudentByEmail(String studentEmail) {
+        return studentRepository.findByEmail(studentEmail);
     }
 
     // Create a new student
@@ -33,15 +33,15 @@ public class StudentService {
     }
 
     // Update an existing student
-    public Student updateStudent(Long studentId, Student updatedStudent) {
-        return studentRepository.findById(studentId)
+    public Student updateStudent(Long id, Student updatedStudent) {
+        return studentRepository.findById(id)
                 .map(student -> {
                     student.setBirthDate(updatedStudent.getBirthDate());
                     student.setEnrollmentDate(updatedStudent.getEnrollmentDate());
                     student.setExpectedGradDate(updatedStudent.getExpectedGradDate());
                     return studentRepository.save(student);
                 })
-                .orElseThrow(() -> new RuntimeException("Student not found with id: " + studentId));
+                .orElseThrow(() -> new RuntimeException("Student not found with ID: "+id));
     }
 
     // Delete a student by ID
