@@ -2,7 +2,10 @@ package com.hackademics.controller;
 
 import java.util.List;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -14,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.hackademics.dto.SignUpDto;
 import com.hackademics.model.Administrator;
+import com.hackademics.model.User;
 import com.hackademics.service.AdministratorService;
 
 @RestController
@@ -31,12 +35,17 @@ public class AdministratorController {
         return ResponseEntity.ok(administratorService.getAllAdministrators());
     }
 
-   /*  @GetMapping("/{id}")
-    public ResponseEntity<Administrator> getAdministratorById(@PathVariable Long id) {
-        Optional<Administrator> administrator = administratorService.getAdministratorById(id);
-        return administrator.map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
-    } */
+     @GetMapping("/me")
+    public ResponseEntity<Administrator> getCurrentUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication.getPrincipal() instanceof User user) { 
+            return administratorService.getAdministratorByEmail(user.getUsername()) 
+                    .map(ResponseEntity::ok)
+                    .orElse(ResponseEntity.notFound().build());
+        }
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    }
 
     @PostMapping
     public ResponseEntity<Administrator> createAdministrator(@RequestBody SignUpDto signUpDto) {

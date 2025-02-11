@@ -1,10 +1,15 @@
 package com.hackademics.model;
 
+import java.util.Collection;
+
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.MappedSuperclass;
 
 @MappedSuperclass
-public abstract class User{
+public abstract class User implements UserDetails{
     @Column(nullable = false)
     private String firstName;
 
@@ -38,14 +43,11 @@ public abstract class User{
         this.lastName = lastName;
     }
 
-    public String getEmail() {
-        return email;
-    }
-
     public void setEmail(String email) {
         this.email = email;
     }
 
+    @Override
     public String getPassword() {
         return password;
     }
@@ -62,4 +64,11 @@ public abstract class User{
         this.gender = gender;
     }
 
+    @Override
+    public String getUsername(){
+        return this.email;
+    }
+
+    @Override
+    public abstract Collection<? extends GrantedAuthority> getAuthorities();
 }

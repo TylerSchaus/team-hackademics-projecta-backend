@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 
+import com.hackademics.service.CustomUserDetailsService;
 import com.hackademics.service.JwtService;
 
 import jakarta.servlet.FilterChain;
@@ -25,15 +26,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final HandlerExceptionResolver handlerExceptionResolver;
 
     private final JwtService jwtService;
-    private final UserDetailsService userDetailsService;
+    private final UserDetailsService customUserDetailsService;
 
     public JwtAuthenticationFilter(
         JwtService jwtService,
-        UserDetailsService userDetailsService,
+        CustomUserDetailsService customUserDetailsService,
         HandlerExceptionResolver handlerExceptionResolver
     ) {
         this.jwtService = jwtService;
-        this.userDetailsService = userDetailsService;
+        this.customUserDetailsService = customUserDetailsService;
         this.handlerExceptionResolver = handlerExceptionResolver;
     }
 
@@ -57,7 +58,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
             if (userEmail != null && authentication == null) {
-                UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
+                UserDetails userDetails = this.customUserDetailsService.loadUserByUsername(userEmail);
 
                 if (jwtService.isTokenValid(jwt, userDetails)) {
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
