@@ -27,7 +27,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // API should be stateless
                 .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/auth/**").permitAll() // Allow login/signup endpoints
-                .requestMatchers("/api/administrators/me", "/api/students/me").authenticated() // Secure /me endpoints
+                .requestMatchers("/api/users/me").authenticated() // Secure /me endpoints
                 .anyRequest().permitAll() // Allow other requests 
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

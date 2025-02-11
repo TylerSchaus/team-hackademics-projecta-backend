@@ -9,26 +9,31 @@ import org.springframework.web.bind.annotation.RestController;
 import com.hackademics.dto.LoginDto;
 import com.hackademics.dto.LoginResponse;
 import com.hackademics.dto.SignUpDto;
-import com.hackademics.model.Student;
+import com.hackademics.model.Role;
 import com.hackademics.model.User;
 import com.hackademics.service.AuthenticationService;
 import com.hackademics.service.JwtService;
 
 @RestController
-@RequestMapping("/auth/student")
-public class StudentAuthController {
+@RequestMapping("/auth")
+public class AuthController {
     private final JwtService jwtService;
     private final AuthenticationService authenticationService;
 
-    public StudentAuthController(JwtService jwtService, AuthenticationService authenticationService) {
+    public AuthController(JwtService jwtService, AuthenticationService authenticationService) {
         this.jwtService = jwtService;
         this.authenticationService = authenticationService;
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<Student> register(@RequestBody SignUpDto signUpDto) {
-        Student registeredStudent = authenticationService.signupStudent(signUpDto);
-        return ResponseEntity.ok(registeredStudent);
+    public ResponseEntity<User> register(@RequestBody SignUpDto signUpDto) {
+        User registeredUser;
+        if (signUpDto.getRole() == Role.ADMIN) {
+            registeredUser = authenticationService.signupAdmin(signUpDto);
+        } else {
+            registeredUser = authenticationService.signupStudent(signUpDto);
+        }
+        return ResponseEntity.ok(registeredUser);
     }
 
     @PostMapping("/login")

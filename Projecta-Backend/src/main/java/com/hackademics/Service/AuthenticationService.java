@@ -8,50 +8,47 @@ import org.springframework.stereotype.Service;
 
 import com.hackademics.dto.LoginDto;
 import com.hackademics.dto.SignUpDto;
-import com.hackademics.model.Administrator;
-import com.hackademics.model.Student;
+import com.hackademics.model.Role;
 import com.hackademics.model.User;
-import com.hackademics.repository.AdministratorRepository;
-import com.hackademics.repository.StudentRepository;
+import com.hackademics.repository.UserRepository;
 
 @Service
 public class AuthenticationService {
 
-    private final AdministratorRepository administratorRepository;
-    private final StudentRepository studentRepository;
+    private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
 
     public AuthenticationService(
-            AdministratorRepository administratorRepository,
-            StudentRepository studentRepository,
+            UserRepository userRepository,
             AuthenticationManager authenticationManager,
             PasswordEncoder passwordEncoder
     ) {
-        this.administratorRepository = administratorRepository;
-        this.studentRepository = studentRepository;
+        this.userRepository = userRepository;
         this.authenticationManager = authenticationManager;
         this.passwordEncoder = passwordEncoder;
     }
 
-    public Administrator signupAdmin(SignUpDto input) {
-        Administrator admin = new Administrator();
+    public User signupAdmin(SignUpDto input) {
+        User admin = new User();
         admin.setFirstName(input.getFirstName());
         admin.setLastName(input.getLastName());
         admin.setEmail(input.getEmail());
         admin.setPassword(passwordEncoder.encode(input.getPassword()));
+        admin.setRole(Role.ADMIN);
 
-        return administratorRepository.save(admin);
+        return userRepository.save(admin);
     }
 
-    public Student signupStudent(SignUpDto input) { 
-        Student student = new Student();
+    public User signupStudent(SignUpDto input) { 
+        User student = new User();
         student.setFirstName(input.getFirstName());
         student.setLastName(input.getLastName());
         student.setEmail(input.getEmail());
         student.setPassword(passwordEncoder.encode(input.getPassword()));
+        student.setRole(Role.STUDENT);
 
-        return studentRepository.save(student);
+        return userRepository.save(student);
     }
 
     public User authenticate(LoginDto input) {
@@ -62,10 +59,7 @@ public class AuthenticationService {
                 )
         );
 
-        return administratorRepository.findByEmail(input.getEmail())
-                .map(admin -> (User) admin) 
-                .orElseGet(() -> studentRepository.findByEmail(input.getEmail())
-                        .map(student -> (User) student) 
-                        .orElseThrow(() -> new UsernameNotFoundException("User not found")));
+        return userRepository.findByEmail(input.getEmail())
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
     }
 }
