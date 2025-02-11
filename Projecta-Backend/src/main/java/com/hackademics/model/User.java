@@ -1,65 +1,86 @@
 package com.hackademics.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.MappedSuperclass;
+import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.List;
 
-@MappedSuperclass
-public abstract class User{
-    @Column(nullable = false)
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.Setter;
+
+
+@Entity
+@Table(name = "users")
+public class User implements UserDetails {
+
+    @Id
+    @Getter
+    @Setter
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Getter
+    @Setter
+    @Column(length = 50, nullable = false)
     private String firstName;
 
-    @Column(nullable = false)
+    @Getter
+    @Setter
+    @Column(length = 50, nullable = false)
     private String lastName;
 
-    @Column(nullable = false, unique = true)
+    @Getter
+    @Setter
+    @Column(length = 100, unique = true, nullable = false)
     private String email;
 
-    @Column(nullable = false)
+    @Getter
+    @Setter
+    @Column(length = 255, nullable = false)
     private String password;
 
-    @Column(/*nullable = false*/)
-    private String gender;
+    @Getter
+    @Setter
+    @Enumerated(EnumType.STRING)
+    @Column(/* nullable = false */)
+    private Gender gender;
 
-    // Getters and Setters
+    @Getter
+    @Setter
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Role role; // STUDENT or ADMIN
 
-    public String getFirstName() {
-        return firstName;
+    // Student-specific fields
+    @Getter
+    @Setter
+    private LocalDateTime enrollStartDate;
+
+    @Getter
+    @Setter
+    private LocalDateTime expectGraduationDate;
+
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
     }
 
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
-
-    public String getEmail() {
+    @Override
+    public String getUsername() {
         return email;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public String getGender() {
-        return gender;
-    }
-
-    public void setGender(String gender) {
-        this.gender = gender;
-    }
 
 }
