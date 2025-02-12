@@ -1,5 +1,5 @@
-package com.hackademics.config;
+package com.hackademics.Model;
 
-public class Role {
-
+public  enum Role{ 
+    ADMIN, STUDENT
 }
