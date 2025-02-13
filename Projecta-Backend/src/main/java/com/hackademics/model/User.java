@@ -1,4 +1,4 @@
-package com.hackademics.Model;
+package com.hackademics.model;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
@@ -18,7 +18,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
-
 
 @Entity
 @Table(name = "users")
@@ -63,6 +62,12 @@ public class User implements UserDetails {
     private Role role; // STUDENT or ADMIN
 
     // Student-specific fields
+
+    @Getter
+    @Setter
+    @Column(name = "student_id")
+    private Long studentId;
+
     @Getter
     @Setter
     private LocalDateTime enrollStartDate;
@@ -70,6 +75,12 @@ public class User implements UserDetails {
     @Getter
     @Setter
     private LocalDateTime expectGraduationDate;
+
+    // Admin specific properties\
+    @Getter
+    @Setter
+    @Column(name = "admin_id")
+    private Long adminId;
 
 
     @Override
@@ -82,5 +93,12 @@ public class User implements UserDetails {
         return email;
     }
 
-
+    public User() { 
+        if (this.role == Role.ADMIN) {
+            // set in case of admin
+        }
+        else {
+            // set in case of student 
+        }
+    }
 }

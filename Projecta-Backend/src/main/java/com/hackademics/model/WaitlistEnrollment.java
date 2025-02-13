@@ -1,45 +1,43 @@
-package com.hackademics.Model;
-
-import jakarta.persistence.*;
-import lombok.*;
+package com.hackademics.model;
 
 import java.io.Serializable;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.Setter;
+
 @Entity
 @Table(name = "waitlist_enrollments")
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class WaitlistEnrollment implements Serializable {
 
     // Composite key fields
-    @EmbeddedId
-    private WaitlistEnrollmentId id;
+    @Id
+    @Getter
+    @Setter
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(nullable=false)
+    private Long id;
 
-    @Column(name = "waitlist_position", nullable = false)
+    @Getter
+    @Setter
+    @Column(nullable = false)
     private int waitlistPosition;
 
-    @ManyToOne
-    @MapsId("waitlistId")
+    @Getter
+    @Setter
+    @Column(nullable = false)
     @JoinColumn(name = "waitlist_id")
-    private Waitlist waitlist;
+    private Long waitlistId; 
 
-    @ManyToOne
-    @MapsId("studentId")
+    @Getter
+    @Setter
     @JoinColumn(name = "student_id")
-    private Student student;
+    private Long studentId;
 
-    // Composite key class (embedded inside WaitlistEnrollment)
-    @Embeddable
-    @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
-    public static class WaitlistEnrollmentId implements Serializable {
-
-        @Column(name = "waitlist_id", length = 5)
-        private String waitlistId;
-
-        @Column(name = "student_id", length = 9)
-        private String studentId;
-    }
 }
