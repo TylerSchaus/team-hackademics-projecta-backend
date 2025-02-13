@@ -1,22 +1,26 @@
-package com.hackademics.Model;
+package com.hackademics.model;
 
 import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
 @Table(name = "waitlists")
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class Waitlist {
 
     @Id
-    @Column(name = "waitlist_id", length = 5)
-    private String waitlistId;
+    @Getter
+    @Setter
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "waitlist_id")
+    private Long waitlistId;
 
-    @Column(name = "course_id", length = 5, nullable = false)
-    private String courseId;
+    @Getter
+    @Setter
+    @Column(name = "course_id", nullable = false)
+    private Long courseId;
 
+    @Getter
+    @Setter
     @Column(name = "waitlist_limit", nullable = false)
     private int waitlistLimit;
 }

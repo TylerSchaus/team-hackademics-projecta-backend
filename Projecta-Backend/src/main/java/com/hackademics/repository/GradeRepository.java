@@ -1,13 +1,14 @@
 package com.hackademics.repository;
 
-import com.hackademics.Model.Grade;
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
+import com.hackademics.model.Grade;
 
 @Repository
-public interface GradeRepository extends JpaRepository<Grade, String> {
-    List<Grade> findByCourseId(String courseId);
-    List<Grade> findByStudentId(String studentId);
+public interface GradeRepository extends JpaRepository<Grade, Long> {
+    List<Grade> findByCourseId(Long courseId);
+    List<Grade> findByStudentId(Long studentId);
 }

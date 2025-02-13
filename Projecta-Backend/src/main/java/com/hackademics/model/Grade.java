@@ -1,24 +1,38 @@
-package com.hackademics.Model;
+package com.hackademics.model;
 
-import jakarta.persistence.*;
-import lombok.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
 @Table(name = "grades")
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class Grade {
+
     @Id
+    @Getter
+    @Setter
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "student_id", nullable = false)
-    private String studentId;
+    @Getter
+    @Setter
+    @Column(nullable = false)
+    @JoinColumn(name = "student_id")
+    private Long studentId;
 
+    @Getter
+    @Setter
     @Column(name = "course_id", nullable = false)
-    private String courseId;
+    private Long courseId;
 
+    @Getter
+    @Setter
     @Column(name = "grade", nullable = false)
     private Double grade;
 }
