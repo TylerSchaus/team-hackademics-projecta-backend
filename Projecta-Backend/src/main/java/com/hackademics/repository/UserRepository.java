@@ -6,8 +6,8 @@ import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import com.hackademics.model.Role;
-import com.hackademics.model.User;
+import com.hackademics.Model.Role;
+import com.hackademics.Model.User;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
