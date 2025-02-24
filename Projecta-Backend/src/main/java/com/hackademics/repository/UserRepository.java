@@ -23,4 +23,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
     @Query("SELECT MAX(u.adminId) FROM User u WHERE u.adminId IS NOT NULL")
     Long findMaxAdminId();
 
+    Optional<User> findByStudentId(Long studentId); // Im not sure if we will need these later, but think they might come in handy. 
+    Optional<User> findByAdminId(Long adminId);
+
 }
