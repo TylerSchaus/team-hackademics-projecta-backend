@@ -48,6 +48,7 @@ class UserRepositoryTest {
         adminUser.setAdminId(5001L); // Just an example admin ID
     }
 
+    // Default JPA method.
     @Test
     void testSaveUser() {
         // Save the student user
@@ -89,6 +90,7 @@ class UserRepositoryTest {
         Assertions.assertEquals("bob@example.com", admins.get(0).getEmail());
     }
 
+    // Default JPA method.
     @Test
     void testGetUserById() {
         // Save a user
@@ -101,6 +103,7 @@ class UserRepositoryTest {
         Assertions.assertEquals("Alice", found.get().getFirstName());
     }
 
+    // Default JPA method.
     @Test
     void testUpdateUser() {
         // Save the student initially
@@ -137,6 +140,7 @@ class UserRepositoryTest {
         Assertions.assertEquals("Bob", foundAdmin.get().getFirstName());
     }
 
+    // Default JPA method.
     @Test
     void testDeleteUser() {
         User saved = userRepository.save(studentUser);
