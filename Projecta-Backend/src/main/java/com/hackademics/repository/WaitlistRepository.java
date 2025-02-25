@@ -1,14 +1,14 @@
 package com.hackademics.repository;
 
-import com.hackademics.model.Waitlist;
+import java.util.List;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
-import java.util.Optional;
+import com.hackademics.model.Waitlist;
 
 @Repository
 public interface WaitlistRepository extends JpaRepository<Waitlist, Long> {
-    Optional<Waitlist> findByWaitlistId(Long waitlistId);
-    List<Waitlist> findByCourseId(Long courseId);
+    
+    List<Waitlist> findByCourseId(Long id);
 }

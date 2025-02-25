@@ -10,6 +10,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Getter;
@@ -24,26 +26,33 @@ public class Course {
     @Setter
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "course_id")
-    private Long courseId;
+    private Long id;
 
     @Getter
     @Setter
-    @Column(name = "admin_id", nullable = false)
-    private Long adminId;
+    @ManyToOne
+    @JoinColumn(name = "admin_id", nullable = false)
+    private User admin;
 
     @Getter
     @Setter
-    @Column(name = "subject_id", nullable = false)
-    private Long subjectId;
+    @ManyToOne
+    @JoinColumn(name = "subject_id", nullable = false)
+    private Subject subject;
 
     @Getter
     @Setter
-    @Column(name = "start_date", nullable = false)
+    @Column(name = "course_name", nullable = false)
+    private String courseName;
+
+    @Getter
+    @Setter
+    @Column(name = "start_date")
     private LocalDateTime startDate;
 
     @Getter
     @Setter
-    @Column(name = "end_date", nullable = false)
+    @Column(name = "end_date")
     private LocalDateTime endDate;
 
     @Getter
@@ -54,4 +63,9 @@ public class Course {
     @Getter
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
     private final List<Grade> grades = new ArrayList<>();
+
+    @Getter
+    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
+    private final List<Enrollment> enrollments = new ArrayList<>();
+
 }

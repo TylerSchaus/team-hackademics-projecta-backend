@@ -25,7 +25,7 @@ public class Grade {
     @Setter
     @ManyToOne
     @JoinColumn(name = "student_id", nullable = false)
-    private User user;
+    private User student;
 
     @Getter
     @Setter

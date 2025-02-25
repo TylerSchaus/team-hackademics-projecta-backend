@@ -56,7 +56,7 @@ public class User implements UserDetails {
     @Setter
     @Enumerated(EnumType.STRING)
     @Column(/* nullable = false */)
-    private Gender gender;
+    private Gender gender; // MALE, FEMALE, OTHER
 
     @Getter
     @Setter
@@ -79,16 +79,28 @@ public class User implements UserDetails {
     @Setter
     private LocalDateTime expectGraduationDate;
 
-    // Admin specific properties\
+    
+    @Getter 
+    @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Grade> grades = new ArrayList<>();
+
+    @Getter
+    @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Enrollment> enrollments = new ArrayList<>();
+
+    @Getter
+    @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<WaitlistEnrollment> waitListEnrollments = new ArrayList<>();
+
+    // Admin specific properties
     @Getter
     @Setter
     @Column(name = "admin_id")
     private Long adminId;
 
-    @Getter 
-    @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, orphanRemoval = true)
-    private final List<Grade> grades = new ArrayList<>();
-
+    @Getter
+    @OneToMany(mappedBy = "admin", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Course> courses = new ArrayList<>();
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
