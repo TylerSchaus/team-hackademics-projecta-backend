@@ -31,8 +31,7 @@ public class WaitlistEnrollment implements Serializable {
 
     @Getter
     @Setter
-    @Column(nullable = false)
-    @JoinColumn(name = "waitlist_id")
+    @JoinColumn(name = "waitlist_id", nullable =false)
     private Long waitlistId; 
 
     @Getter

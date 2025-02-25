@@ -6,6 +6,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
@@ -22,14 +23,15 @@ public class Grade {
 
     @Getter
     @Setter
-    @Column(nullable = false)
-    @JoinColumn(name = "student_id")
-    private Long studentId;
+    @ManyToOne
+    @JoinColumn(name = "student_id", nullable = false)
+    private User user;
 
     @Getter
     @Setter
-    @Column(name = "course_id", nullable = false)
-    private Long courseId;
+    @ManyToOne
+    @JoinColumn(name = "course_id", nullable = false)
+    private Course course;
 
     @Getter
     @Setter
