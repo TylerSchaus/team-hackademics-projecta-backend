@@ -11,8 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.ActiveProfiles;
 
-import com.hackademics.model.Role;
-import com.hackademics.model.User;
+import com.hackademics.Model.Role;
+import com.hackademics.Model.User;
 import com.hackademics.repository.UserRepository;
 
 @DataJpaTest
