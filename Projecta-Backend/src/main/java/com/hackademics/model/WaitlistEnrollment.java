@@ -8,6 +8,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
@@ -16,7 +17,6 @@ import lombok.Setter;
 @Table(name = "waitlist_enrollments")
 public class WaitlistEnrollment implements Serializable {
 
-    // Composite key fields
     @Id
     @Getter
     @Setter
@@ -31,13 +31,14 @@ public class WaitlistEnrollment implements Serializable {
 
     @Getter
     @Setter
-    @Column(nullable = false)
-    @JoinColumn(name = "waitlist_id")
-    private Long waitlistId; 
+    @ManyToOne
+    @JoinColumn(name = "waitlist_id", nullable =false)
+    private Waitlist waitlist; 
 
     @Getter
     @Setter
-    @JoinColumn(name = "student_id")
-    private Long studentId;
+    @ManyToOne
+    @JoinColumn(name = "student_id", nullable = false)
+    private User student;
 
 }
