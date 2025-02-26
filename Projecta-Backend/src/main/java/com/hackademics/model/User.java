@@ -93,12 +93,4 @@ public class User implements UserDetails {
         return email;
     }
 
-    public User() { 
-        if (this.role == Role.ADMIN) {
-            // set in case of admin
-        }
-        else {
-            // set in case of student 
-        }
-    }
 }

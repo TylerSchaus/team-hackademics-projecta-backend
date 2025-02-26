@@ -17,10 +17,14 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     List<User> findByRole(Role role);
 
+    // Helper methods for getting max student and admin ideas, allows us to replicate the auto generate process with incremental generation. 
     @Query("SELECT MAX(u.studentId) FROM User u WHERE u.studentId IS NOT NULL")
     Long findMaxStudentId();
 
     @Query("SELECT MAX(u.adminId) FROM User u WHERE u.adminId IS NOT NULL")
     Long findMaxAdminId();
+
+    Optional<User> findByStudentId(Long studentId); // Im not sure if we will need these later, but think they might come in handy. 
+    Optional<User> findByAdminId(Long adminId);
 
 }
