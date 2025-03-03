@@ -23,32 +23,39 @@ import jakarta.servlet.http.HttpServletResponse;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
-    private final HandlerExceptionResolver handlerExceptionResolver;
+
 
     private final JwtService jwtService;
     private final UserDetailsService customUserDetailsService;
 
     public JwtAuthenticationFilter(
-        JwtService jwtService,
-        CustomUserDetailsService customUserDetailsService,
-        HandlerExceptionResolver handlerExceptionResolver
+            JwtService jwtService,
+            CustomUserDetailsService customUserDetailsService,
+            HandlerExceptionResolver handlerExceptionResolver
     ) {
         this.jwtService = jwtService;
         this.customUserDetailsService = customUserDetailsService;
-        this.handlerExceptionResolver = handlerExceptionResolver;
     }
 
     @Override
     protected void doFilterInternal(
-        @NonNull HttpServletRequest request,
-        @NonNull HttpServletResponse response,
-        @NonNull FilterChain filterChain
+            @NonNull HttpServletRequest request,
+            @NonNull HttpServletResponse response,
+            @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
+
+        if (request.getRequestURI().startsWith("/auth")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         final String authHeader = request.getHeader("Authorization");
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            filterChain.doFilter(request, response);
-            return;
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("Unauthorized: Missing token");
+            response.getWriter().flush();
+            return; // Ensure further processing stops
         }
 
         try {
@@ -74,7 +81,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             filterChain.doFilter(request, response);
         } catch (Exception exception) {
-            handlerExceptionResolver.resolveException(request, response, null, exception);
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("Invalid authentication");
+            response.getWriter().flush();
         }
     }
 }
