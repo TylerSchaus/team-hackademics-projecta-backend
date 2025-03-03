@@ -109,6 +109,59 @@ class AuthControllerTest {
     }
 
     @Test
+    void shouldFailRegistrationWithInvalidEmail() throws Exception {
+        SignUpDto signUpDto = new SignUpDto();
+        signUpDto.setFirstName("John");
+        signUpDto.setLastName("Doe");
+        signUpDto.setEmail("invalid-email"); // Missing @ and domain
+        signUpDto.setPassword("password123");
+        signUpDto.setRole(Role.STUDENT);
+
+        mockMvc.perform(post("/auth/signup")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(signUpDto)))
+                .andExpect(status().isBadRequest()); 
+    }
+
+    @Test
+    void shouldFailRegistrationWithDuplicateEmail() throws Exception {
+        User user = new User();
+        user.setFirstName("John");
+        user.setLastName("Doe");
+        user.setEmail("john@example.com");
+        user.setPassword(passwordEncoder.encode("password123")); // Hash password
+        user.setRole(Role.STUDENT);
+        userRepository.save(user);
+
+        SignUpDto signUpDto = new SignUpDto();
+        signUpDto.setFirstName("Jane");
+        signUpDto.setLastName("Doe");
+        signUpDto.setEmail("john@example.com"); // Duplicate email
+        signUpDto.setPassword("password456");
+        signUpDto.setRole(Role.STUDENT);
+
+        mockMvc.perform(post("/auth/signup")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(signUpDto)))
+                .andExpect(status().isBadRequest()); 
+    }
+
+    @Test
+    void shouldFailRegistrationWithNoRole() throws Exception {
+        SignUpDto signUpDto = new SignUpDto();
+        signUpDto.setFirstName("John");
+        signUpDto.setLastName("Doe");
+        signUpDto.setEmail("john@example.com");
+        signUpDto.setPassword("password123");
+        signUpDto.setRole(null); // Role is missing
+
+        mockMvc.perform(post("/auth/signup")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(signUpDto)))
+                .andExpect(status().isBadRequest()); 
+    }
+
+    @Test
     void shouldDenyAccessToProtectedEndpointWithoutToken() throws Exception {
         mockMvc.perform(get("/api/users/me")) // No token provided
                 .andExpect(status().isUnauthorized());
