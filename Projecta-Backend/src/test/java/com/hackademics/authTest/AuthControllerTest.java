@@ -87,6 +87,28 @@ class AuthControllerTest {
     }
 
     @Test
+    void shouldLoginUnsuccessfully() throws Exception {
+        // Manually create and save a user since login requires an existing user
+        User user = new User();
+        user.setFirstName("John");
+        user.setLastName("Doe");
+        user.setEmail("john@example.com");
+        user.setPassword(passwordEncoder.encode("password123")); // Hash password
+        user.setRole(Role.STUDENT);
+        userRepository.save(user);
+
+        // Create login request
+        LoginDto loginDto = new LoginDto();
+        loginDto.setEmail("john@example.com");
+        loginDto.setPassword("password321"); // Incorrect password
+
+        mockMvc.perform(post("/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(loginDto)))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
     void shouldDenyAccessToProtectedEndpointWithoutToken() throws Exception {
         mockMvc.perform(get("/api/users/me")) // No token provided
                 .andExpect(status().isUnauthorized());
