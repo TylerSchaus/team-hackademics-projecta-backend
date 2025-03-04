@@ -8,6 +8,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -92,7 +94,7 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.email").value("newemail@example.com"));
     }
 
-    @Test 
+    @Test
     void shouldNotAllowStudentToUpdateOwnName() throws Exception {
         UserUpdateDto updateDto = new UserUpdateDto();
         updateDto.setFirstName("NewName");
@@ -153,6 +155,45 @@ class UserControllerTest {
                 .content(objectMapper.writeValueAsString(updateDto))
                 .header("Authorization", "Bearer " + generateToken(student)))
                 .andExpect(status().isForbidden()); // Expecting 403 Forbidden
+    }
+
+    @Test
+    void shouldAllowAdminToDeleteUser() throws Exception {
+        mockMvc.perform(delete("/api/users/" + student.getId())
+                .header("Authorization", "Bearer " + generateToken(admin)))
+                .andExpect(status().isNoContent()); // 204 No Content means successful delete
+    }
+
+    @Test
+    void shouldNotAllowStudentToDeleteUser() throws Exception {
+        mockMvc.perform(delete("/api/users/" + admin.getId())
+                .header("Authorization", "Bearer " + generateToken(student)))
+                .andExpect(status().isForbidden()); // 403 Forbidden
+    }
+
+    @Test
+    void shouldAllowAdminToGetUsersByRole() throws Exception {
+        mockMvc.perform(get("/api/users")
+                .param("role", "STUDENT")
+                .header("Authorization", "Bearer " + generateToken(admin)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(2)); // Should return 2 students
+    }
+
+    @Test
+    void shouldNotAllowStudentToGetUsersByRole() throws Exception {
+        mockMvc.perform(get("/api/users")
+                .param("role", "STUDENT")
+                .header("Authorization", "Bearer " + generateToken(student)))
+                .andExpect(status().isForbidden()); // 403 Forbidden
+    }
+
+    @Test
+    void shouldAllowUserToRetrieveTheirOwnInfo() throws Exception {
+        mockMvc.perform(get("/api/users/me")
+                .header("Authorization", "Bearer " + generateToken(student)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.email").value(student.getEmail()));
     }
 
 }
