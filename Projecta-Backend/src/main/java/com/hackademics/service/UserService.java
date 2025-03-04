@@ -3,8 +3,10 @@ package com.hackademics.service;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.hackademics.model.Role;
 import com.hackademics.model.User;
@@ -29,17 +31,24 @@ public class UserService {
         return userRepository.findByEmail(email);
     }
 
+    public Optional<User> getUserById(Long id) {
+        return userRepository.findById(id);
+    }
+
+    public User saveUser(User user) {
+        return userRepository.save(user);
+    }
+
     public User createUser(User user) { // Only used for testing. All real users should go through authentication. 
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        if (user.getRole() == Role.ADMIN){
+        if (user.getRole() == Role.ADMIN) {
             user.setAdminId(generateNextAdminId());
         }
-        if (user.getRole() == Role.STUDENT){
+        if (user.getRole() == Role.STUDENT) {
             user.setStudentId(generateNextStudentId());
         }
         return userRepository.save(user);
     }
-
 
     public User updateUser(Long id, User updatedUser) {
         return userRepository.findById(id)
@@ -56,7 +65,15 @@ public class UserService {
         userRepository.deleteById(userId);
     }
 
-    // methods: 
+    // Utility methods
+
+    public void validateUniqueStudentId(Long studentId) {
+        Optional<User> existingUser = userRepository.findByStudentId(studentId);
+        if (existingUser.isPresent()) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Student ID is already taken.");
+
+        }
+    }
 
     private Long generateNextStudentId() {
         Long maxStudentId = userRepository.findMaxStudentId();
