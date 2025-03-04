@@ -3,6 +3,9 @@ package com.hackademics.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -24,7 +27,6 @@ public class Waitlist {
     @Getter
     @Setter
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "waitlist_id")
     private Long id;
 
     @Getter
@@ -40,5 +42,6 @@ public class Waitlist {
 
     @Getter
     @OneToMany(mappedBy = "waitlist", cascade = CascadeType.ALL, orphanRemoval=true)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private final List<WaitlistEnrollment> waitlistEnrollments = new ArrayList<>();
 }

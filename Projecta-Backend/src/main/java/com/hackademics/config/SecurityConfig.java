@@ -17,7 +17,7 @@ public class SecurityConfig {
 
     public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
- 
+
     }
 
     @Bean
@@ -28,7 +28,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/auth/**").permitAll() // Allow login/signup endpoints
                 .requestMatchers("/api/users/me").authenticated() // Secure /me endpoints
-                .anyRequest().permitAll() // Allow other requests 
+                .anyRequest().authenticated() // Allow other requests 
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
