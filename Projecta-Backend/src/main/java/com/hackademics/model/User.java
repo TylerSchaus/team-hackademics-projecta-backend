@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -82,14 +84,17 @@ public class User implements UserDetails {
     
     @Getter 
     @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private List<Grade> grades = new ArrayList<>();
 
     @Getter
     @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private List<Enrollment> enrollments = new ArrayList<>();
 
     @Getter
     @OneToMany(mappedBy = "student", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private List<WaitlistEnrollment> waitListEnrollments = new ArrayList<>();
 
     // Admin specific properties
@@ -99,7 +104,7 @@ public class User implements UserDetails {
     private Long adminId;
 
     @Getter
-    @OneToMany(mappedBy = "admin", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "admin", cascade = CascadeType.PERSIST)
     private List<Course> courses = new ArrayList<>();
 
     @Override

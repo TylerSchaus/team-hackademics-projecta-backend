@@ -4,6 +4,9 @@ import java.time.LocalDateTime;
 import java.util.ArrayList; 
 import java.util.List;
 
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -25,13 +28,13 @@ public class Course {
     @Getter
     @Setter
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "course_id")
     private Long id;
 
     @Getter
     @Setter
     @ManyToOne
-    @JoinColumn(name = "admin_id", nullable = false)
+    @JoinColumn(name = "admin_id", nullable = true)
+    @OnDelete(action = OnDeleteAction.SET_NULL)
     private User admin;
 
     @Getter
@@ -62,10 +65,12 @@ public class Course {
 
     @Getter
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private final List<Grade> grades = new ArrayList<>();
 
     @Getter
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private final List<Enrollment> enrollments = new ArrayList<>();
 
 }
