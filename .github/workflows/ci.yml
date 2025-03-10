@@ -30,8 +30,8 @@ jobs:
       - name: Show Maven Dependancies 
         run: |
           cd Projecta-Backend
-          mvn dependancy:tree
-          
+          mvn dependency:tree
+
       - name: Build and Test
         run: |
           cd Projecta-Backend
