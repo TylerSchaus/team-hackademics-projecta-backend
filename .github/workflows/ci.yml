@@ -23,12 +23,13 @@ jobs:
         uses: actions/cache@v3
         with:
           path: ~/.m2
-          key: maven-${{ hashFiles('**/pom.xml') }}
+          key: maven-${{ hashFiles('Projecta-Backend/pom.xml') }}
           restore-keys: |
             maven-
 
       - name: Run Tests
         run: |
           cd Projecta-Backend  # Navigate to project folder
+          mvn install -DskipTests # Ensure all dependancies are installed before attempting tests. 
           mvn test
         
