@@ -27,9 +27,12 @@ jobs:
           restore-keys: |
             maven-
 
+      - name: Clean and Compile
+        run: |
+          cd Projecta-Backend
+          mvn clean compile
+
       - name: Run Tests
         run: |
           cd Projecta-Backend  # Navigate to project folder
-          mvn install -DskipTests # Ensure all dependancies are installed before attempting tests. 
           mvn test
-        
