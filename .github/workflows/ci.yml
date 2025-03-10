@@ -30,5 +30,6 @@ jobs:
       - name: Run Tests
         run: |
           cd Projecta-Backend  # Navigate to project folder
+          mvn clean install -U # Clean install for all dependancies. 
           mvn test
         
