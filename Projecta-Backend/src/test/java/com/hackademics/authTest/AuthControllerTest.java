@@ -25,7 +25,7 @@ import jakarta.transaction.Transactional;
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
-class AuthControllerTest {
+class AuthControllerTest { // Comments for test PR ... can be removed later. 
 
     @Autowired
     private MockMvc mockMvc;
