@@ -1,0 +1,39 @@
+name: Spring Boot CI
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v3
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      # (Optional) Temporarily disable this if you suspect a corrupt cache
+      - name: Cache Maven dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - name: Show Maven Dependencies (debug step)
+        run: |
+          cd Projecta-Backend
+          mvn dependency:tree
+
+      - name: Build and Test
+        run: |
+          cd Projecta-Backend
+          mvn clean test

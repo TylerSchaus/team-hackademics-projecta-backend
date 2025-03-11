@@ -16,32 +16,53 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
-import lombok.Getter;
-import lombok.Setter;
 
 @Entity
 @Table(name = "waitlists")
 public class Waitlist {
 
     @Id
-    @Getter
-    @Setter
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Getter
-    @Setter
     @OneToOne(orphanRemoval = true)
     @JoinColumn(name = "course_id", nullable = false)
     private Course course;
 
-    @Getter
-    @Setter
     @Column(name = "waitlist_limit", nullable = false)
     private int waitlistLimit;
 
-    @Getter
     @OneToMany(mappedBy = "waitlist", cascade = CascadeType.ALL, orphanRemoval=true)
     @OnDelete(action = OnDeleteAction.CASCADE)
     private final List<WaitlistEnrollment> waitlistEnrollments = new ArrayList<>();
+
+    // Getters and Setters
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Course getCourse() {
+        return course;
+    }
+
+    public void setCourse(Course course) {
+        this.course = course;
+    }
+
+    public int getWaitlistLimit() {
+        return waitlistLimit;
+    }
+
+    public void setWaitlistLimit(int waitlistLimit) {
+        this.waitlistLimit = waitlistLimit;
+    }
+
+    public List<WaitlistEnrollment> getWaitlistEnrollments() {
+        return waitlistEnrollments;
+    }
 }
