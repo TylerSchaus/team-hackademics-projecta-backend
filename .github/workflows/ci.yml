@@ -35,4 +35,4 @@ jobs:
       - name: Build and Test
         run: |
           cd Projecta-Backend
-          mvn clean verify -U -Djps.track.ap.dependencies=false
+          mvn clean verify -U 
