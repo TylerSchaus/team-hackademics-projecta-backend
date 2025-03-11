@@ -33,6 +33,7 @@ public class Subject {
     private String subjectName;
 
     @Getter
+    @Setter
     @OneToMany(mappedBy = "subject", cascade = CascadeType.ALL, orphanRemoval = true)
     @OnDelete(action = OnDeleteAction.CASCADE)
     private List<Course> courses = new ArrayList<>(); 
