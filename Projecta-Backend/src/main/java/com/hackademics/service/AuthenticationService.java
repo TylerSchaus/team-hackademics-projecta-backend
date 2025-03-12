@@ -1,4 +1,4 @@
-package com.hackademics.service;
+package com.hackademics.Service;
 
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;

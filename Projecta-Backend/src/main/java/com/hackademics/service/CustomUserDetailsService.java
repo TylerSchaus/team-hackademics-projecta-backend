@@ -1,4 +1,4 @@
-package com.hackademics.service;
+package com.hackademics.Service;
 
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

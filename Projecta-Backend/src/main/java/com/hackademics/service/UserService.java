@@ -1,4 +1,4 @@
-package com.hackademics.service;
+package com.hackademics.Service;
 
 import java.util.List;
 import java.util.Optional;
