@@ -10,5 +10,6 @@ import com.hackademics.model.Course;
 @Repository
 public interface CourseRepository extends JpaRepository<Course, Long> {
     List<Course> findByAdminId(Long id);
+    List<Course> findBySubjectName(String name);
     List<Course> findBySubjectId(Long id);
 }
