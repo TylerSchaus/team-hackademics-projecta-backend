@@ -68,65 +68,23 @@ public class UserController {
             @PathVariable Long id,
             @RequestBody @Valid UserUpdateDto userUpdateDto,
             @AuthenticationPrincipal UserDetails currentUser) {
-
-        User userToUpdate = userService.getUserById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
-
-        User authenticatedUser = userService.getUserByEmail(currentUser.getUsername())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized"));
-
-        boolean isAdmin = authenticatedUser.getRole() == Role.ADMIN;
-        boolean isSelfUpdate = authenticatedUser.getId().equals(userToUpdate.getId());
-
-        // Cannot update if user is not an admin or the update is not for the current user.
-        if (!isAdmin && !isSelfUpdate) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You do not have permission to update this user.");
-        }
-
-        if (isAdmin) {
-            if (userUpdateDto.getFirstName() != null) {
-                userToUpdate.setFirstName(userUpdateDto.getFirstName());
-            }
-            if (userUpdateDto.getLastName() != null) {
-                userToUpdate.setLastName(userUpdateDto.getLastName());
-            }
-            if (userUpdateDto.getGender() != null) {
-                userToUpdate.setGender(userUpdateDto.getGender());
-            }
-
-            // Ensure Student ID is unique before updating
-            if (userUpdateDto.getStudentId() != null) {
-                userService.validateUniqueStudentId(userUpdateDto.getStudentId());
-                userToUpdate.setStudentId(userUpdateDto.getStudentId());
-            }
-        }
-        else if (userUpdateDto.getStudentId() != null || userUpdateDto.getFirstName() != null || userUpdateDto.getLastName() != null){
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You do not have permission to update this information.");
-        } 
-
-        if (userUpdateDto.getEmail() != null) {
-            userToUpdate.setEmail(userUpdateDto.getEmail());
-        }
-
-        User updatedUser = userService.saveUser(userToUpdate);
+    
+        // Delegate the update process to the service layer
+        User updatedUser = userService.updateUser(id, userUpdateDto, currentUser);
+    
         return ResponseEntity.ok(updatedUser);
     }
-
+    
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUser(
             @PathVariable Long id,
             @AuthenticationPrincipal UserDetails currentUser) {
-
-        // Ensure only admins can delete users
-        User authenticatedUser = userService.getUserByEmail(currentUser.getUsername())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized"));
-
-        if (authenticatedUser.getRole() != Role.ADMIN) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only admins can delete users.");
-        }
-
-        userService.deleteUser(id);
+    
+        // Delegate role verification and deletion to service
+        userService.deleteUser(id, currentUser);
+    
         return ResponseEntity.noContent().build();
     }
+    
 
 }
