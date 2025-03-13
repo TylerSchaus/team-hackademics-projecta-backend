@@ -5,6 +5,8 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -34,25 +36,25 @@ public class SubjectController {
     }
 
     @PostMapping
-    public ResponseEntity<Subject> createSubject(@Valid @RequestBody SubjectDto subjectDto) {
-        Subject createdSubject = subjectService.createSubject(subjectDto);
+    public ResponseEntity<Subject> createSubject(@Valid @RequestBody SubjectDto subjectDto, @AuthenticationPrincipal UserDetails currentUser) {
+        Subject createdSubject = subjectService.createSubject(subjectDto, currentUser);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdSubject);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteSubject(@PathVariable Long id) {
-        boolean deleted = subjectService.deleteSubject(id);
+    public ResponseEntity<Void> deleteSubject(@PathVariable Long id, @AuthenticationPrincipal UserDetails currentUser) {
+        boolean deleted = subjectService.deleteSubject(id, currentUser);
         return deleted ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
     }
 
-    @GetMapping
+     @GetMapping
     public ResponseEntity<List<Subject>> getAllSubjects() {
         List<Subject> subjects = subjectService.getAllSubjects();
         return ResponseEntity.ok(subjects);
     }
 
-    public ResponseEntity<Subject> updateSubject(@PathVariable Long id, @Valid @RequestBody SubjectDto updatedSubjectDto) {
-        return subjectService.updateSubject(id, updatedSubjectDto)
+    public ResponseEntity<Subject> updateSubject(@PathVariable Long id, @Valid @RequestBody SubjectDto updatedSubjectDto, @AuthenticationPrincipal UserDetails currentUser) {
+        return subjectService.updateSubject(id, updatedSubjectDto, currentUser)
                .map(ResponseEntity::ok)
                .orElse(ResponseEntity.notFound().build());
     }
