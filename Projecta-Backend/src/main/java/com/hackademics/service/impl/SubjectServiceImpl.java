@@ -1,10 +1,12 @@
 package com.hackademics.service.impl;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.hackademics.dto.SubjectDto;
 import com.hackademics.model.Subject;
 import com.hackademics.repository.SubjectRepository;
 import com.hackademics.service.SubjectService;
@@ -13,11 +15,11 @@ import com.hackademics.service.SubjectService;
 public class SubjectServiceImpl implements SubjectService {
 
     @Autowired
-    SubjectRepository subjectRepository;
+    private SubjectRepository subjectRepository;
 
     @Override
-    public Subject saveSubject(Subject subject) {
-        return subjectRepository.save(subject);
+    public Optional<Subject> getSubjectById(Long id) {
+        return subjectRepository.findById(id);
     }
 
     @Override
@@ -26,18 +28,26 @@ public class SubjectServiceImpl implements SubjectService {
     }
 
     @Override
-    public Subject getSubjectById(Long id) {
-        return subjectRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Subject not found with ID: " + id));
+    public Subject createSubject(SubjectDto subjectDto) {
+        Subject newSubject = new Subject(subjectDto.getSubjectName(), subjectDto.getSubjectTag());
+        return subjectRepository.save(newSubject);
     }
 
     @Override
-    public Subject updateSubject(Subject subject) {
-        return subjectRepository.save(subject);
+    public Optional<Subject> updateSubject(Long id, SubjectDto updatedSubjectDto) {
+        return subjectRepository.findById(id).map(subject -> {
+            subject.setSubjectName(updatedSubjectDto.getSubjectName());
+            subject.setSubjectTag(updatedSubjectDto.getSubjectTag());
+            return subjectRepository.save(subject);
+        });
     }
 
     @Override
-    public void deleteSubject(Long id) {
-        subjectRepository.deleteById(id);
+    public boolean deleteSubject(Long id) {
+        if (subjectRepository.existsById(id)) {
+            subjectRepository.deleteById(id);
+            return true;
+        }
+        return false;
     }
 }
