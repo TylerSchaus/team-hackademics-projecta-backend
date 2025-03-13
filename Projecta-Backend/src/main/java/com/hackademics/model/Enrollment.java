@@ -24,6 +24,13 @@ public class Enrollment {
     @JoinColumn(name = "student_id", nullable = false)
     private User student;
 
+    // Constructor
+
+    public Enrollment(Course course, User student) {
+        this.course = course;
+        this.student = student;
+    }
+
     // Getters and Setters
 
     public Long getId() {

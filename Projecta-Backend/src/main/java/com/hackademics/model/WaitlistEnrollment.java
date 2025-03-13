@@ -31,6 +31,13 @@ public class WaitlistEnrollment implements Serializable {
     @JoinColumn(name = "student_id", nullable = false)
     private User student;
 
+    // Constructor
+    public WaitlistEnrollment(int waitlistPosition, Waitlist waitlist, User student) {
+        this.waitlistPosition = waitlistPosition;
+        this.waitlist = waitlist;
+        this.student = student;
+    }
+
     // Getters and Setters
 
     public Long getId() {

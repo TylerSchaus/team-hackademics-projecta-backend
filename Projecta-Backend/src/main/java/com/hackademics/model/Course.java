@@ -61,6 +61,20 @@ public class Course {
     @OnDelete(action = OnDeleteAction.CASCADE)
     private final List<Enrollment> enrollments = new ArrayList<>();
 
+    // Constructor
+
+    public Course(User admin, Subject subject, String courseName, LocalDateTime startDate, LocalDateTime endDate, int enrollLimit,
+            String courseNumber) {
+                this.admin = admin; 
+                this.subject = subject; 
+                this.courseName = courseName;
+                this.startDate = startDate; 
+                this.endDate = endDate; 
+                this.enrollLimit = enrollLimit; 
+                this.courseNumber = courseNumber;
+                this.courseTag = subject.getSubjectTag() + " " + courseNumber;
+            }
+                
     // Getters and Setters
 
     public Long getId() {

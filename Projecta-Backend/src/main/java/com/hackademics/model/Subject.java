@@ -33,6 +33,12 @@ public class Subject {
     @OnDelete(action = OnDeleteAction.CASCADE)
     private List<Course> courses = new ArrayList<>();
 
+    // Constructor
+    public Subject(String subjectName, String subjectTag) {
+        this.subjectName = subjectName;
+        this.subjectTag = subjectTag;
+    }
+
     // Getters and Setters
 
     public Long getId() {
