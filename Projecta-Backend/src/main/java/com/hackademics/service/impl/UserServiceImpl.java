@@ -26,7 +26,15 @@ public class UserServiceImpl implements UserService {
     PasswordEncoder passwordEncoder;
 
     @Override
-    public List<User> getUsersByRole(Role role) {
+    public List<User> getUsersByRole(Role role, UserDetails currentUser) {
+        User authenticatedUser = userRepository.findByEmail(currentUser.getUsername())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized"));
+
+        // Ensure the request is from an admin
+        if (authenticatedUser.getRole() != Role.ADMIN) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You do not have permission to view user data.");
+        }
+
         return userRepository.findByRole(role);
     }
 

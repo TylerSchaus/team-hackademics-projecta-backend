@@ -10,7 +10,7 @@ import com.hackademics.model.Role;
 import com.hackademics.model.User;
 
 public interface UserService {
-    List<User> getUsersByRole(Role role);
+    List<User> getUsersByRole(Role role, UserDetails currentUser);
 
     Optional<User> getUserByEmail(String email);
 

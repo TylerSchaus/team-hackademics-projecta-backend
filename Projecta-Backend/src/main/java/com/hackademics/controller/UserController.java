@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ResponseStatusException;
 
 import com.hackademics.dto.UserUpdateDto;
 import com.hackademics.model.Role;
@@ -40,15 +39,10 @@ public class UserController {
             @RequestParam Role role,
             @AuthenticationPrincipal UserDetails currentUser) {
 
-        // Ensure the request is from an admin
-        User authenticatedUser = userService.getUserByEmail(currentUser.getUsername())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized"));
-
-        if (authenticatedUser.getRole() != Role.ADMIN) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You do not have permission to view user data.");
-        }
-
-        return ResponseEntity.ok(userService.getUsersByRole(role));
+        // Delegate the request to the service layer
+        List<User> users = userService.getUsersByRole(role, currentUser);
+        
+        return ResponseEntity.ok(users);
     }
 
     @GetMapping("/me")
