@@ -56,30 +56,13 @@ class UserControllerTest {
     void setUp() {
         userRepository.deleteAll(); // Clean database before each test
 
-        admin = new User();
-        admin.setFirstName("Admin");
-        admin.setLastName("User");
-        admin.setEmail("admin@example.com");
-        admin.setPassword(passwordEncoder.encode("adminPass"));
-        admin.setRole(Role.ADMIN);
+        admin = new User("Admin", "User", "admin@example.com", passwordEncoder.encode("adminPass"), Role.ADMIN, 100L);
         admin = userRepository.save(admin);
 
-        student = new User();
-        student.setFirstName("Student");
-        student.setLastName("User");
-        student.setEmail("student@example.com");
-        student.setPassword(passwordEncoder.encode("studentPass"));
-        student.setRole(Role.STUDENT);
-        student.setStudentId(123L);
+        student = new User("Student", "User", "student@example.com", passwordEncoder.encode("studentPass"), Role.STUDENT, 123L);
         student = userRepository.save(student);
 
-        anotherStudent = new User();
-        anotherStudent.setFirstName("Another");
-        anotherStudent.setLastName("Student");
-        anotherStudent.setEmail("anotherstudent@example.com");
-        anotherStudent.setPassword(passwordEncoder.encode("studentPass"));
-        anotherStudent.setRole(Role.STUDENT);
-        anotherStudent.setStudentId(456L);
+        anotherStudent = new User("Another", "Student", "anotherstudent@example.com", passwordEncoder.encode("studentPass"), Role.STUDENT, 456L);
         anotherStudent = userRepository.save(anotherStudent);
     }
 

@@ -28,6 +28,9 @@ public class Grade {
     @Column(name = "grade", nullable = false)
     private Double grade;
 
+    @Column(name = "course_tag_copy", nullable = false) // To ensure that even if a course is deleted, a copy of the course (COSC121, BIOL117, etc) remains. 
+    private String courseTagCopy; 
+
     // Getters and Setters
 
     public Long getId() {
@@ -60,5 +63,13 @@ public class Grade {
 
     public void setGrade(Double grade) {
         this.grade = grade;
+    }
+
+    public String getCourseTagCopy() {
+        return courseTagCopy;
+    }
+
+    public void setCourseTagCopy(String courseTagCopy) {
+        this.courseTagCopy = courseTagCopy;
     }
 }

@@ -50,12 +50,7 @@ class AuthControllerTest {
 
     @Test
     void shouldRegisterNewUserSuccessfully() throws Exception {
-        SignUpDto signUpDto = new SignUpDto();
-        signUpDto.setFirstName("John");
-        signUpDto.setLastName("Doe");
-        signUpDto.setEmail("john@example.com");
-        signUpDto.setPassword("password123");
-        signUpDto.setRole(Role.STUDENT);
+        SignUpDto signUpDto = new SignUpDto("John", "Doe", "john@example.com", "password123", Role.STUDENT);
 
         mockMvc.perform(post("/auth/signup")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -68,18 +63,11 @@ class AuthControllerTest {
     @Test
     void shouldLoginSuccessfully() throws Exception {
         // Manually create and save a user since login requires an existing user
-        User user = new User();
-        user.setFirstName("John");
-        user.setLastName("Doe");
-        user.setEmail("john@example.com");
-        user.setPassword(passwordEncoder.encode("password123")); // Hash password
-        user.setRole(Role.STUDENT);
+        User user = new User("John", "Doe", "john@example.com", passwordEncoder.encode("password123"), Role.STUDENT, 123L);
         userRepository.save(user);
 
         // Create login request
-        LoginDto loginDto = new LoginDto();
-        loginDto.setEmail("john@example.com");
-        loginDto.setPassword("password123");
+        LoginDto loginDto = new LoginDto("john@example.com", "password123");
 
         mockMvc.perform(post("/auth/login")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -91,18 +79,11 @@ class AuthControllerTest {
     @Test
     void shouldLoginUnsuccessfully() throws Exception {
         // Manually create and save a user since login requires an existing user
-        User user = new User();
-        user.setFirstName("John");
-        user.setLastName("Doe");
-        user.setEmail("john@example.com");
-        user.setPassword(passwordEncoder.encode("password123")); // Hash password
-        user.setRole(Role.STUDENT);
+        User user = new User("John", "Doe", "john@example.com", passwordEncoder.encode("password123"), Role.STUDENT, 123L);
         userRepository.save(user);
 
-        // Create login request
-        LoginDto loginDto = new LoginDto();
-        loginDto.setEmail("john@example.com");
-        loginDto.setPassword("password321"); // Incorrect password
+        // Create login request with wrong password
+        LoginDto loginDto = new LoginDto("john@example.com", "password321"); // Incorrect password
 
         mockMvc.perform(post("/auth/login")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -112,12 +93,7 @@ class AuthControllerTest {
 
     @Test
     void shouldFailRegistrationWithInvalidEmail() throws Exception {
-        SignUpDto signUpDto = new SignUpDto();
-        signUpDto.setFirstName("John");
-        signUpDto.setLastName("Doe");
-        signUpDto.setEmail("invalid-email"); // Missing @ and domain
-        signUpDto.setPassword("password123");
-        signUpDto.setRole(Role.STUDENT);
+        SignUpDto signUpDto = new SignUpDto("John", "Doe", "invalid-email", "password123", Role.STUDENT);
 
         mockMvc.perform(post("/auth/signup")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -127,20 +103,12 @@ class AuthControllerTest {
 
     @Test
     void shouldFailRegistrationWithDuplicateEmail() throws Exception {
-        User user = new User();
-        user.setFirstName("John");
-        user.setLastName("Doe");
-        user.setEmail("john@example.com");
-        user.setPassword(passwordEncoder.encode("password123")); // Hash password
-        user.setRole(Role.STUDENT);
+        // Existing user
+        User user = new User("John", "Doe", "john@example.com", passwordEncoder.encode("password123"), Role.STUDENT, 123L);
         userRepository.save(user);
 
-        SignUpDto signUpDto = new SignUpDto();
-        signUpDto.setFirstName("Jane");
-        signUpDto.setLastName("Doe");
-        signUpDto.setEmail("john@example.com"); // Duplicate email
-        signUpDto.setPassword("password456");
-        signUpDto.setRole(Role.STUDENT);
+        // New signup request with duplicate email
+        SignUpDto signUpDto = new SignUpDto("Jane", "Doe", "john@example.com", "password456", Role.STUDENT);
 
         mockMvc.perform(post("/auth/signup")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -150,12 +118,7 @@ class AuthControllerTest {
 
     @Test
     void shouldFailRegistrationWithNoRole() throws Exception {
-        SignUpDto signUpDto = new SignUpDto();
-        signUpDto.setFirstName("John");
-        signUpDto.setLastName("Doe");
-        signUpDto.setEmail("john@example.com");
-        signUpDto.setPassword("password123");
-        signUpDto.setRole(null); // Role is missing
+        SignUpDto signUpDto = new SignUpDto("John", "Doe", "john@example.com", "password123", null); // Role is missing
 
         mockMvc.perform(post("/auth/signup")
                 .contentType(MediaType.APPLICATION_JSON)
