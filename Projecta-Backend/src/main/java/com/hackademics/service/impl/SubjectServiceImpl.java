@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.hackademics.dto.SubjectDto;
+import com.hackademics.dto.SubjectUpdateDto;
 import com.hackademics.model.Role;
 import com.hackademics.model.Subject;
 import com.hackademics.model.User;
@@ -50,22 +51,29 @@ public class SubjectServiceImpl implements SubjectService {
     }
 
     @Override
-    public Optional<Subject> updateSubject(Long id, SubjectDto updatedSubjectDto, UserDetails currentUser) {
-        User authenticatedUser = userRepository.findByEmail(currentUser.getUsername())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized"));
+public Optional<Subject> updateSubject(Long id, SubjectUpdateDto updatedSubjectDto, UserDetails currentUser) {
+    User authenticatedUser = userRepository.findByEmail(currentUser.getUsername())
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized"));
 
-        if (authenticatedUser.getRole() != Role.ADMIN) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only admins can update subjects.");
-        }
-
-        return subjectRepository.findById(id).map(subject -> {
-            subject.setSubjectName(updatedSubjectDto.getSubjectName());
-            subject.setSubjectTag(updatedSubjectDto.getSubjectTag());
-            return subjectRepository.save(subject);
-        });
+    if (authenticatedUser.getRole() != Role.ADMIN) {
+        throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only admins can update subjects.");
     }
 
-    @Override
+    return subjectRepository.findById(id).map(subject -> {
+        // Update fields only if they are provided (non-null)
+        if (updatedSubjectDto.getSubjectName() != null) {
+            subject.setSubjectName(updatedSubjectDto.getSubjectName());
+        }
+        if (updatedSubjectDto.getSubjectTag() != null) {
+            subject.setSubjectTag(updatedSubjectDto.getSubjectTag());
+        }
+
+        return subjectRepository.save(subject);
+    });
+}
+
+
+        @Override
     public boolean deleteSubject(Long id, UserDetails currentUser) {
         User authenticatedUser = userRepository.findByEmail(currentUser.getUsername())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized"));

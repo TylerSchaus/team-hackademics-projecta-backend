@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.hackademics.dto.SubjectDto;
+import com.hackademics.dto.SubjectUpdateDto;
 import com.hackademics.model.Subject;
 import com.hackademics.service.SubjectService;
 
@@ -53,7 +54,7 @@ public class SubjectController {
         return ResponseEntity.ok(subjects);
     }
 
-    public ResponseEntity<Subject> updateSubject(@PathVariable Long id, @Valid @RequestBody SubjectDto updatedSubjectDto, @AuthenticationPrincipal UserDetails currentUser) {
+    public ResponseEntity<Subject> updateSubject(@PathVariable Long id, @Valid @RequestBody SubjectUpdateDto updatedSubjectDto, @AuthenticationPrincipal UserDetails currentUser) {
         return subjectService.updateSubject(id, updatedSubjectDto, currentUser)
                .map(ResponseEntity::ok)
                .orElse(ResponseEntity.notFound().build());

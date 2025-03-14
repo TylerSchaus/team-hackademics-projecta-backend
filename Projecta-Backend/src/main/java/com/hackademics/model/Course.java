@@ -53,6 +53,9 @@ public class Course {
     @Column(name = "course_tag", nullable = false)
     private String courseTag;
 
+    @Column(name = "semester", nullable = false)
+    private int semester;
+
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
     @OnDelete(action = OnDeleteAction.CASCADE)
     private final List<Grade> grades = new ArrayList<>();
@@ -69,6 +72,11 @@ public class Course {
                 this.subject = subject; 
                 this.courseName = courseName;
                 this.startDate = startDate; 
+                if (null == startDate.getMonth()) semester = 3; else semester = switch (startDate.getMonth()) {
+                    case SEPTEMBER -> 1;
+                    case JANUARY -> 2;
+                    default -> 3;
+                };
                 this.endDate = endDate; 
                 this.enrollLimit = enrollLimit; 
                 this.courseNumber = courseNumber;
@@ -155,5 +163,13 @@ public class Course {
 
     public List<Enrollment> getEnrollments() {
         return enrollments;
+    }
+
+    public int getSemester() {
+        return semester;
+    }
+
+    public void setSemester(int semester) {
+        this.semester = semester;
     }
 }
