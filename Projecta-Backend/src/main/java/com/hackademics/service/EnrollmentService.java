@@ -2,12 +2,15 @@ package com.hackademics.service;
 
 import java.util.List;
 
+import org.springframework.security.core.userdetails.UserDetails;
+
+import com.hackademics.dto.EnrollmentDto;
 import com.hackademics.model.Enrollment;
 
 public interface EnrollmentService {
-    Enrollment saveEnrollment(Enrollment enrollment);
-    List<Enrollment> getAllEnrollments();
-    Enrollment getEnrollmentById(Long id);
-    Enrollment updateEnrollment(Enrollment enrollment);
-    void deleteEnrollment(Long id);
+    Enrollment saveEnrollment(EnrollmentDto enrollmentDto, UserDetails currentUser);
+    List<Enrollment> getAllEnrollments(UserDetails currentUser);
+    Enrollment getEnrollmentById(Long id, UserDetails currentUser);
+    List<Enrollment> getEnrollmentsByCourseId(Long id, UserDetails currentUser); 
+    void deleteEnrollment(Long id, UserDetails currentUser);
 }

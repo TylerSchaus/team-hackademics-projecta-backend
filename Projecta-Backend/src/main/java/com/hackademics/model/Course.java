@@ -47,6 +47,9 @@ public class Course {
     @Column(name = "enroll_limit", nullable = false)
     private int enrollLimit;
 
+    @Column(name = "current_enroll", nullable = false)
+    private int currentEnroll;
+
     @Column(name = "course_number", nullable = false)
     private String courseNumber;
 
@@ -81,6 +84,7 @@ public class Course {
                 this.enrollLimit = enrollLimit; 
                 this.courseNumber = courseNumber;
                 this.courseTag = subject.getSubjectTag() + " " + courseNumber;
+                this.currentEnroll = 0;
             }
                 
     // Getters and Setters
@@ -172,4 +176,13 @@ public class Course {
     public void setSemester(int semester) {
         this.semester = semester;
     }
+
+    public int getCurrentEnroll() {
+        return currentEnroll;
+    }
+
+    public void setCurrentEnroll(int currentEnroll) {
+        this.currentEnroll = currentEnroll;
+    }
+
 }
