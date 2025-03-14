@@ -30,7 +30,7 @@ public class EnrollmentController {
 
     @PostMapping
     public ResponseEntity<Enrollment> saveEnrollment(@Valid @RequestBody EnrollmentDto enrollmentDto,
-                                                     @AuthenticationPrincipal UserDetails currentUser) {
+            @AuthenticationPrincipal UserDetails currentUser) {
         Enrollment createdEnrollment = enrollmentService.saveEnrollment(enrollmentDto, currentUser);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdEnrollment);
     }
@@ -42,21 +42,26 @@ public class EnrollmentController {
 
     @GetMapping("/course/{courseId}")
     public ResponseEntity<List<Enrollment>> getEnrollmentsByCourseId(@PathVariable Long courseId,
-                                                                     @AuthenticationPrincipal UserDetails currentUser) {
+            @AuthenticationPrincipal UserDetails currentUser) {
         return ResponseEntity.ok(enrollmentService.getEnrollmentsByCourseId(courseId, currentUser));
+    }
+
+    @GetMapping("/student/{studentId}")
+    public ResponseEntity<List<Enrollment>> getEnrollmentsByStudentId(@PathVariable Long studentId,
+            @AuthenticationPrincipal UserDetails currentUser) {
+        return ResponseEntity.ok(enrollmentService.getEnrollmentsByStudentId(studentId, currentUser));
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Enrollment> getEnrollmentById(@PathVariable Long id,
-                                                        @AuthenticationPrincipal UserDetails currentUser) {
+            @AuthenticationPrincipal UserDetails currentUser) {
         return ResponseEntity.ok(enrollmentService.getEnrollmentById(id, currentUser));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteEnrollment(@PathVariable Long id,
-                                                 @AuthenticationPrincipal UserDetails currentUser) {
+            @AuthenticationPrincipal UserDetails currentUser) {
         enrollmentService.deleteEnrollment(id, currentUser);
         return ResponseEntity.noContent().build();
     }
 }
-

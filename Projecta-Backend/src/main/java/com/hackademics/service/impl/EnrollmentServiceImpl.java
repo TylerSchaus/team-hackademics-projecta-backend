@@ -26,8 +26,8 @@ public class EnrollmentServiceImpl implements EnrollmentService {
 
     @Autowired
     private UserRepository userRepository;
-    
-    @Autowired 
+
+    @Autowired
     private CourseRepository courseRepository;
 
     @Override
@@ -84,6 +84,18 @@ public class EnrollmentServiceImpl implements EnrollmentService {
         }
 
         return enrollmentRepository.findByCourseId(courseId);
+    }
+
+    @Override
+    public List<Enrollment> getEnrollmentsByStudentId(Long studentId, UserDetails currentUser) {
+        User authenticatedUser = userRepository.findByEmail(currentUser.getUsername())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized"));
+
+        if (authenticatedUser.getRole() == Role.STUDENT && !authenticatedUser.getId().equals(studentId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Students can only view their own enrollments.");
+        }
+
+        return enrollmentRepository.findByStudentId(studentId);
     }
 
     @Override
