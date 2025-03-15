@@ -1,5 +1,6 @@
 package com.hackademics.repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -11,4 +12,6 @@ import com.hackademics.model.Course;
 public interface CourseRepository extends JpaRepository<Course, Long> {
     List<Course> findByAdminId(Long id);
     List<Course> findBySubjectId(Long id);
+    List<Course> findByStartDateAfter(LocalDateTime now);
+    List<Course> findByStartDateBeforeAndEndDateAfter(LocalDateTime now1, LocalDateTime now2);
 }

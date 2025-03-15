@@ -1,13 +1,19 @@
 package com.hackademics.service;
 
 import java.util.List;
+import java.util.Optional;
 
+import org.springframework.security.core.userdetails.UserDetails;
+
+import com.hackademics.dto.SubjectDto;
+import com.hackademics.dto.SubjectUpdateDto;
 import com.hackademics.model.Subject;
 
 public interface SubjectService {
-    Subject saveSubject(Subject subject);
+
     List<Subject> getAllSubjects();
-    Subject getSubjectById(Long id);
-    Subject updateSubject(Subject subject);
-    void deleteSubject(Long id);
+    Optional<Subject> getSubjectById(Long id);
+    Optional<Subject> updateSubject(Long id, SubjectUpdateDto updatedSubjectDto, UserDetails currentUser);
+    Subject createSubject(SubjectDto subjectDto, UserDetails currentUser);
+    boolean deleteSubject(Long id, UserDetails currentUser);
 }

@@ -1,7 +1,8 @@
 package com.hackademics.model;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList; 
+import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.hibernate.annotations.OnDelete;
@@ -47,11 +48,26 @@ public class Course {
     @Column(name = "enroll_limit", nullable = false)
     private int enrollLimit;
 
+    @Column(name = "current_enroll", nullable = false)
+    private int currentEnroll;
+
     @Column(name = "course_number", nullable = false)
     private String courseNumber;
 
     @Column(name = "course_tag", nullable = false)
     private String courseTag;
+
+    @Column(name = "semester", nullable = false)
+    private int semester;
+
+    @Column(name = "days") // Allow null values for asynchronous classes. 
+    private Integer days;  
+
+    @Column(name = "start_time")
+    private LocalTime startTime; 
+
+    @Column(name = "end_time")
+    private LocalTime endTime;  
 
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
     @OnDelete(action = OnDeleteAction.CASCADE)
@@ -62,21 +78,35 @@ public class Course {
     private final List<Enrollment> enrollments = new ArrayList<>();
 
     // Constructor
-
     public Course(User admin, Subject subject, String courseName, LocalDateTime startDate, LocalDateTime endDate, int enrollLimit,
-            String courseNumber) {
-                this.admin = admin; 
-                this.subject = subject; 
-                this.courseName = courseName;
-                this.startDate = startDate; 
-                this.endDate = endDate; 
-                this.enrollLimit = enrollLimit; 
-                this.courseNumber = courseNumber;
-                this.courseTag = subject.getSubjectTag() + " " + courseNumber;
-            }
-                
-    // Getters and Setters
+            String courseNumber, Integer days, LocalTime startTime, LocalTime endTime) {
+        this.admin = admin;
+        this.subject = subject;
+        this.courseName = courseName;
+        this.startDate = startDate;
+        if (null == startDate.getMonth()) {
+            semester = 3;
+        } else {
+            semester = switch (startDate.getMonth()) {
+                case SEPTEMBER ->
+                    1;
+                case JANUARY ->
+                    2;
+                default ->
+                    3;
+            };
+        }
+        this.endDate = endDate;
+        this.enrollLimit = enrollLimit;
+        this.courseNumber = courseNumber;
+        this.courseTag = subject.getSubjectTag() + " " + courseNumber;
+        this.currentEnroll = 0;
+        this.days = days; 
+        this.startTime = startTime; 
+        this.endTime = endTime;
+    }
 
+    // Getters and Setters
     public Long getId() {
         return id;
     }
@@ -156,4 +186,46 @@ public class Course {
     public List<Enrollment> getEnrollments() {
         return enrollments;
     }
+
+    public int getSemester() {
+        return semester;
+    }
+
+    public void setSemester(int semester) {
+        this.semester = semester;
+    }
+
+    public int getCurrentEnroll() {
+        return currentEnroll;
+    }
+
+    public void setCurrentEnroll(int currentEnroll) {
+        this.currentEnroll = currentEnroll;
+    }
+
+    public Integer getDays() {
+        return days;
+    }
+    
+    public void setDays(Integer days) {
+        this.days = days;
+    }
+    
+    public LocalTime getStartTime() {
+        return startTime;
+    }
+    
+    public void setStartTime(LocalTime startTime) {
+        this.startTime = startTime;
+    }
+    
+    public LocalTime getEndTime() {
+        return endTime;
+    }
+    
+    public void setEndTime(LocalTime endTime) {
+        this.endTime = endTime;
+    }
+    
+
 }
