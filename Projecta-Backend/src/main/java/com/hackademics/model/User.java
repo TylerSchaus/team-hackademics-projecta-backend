@@ -78,6 +78,23 @@ public class User implements UserDetails {
     @OneToMany(mappedBy = "admin", cascade = CascadeType.PERSIST)
     private List<Course> courses = new ArrayList<>();
 
+    // Constructor 
+
+    public User(String firstName, String lastName, String email, String password, Role role, Long specialId){ // Still need to incorporate gender as well. 
+        this.firstName = firstName; 
+        this.lastName = lastName; 
+        this.email = email; 
+        this.password = password; 
+        this.role = role; 
+        if (this.role == Role.ADMIN){
+            this.adminId = specialId; 
+        }
+        else {
+            this.studentId = specialId; 
+            // Add enroll start date and end date calculations. 
+        }
+    }
+
     // Getters and Setters
 
     public Long getId() {

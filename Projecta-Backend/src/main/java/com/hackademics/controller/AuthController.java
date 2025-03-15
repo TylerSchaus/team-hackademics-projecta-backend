@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.hackademics.dto.LoginDto;
 import com.hackademics.dto.LoginResponse;
 import com.hackademics.dto.SignUpDto;
-import com.hackademics.model.Role;
 import com.hackademics.model.User;
 import com.hackademics.service.AuthenticationService;
 import com.hackademics.service.JwtService;
@@ -35,12 +34,7 @@ public class AuthController {
     @PostMapping("/signup")
     public ResponseEntity<?> register(@Valid @RequestBody SignUpDto signUpDto) {
         try {
-            User registeredUser;
-            if (signUpDto.getRole() == Role.ADMIN) {
-                registeredUser = authenticationService.signupAdmin(signUpDto);
-            } else {
-                registeredUser = authenticationService.signupStudent(signUpDto);
-            }
+            User registeredUser = authenticationService.signupUser(signUpDto);
             return ResponseEntity.ok(registeredUser);
         } catch (DataIntegrityViolationException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)

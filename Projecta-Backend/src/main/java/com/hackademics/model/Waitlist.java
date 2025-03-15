@@ -36,6 +36,12 @@ public class Waitlist {
     @OnDelete(action = OnDeleteAction.CASCADE)
     private final List<WaitlistEnrollment> waitlistEnrollments = new ArrayList<>();
 
+    // Constructor
+    public Waitlist (Course course, int waitlistLimit){
+        this.course = course;
+        this.waitlistLimit = waitlistLimit;
+    }
+
     // Getters and Setters
 
     public Long getId() {

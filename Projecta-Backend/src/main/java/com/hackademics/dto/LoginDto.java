@@ -14,6 +14,11 @@ public class LoginDto {
     @Size(min = 8, message = "Password must be at least 8 characters long")
     private String password;
 
+    // Constructor 
+    public LoginDto(String email, String password){
+        this.email = email;
+        this.password = password; 
+    }
     // Getters and Setters
 
     public String getEmail() {

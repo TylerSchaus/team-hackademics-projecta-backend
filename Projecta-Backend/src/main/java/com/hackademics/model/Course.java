@@ -47,6 +47,12 @@ public class Course {
     @Column(name = "enroll_limit", nullable = false)
     private int enrollLimit;
 
+    @Column(name = "course_number", nullable = false)
+    private String courseNumber;
+
+    @Column(name = "course_tag", nullable = false)
+    private String courseTag;
+
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
     @OnDelete(action = OnDeleteAction.CASCADE)
     private final List<Grade> grades = new ArrayList<>();
@@ -55,6 +61,20 @@ public class Course {
     @OnDelete(action = OnDeleteAction.CASCADE)
     private final List<Enrollment> enrollments = new ArrayList<>();
 
+    // Constructor
+
+    public Course(User admin, Subject subject, String courseName, LocalDateTime startDate, LocalDateTime endDate, int enrollLimit,
+            String courseNumber) {
+                this.admin = admin; 
+                this.subject = subject; 
+                this.courseName = courseName;
+                this.startDate = startDate; 
+                this.endDate = endDate; 
+                this.enrollLimit = enrollLimit; 
+                this.courseNumber = courseNumber;
+                this.courseTag = subject.getSubjectTag() + " " + courseNumber;
+            }
+                
     // Getters and Setters
 
     public Long getId() {
@@ -111,6 +131,22 @@ public class Course {
 
     public void setEnrollLimit(int enrollLimit) {
         this.enrollLimit = enrollLimit;
+    }
+
+    public String getCourseNumber() {
+        return courseNumber;
+    }
+
+    public void setCourseNumber(String courseNumber) {
+        this.courseNumber = courseNumber;
+    }
+
+    public String getCourseTag() {
+        return courseTag;
+    }
+
+    public void setCourseTag(String courseTag) {
+        this.courseTag = courseTag;
     }
 
     public List<Grade> getGrades() {

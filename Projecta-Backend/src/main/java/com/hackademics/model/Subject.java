@@ -26,9 +26,18 @@ public class Subject {
     @Column(name = "subject_name", nullable = false, unique = true)
     private String subjectName;
 
+    @Column(name = "subject_tag", nullable = false, unique = true)
+    private String subjectTag;
+
     @OneToMany(mappedBy = "subject", cascade = CascadeType.ALL, orphanRemoval = true)
     @OnDelete(action = OnDeleteAction.CASCADE)
     private List<Course> courses = new ArrayList<>();
+
+    // Constructor
+    public Subject(String subjectName, String subjectTag) {
+        this.subjectName = subjectName;
+        this.subjectTag = subjectTag;
+    }
 
     // Getters and Setters
 
@@ -48,6 +57,14 @@ public class Subject {
         this.subjectName = subjectName;
     }
 
+    public String getSubjectTag() {
+        return subjectTag;
+    }
+
+    public void setSubjectTag(String subjectTag) {
+        this.subjectTag = subjectTag;
+    }
+
     public List<Course> getCourses() {
         return courses;
     }
@@ -55,4 +72,5 @@ public class Subject {
     public void setCourses(List<Course> courses) {
         this.courses = courses;
     }
+
 }

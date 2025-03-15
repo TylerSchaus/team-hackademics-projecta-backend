@@ -1,6 +1,5 @@
 package com.hackademics.repositoryTest;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -28,24 +27,10 @@ class UserRepositoryTest {
     @BeforeEach
     void setUp() {
         // Create a "student" user
-        studentUser = new User();
-        studentUser.setFirstName("Alice");
-        studentUser.setLastName("Example");
-        studentUser.setEmail("alice@example.com");
-        studentUser.setPassword("password");
-        studentUser.setRole(Role.STUDENT);
-        studentUser.setStudentId(1001L); // Just an example student ID
-        studentUser.setEnrollStartDate(LocalDateTime.now());
-        studentUser.setExpectGraduationDate(LocalDateTime.now().plusMonths(6));
-
+        studentUser = new User("Alice", "Example", "alice@example.com", "password", Role.STUDENT, 1001L);
+    
         // Create an "admin" user
-        adminUser = new User();
-        adminUser.setFirstName("Bob");
-        adminUser.setLastName("Admin");
-        adminUser.setEmail("bob@example.com");
-        adminUser.setPassword("password");
-        adminUser.setRole(Role.ADMIN);
-        adminUser.setAdminId(5001L); // Just an example admin ID
+        adminUser = new User("Bob", "Admin", "bob@example.com", "password", Role.ADMIN, 5001L);
     }
 
     // Default JPA method.

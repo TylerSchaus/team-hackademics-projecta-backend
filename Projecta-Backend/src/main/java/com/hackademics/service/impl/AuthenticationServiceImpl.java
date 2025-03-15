@@ -27,29 +27,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     AuthenticationManager authenticationManager;
 
     @Override
-    public User signupAdmin(SignUpDto input) {
-        User admin = new User();
-        admin.setFirstName(input.getFirstName());
-        admin.setLastName(input.getLastName());
-        admin.setEmail(input.getEmail());
-        admin.setPassword(passwordEncoder.encode(input.getPassword()));
-        admin.setRole(Role.ADMIN);
-        admin.setAdminId(generateNextAdminId());
-
+    public User signupUser(SignUpDto input) {
+        Long specialId = input.getRole() == Role.ADMIN ? generateNextAdminId() : generateNextStudentId(); 
+        User admin = new User(input.getFirstName(), input.getLastName(), input.getEmail(), input.getPassword(), input.getRole(), specialId);
         return userRepository.save(admin);
-    }
-
-    @Override
-    public User signupStudent(SignUpDto input) {
-        User student = new User();
-        student.setFirstName(input.getFirstName());
-        student.setLastName(input.getLastName());
-        student.setEmail(input.getEmail());
-        student.setPassword(passwordEncoder.encode(input.getPassword()));
-        student.setRole(Role.STUDENT);
-        student.setStudentId(generateNextStudentId());
-
-        return userRepository.save(student);
     }
 
     @Override
