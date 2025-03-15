@@ -34,6 +34,14 @@ If you see this, the application is running. To terminate the application, in yo
 - Lexi Loudiadis
 - Aditi Bajaj
 
+## March 14 (Milestone 2) Update 
+
+Approx. 60% of Backend complete. 
+Endpoints are defined for Users, Subjects, Courses, and Enrollments, allowing all functionality related to these entities. 
+Along with endpoints, their corresponding service, repository, and model implementations are complete. 
+JWT Authetnication is set up, and tested. 
+
+
 
 
 
