@@ -1,6 +1,7 @@
 package com.hackademics.dto;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 public class CourseUpdateDto {
     private Long adminId; 
@@ -10,6 +11,9 @@ public class CourseUpdateDto {
     private LocalDateTime endDate;
     private Integer enrollLimit;
     private String courseNumber;
+    private Integer days;
+    private LocalTime startTime; 
+    private LocalTime endTime; 
 
     // Getters and Setters
 
@@ -68,4 +72,29 @@ public class CourseUpdateDto {
     public void setCourseNumber(String courseNumber) {
         this.courseNumber = courseNumber;
     }
+
+    public Integer getDays() {
+        return days;
+    }
+    
+    public void setDays(Integer days) {
+        this.days = days;
+    }
+    
+    public LocalTime getStartTime() {
+        return startTime;
+    }
+    
+    public void setStartTime(LocalTime startTime) {
+        this.startTime = startTime;
+    }
+    
+    public LocalTime getEndTime() {
+        return endTime;
+    }
+    
+    public void setEndTime(LocalTime endTime) {
+        this.endTime = endTime;
+    }
+    
 }

@@ -1,6 +1,7 @@
 package com.hackademics.dto;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -28,10 +29,16 @@ public class CourseDto {
     @NotBlank
     private String courseNumber;
 
+    private Integer days; 
+
+    private LocalTime startTime; 
+
+    private LocalTime endTime;
+
     // Constructor
 
     public CourseDto(Long adminId, Long subjectId, String courseName, LocalDateTime startDate, LocalDateTime endDate, int enrollLimit,
-            String courseNumber) {
+            String courseNumber, Integer days, LocalTime startTime, LocalTime endTime) {
                 this.adminId = adminId;
                 this.subjectId = subjectId;
                 this.courseName = courseName;
@@ -39,6 +46,9 @@ public class CourseDto {
                 this.endDate = endDate;
                 this.enrollLimit = enrollLimit;
                 this.courseNumber = courseNumber;
+                this.days = days; 
+                this.startTime = startTime; 
+                this.endTime = endTime;
     }
 
     // Getters and Setters
@@ -98,5 +108,30 @@ public class CourseDto {
     public void setCourseNumber(String courseNumber) {
         this.courseNumber = courseNumber;
     }
+
+    public Integer getDays() {
+        return days;
+    }
+    
+    public void setDays(Integer days) {
+        this.days = days;
+    }
+    
+    public LocalTime getStartTime() {
+        return startTime;
+    }
+    
+    public void setStartTime(LocalTime startTime) {
+        this.startTime = startTime;
+    }
+    
+    public LocalTime getEndTime() {
+        return endTime;
+    }
+    
+    public void setEndTime(LocalTime endTime) {
+        this.endTime = endTime;
+    }
+    
         
 }

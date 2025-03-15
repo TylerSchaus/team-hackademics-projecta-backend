@@ -47,7 +47,10 @@ public class CourseServiceImpl implements CourseService {
                 courseDto.getStartDate(),
                 courseDto.getEndDate(),
                 courseDto.getEnrollLimit(),
-                courseDto.getCourseNumber());
+                courseDto.getCourseNumber(),
+                courseDto.getDays(),
+                courseDto.getStartTime(),
+                courseDto.getEndTime());
         return courseRepository.save(newCourse);
     }
 
@@ -146,6 +149,17 @@ public class CourseServiceImpl implements CourseService {
             if (courseUpdateDto.getSubjectId() != null || courseUpdateDto.getCourseNumber() != null) {
                 course.setCourseTag(course.getSubject().getSubjectTag() + " " + course.getCourseNumber());
             }
+
+            if (courseUpdateDto.getDays() != null){
+                course.setDays(courseUpdateDto.getDays()); 
+            }
+
+            if (courseUpdateDto.getStartTime() != null){
+                course.setStartTime(courseUpdateDto.getStartTime()); 
+            }
+            if (courseUpdateDto.getEndTime() != null){
+                course.setEndTime(courseUpdateDto.getEndTime()); 
+            } 
 
             return courseRepository.save(course);
         }).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Course not found"));
