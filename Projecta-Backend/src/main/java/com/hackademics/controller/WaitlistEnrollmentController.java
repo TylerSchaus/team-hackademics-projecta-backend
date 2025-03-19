@@ -8,6 +8,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import com.hackademics.model.WaitlistEnrollment;
+import com.hackademics.model.User;
 import com.hackademics.service.WaitlistEnrollmentService;
 
 import java.util.List;
@@ -25,7 +26,6 @@ public class WaitlistEnrollmentController {
     public ResponseEntity<WaitlistEnrollment> createWaitlistEnrollment(
             @RequestBody WaitlistEnrollment waitlistEnrollment,
             @AuthenticationPrincipal UserDetails currentUser) {
-        // Check if the current user is an admin or the student themselves
         if (!isAdmin(currentUser) && !isStudent(currentUser, waitlistEnrollment.getStudent().getId())) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
@@ -36,7 +36,6 @@ public class WaitlistEnrollmentController {
     // Get all waitlist enrollments (Admin only)
     @GetMapping
     public ResponseEntity<List<WaitlistEnrollment>> getAllWaitlistEnrollments(@AuthenticationPrincipal UserDetails currentUser) {
-        // Check if the current user is an admin
         if (!isAdmin(currentUser)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
@@ -49,7 +48,6 @@ public class WaitlistEnrollmentController {
     public ResponseEntity<WaitlistEnrollment> getWaitlistEnrollmentById(
             @PathVariable Long id,
             @AuthenticationPrincipal UserDetails currentUser) {
-        // Check if the current user is an admin
         if (!isAdmin(currentUser)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
@@ -62,13 +60,11 @@ public class WaitlistEnrollmentController {
     public ResponseEntity<Void> deleteWaitlistEnrollment(
             @PathVariable Long id,
             @AuthenticationPrincipal UserDetails currentUser) {
-        // Fetch the enrollment to check the student ID
         WaitlistEnrollment enrollment = waitlistEnrollmentService.getWaitlistEnrollmentById(id);
         if (enrollment == null) {
             return ResponseEntity.notFound().build();
         }
 
-        // Check if the current user is an admin or the student themselves
         if (!isAdmin(currentUser) && !isStudent(currentUser, enrollment.getStudent().getId())) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
@@ -82,12 +78,10 @@ public class WaitlistEnrollmentController {
     public ResponseEntity<List<WaitlistEnrollment>> getWaitlistEnrollmentsByCourseId(
             @PathVariable Long courseId,
             @AuthenticationPrincipal UserDetails currentUser) {
-        // Check if the current user is an admin
         if (!isAdmin(currentUser)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
-        // Fetch all enrollments and filter by course ID
         List<WaitlistEnrollment> allEnrollments = waitlistEnrollmentService.getAllWaitlistEnrollments();
         List<WaitlistEnrollment> courseEnrollments = allEnrollments.stream()
                 .filter(enrollment -> enrollment.getWaitlist().getCourse().getId().equals(courseId))

@@ -22,7 +22,6 @@ public class WaitlistController {
     // Create a new waitlist (Admin only)
     @PostMapping
     public ResponseEntity<Waitlist> createWaitlist(@RequestBody Waitlist waitlist, @AuthenticationPrincipal UserDetails currentUser) {
-        // Check if the current user is an admin
         if (!isAdmin(currentUser)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
@@ -33,7 +32,6 @@ public class WaitlistController {
     // Get all waitlists (Admin only)
     @GetMapping
     public ResponseEntity<List<Waitlist>> getAllWaitlists(@AuthenticationPrincipal UserDetails currentUser) {
-        // Check if the current user is an admin
         if (!isAdmin(currentUser)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
@@ -44,7 +42,6 @@ public class WaitlistController {
     // Get a waitlist by its ID (Admin only)
     @GetMapping("/{id}")
     public ResponseEntity<Waitlist> getWaitlistById(@PathVariable Long id, @AuthenticationPrincipal UserDetails currentUser) {
-        // Check if the current user is an admin
         if (!isAdmin(currentUser)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
@@ -55,7 +52,6 @@ public class WaitlistController {
     // Update a waitlist (Admin only)
     @PutMapping("/{id}")
     public ResponseEntity<Waitlist> updateWaitlist(@PathVariable Long id, @RequestBody Waitlist waitlist, @AuthenticationPrincipal UserDetails currentUser) {
-        // Check if the current user is an admin
         if (!isAdmin(currentUser)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
@@ -67,7 +63,6 @@ public class WaitlistController {
     // Delete a waitlist by its ID (Admin only)
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteWaitlist(@PathVariable Long id, @AuthenticationPrincipal UserDetails currentUser) {
-        // Check if the current user is an admin
         if (!isAdmin(currentUser)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
