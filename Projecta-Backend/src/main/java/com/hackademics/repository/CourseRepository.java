@@ -10,8 +10,8 @@ import com.hackademics.model.Course;
 
 @Repository
 public interface CourseRepository extends JpaRepository<Course, Long> {
-    List<Course> findByAdminId(Long id);
-    List<Course> findBySubjectId(Long id);
+    List<Course> findByAdminId(Long adminId);
+    List<Course> findBySubjectId(Long subjectId);
     List<Course> findByStartDateAfter(LocalDateTime now);
     List<Course> findByStartDateBeforeAndEndDateAfter(LocalDateTime now1, LocalDateTime now2);
 }

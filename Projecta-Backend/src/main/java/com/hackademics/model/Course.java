@@ -28,9 +28,12 @@ public class Course {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "admin_id", nullable = true)
+    @JoinColumn(name = "admin_reference", nullable = true)
     @OnDelete(action = OnDeleteAction.SET_NULL)
     private User admin;
+
+    @Column (name = "admin_id")
+    private Long adminId;
 
     @ManyToOne
     @JoinColumn(name = "subject_id", nullable = false)
@@ -88,6 +91,7 @@ public class Course {
     public Course(User admin, Subject subject, String courseName, LocalDateTime startDate, LocalDateTime endDate, int enrollLimit,
             String courseNumber, Integer days, LocalTime startTime, LocalTime endTime) {
         this.admin = admin;
+        this.adminId = admin.getAdminId();
         this.subject = subject;
         this.courseName = courseName;
         this.startDate = startDate;
@@ -98,7 +102,7 @@ public class Course {
                 case SEPTEMBER ->
                     startDate.getYear() + 1 + "1";
                 case JANUARY ->
-                    startDate.getYear() + "2;";
+                    startDate.getYear() + "2";
                 default ->
                     "UNDETERMINED";
             };
@@ -129,6 +133,11 @@ public class Course {
 
     public void setAdmin(User admin) {
         this.admin = admin;
+        this.adminId = admin.getAdminId();
+    }
+
+    public Long getAdminId() {
+        return adminId;
     }
 
     public Subject getSubject() {
