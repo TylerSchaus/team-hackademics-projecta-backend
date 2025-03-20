@@ -126,20 +126,16 @@ public class CourseServiceImpl implements CourseService {
 
             if (courseUpdateDto.getStartDate() != null) {
                 course.setStartDate(courseUpdateDto.getStartDate());
-
-                if (courseUpdateDto.getStartDate().getMonth() != null) {
-                    course.setSemester(
-                            switch (courseUpdateDto.getStartDate().getMonth()) {
-                        case SEPTEMBER ->
-                            1;
-                        case JANUARY ->
-                            2;
-                        default ->
-                            3;
-                    });
-                } else {
-                    course.setSemester(3); // Default semester
+                
+                switch (courseUpdateDto.getStartDate().getMonth()) {
+                    case SEPTEMBER -> 
+                        course.setTerm((courseUpdateDto.getStartDate().getYear() + 1) + "1");
+                    case JANUARY -> 
+                        course.setTerm(courseUpdateDto.getStartDate().getYear() + "2");
+                    default -> 
+                        course.setTerm("UNDETERMINED");
                 }
+            
             }
 
             if (courseUpdateDto.getEndDate() != null) {
