@@ -2,6 +2,7 @@ package com.hackademics.service.impl;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -9,8 +10,11 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.hackademics.dto.AdminSummaryDto;
 import com.hackademics.dto.CourseDto;
+import com.hackademics.dto.CourseResponseDto;
 import com.hackademics.dto.CourseUpdateDto;
+import com.hackademics.dto.SubjectResponseDto;
 import com.hackademics.model.Course;
 import com.hackademics.model.Role;
 import com.hackademics.model.Subject;
@@ -32,8 +36,41 @@ public class CourseServiceImpl implements CourseService {
     @Autowired
     private SubjectRepository subjectRepository;
 
+    private CourseResponseDto convertToResponseDto(Course course) {
+        AdminSummaryDto adminDto = new AdminSummaryDto(
+            course.getAdmin().getId(),
+            course.getAdmin().getFirstName(),
+            course.getAdmin().getLastName(),
+            course.getAdmin().getAdminId()
+        );
+
+        SubjectResponseDto subjectDto = new SubjectResponseDto(
+            course.getSubject().getId(),
+            course.getSubject().getSubjectName(),
+            course.getSubject().getSubjectTag()
+        );
+
+        return new CourseResponseDto(
+            course.getId(),
+            adminDto,
+            subjectDto,
+            course.getCourseName(),
+            course.getStartDate().toLocalDate(),
+            course.getEndDate().toLocalDate(),
+            course.getEnrollLimit(),
+            course.getCurrentEnroll(),
+            course.getCourseNumber(),
+            course.getCourseTag(),
+            course.getTerm(),
+            course.getDays(),
+            course.getStartTime(),
+            course.getEndTime(),
+            course.getNumLabSections()
+        );
+    }
+
     @Override
-    public Course saveCourse(CourseDto courseDto, UserDetails currentUser) {
+    public CourseResponseDto saveCourse(CourseDto courseDto, UserDetails currentUser) {
         User authenticatedUser = userRepository.findByEmail(currentUser.getUsername())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized"));
 
@@ -51,23 +88,27 @@ public class CourseServiceImpl implements CourseService {
                 courseDto.getDays(),
                 courseDto.getStartTime(),
                 courseDto.getEndTime());
-        return courseRepository.save(newCourse);
+        return convertToResponseDto(courseRepository.save(newCourse));
     }
 
     @Override
-    public List<Course> getAllActiveCourses() {
+    public List<CourseResponseDto> getAllActiveCourses() {
         LocalDateTime now = LocalDateTime.now();
-        return courseRepository.findByStartDateBeforeAndEndDateAfter(now, now);
+        return courseRepository.findByStartDateBeforeAndEndDateAfter(now, now).stream()
+            .map(this::convertToResponseDto)
+            .collect(Collectors.toList());
     }
 
     @Override
-    public List<Course> getAllUpcomingCourses() {
+    public List<CourseResponseDto> getAllUpcomingCourses() {
         LocalDateTime now = LocalDateTime.now();
-        return courseRepository.findByStartDateAfter(now);
+        return courseRepository.findByStartDateAfter(now).stream()
+            .map(this::convertToResponseDto)
+            .collect(Collectors.toList());
     }
 
     @Override
-    public List<Course> getAllCoursesByAdmin(UserDetails currentUser) {
+    public List<CourseResponseDto> getAllCoursesByAdmin(UserDetails currentUser) {
         User authenticatedUser = userRepository.findByEmail(currentUser.getUsername())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized"));
 
@@ -75,22 +116,27 @@ public class CourseServiceImpl implements CourseService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only admins can view their courses.");
         }
 
-        return courseRepository.findByAdminId(authenticatedUser.getId());
+        return courseRepository.findByAdminId(authenticatedUser.getId()).stream()
+            .map(this::convertToResponseDto)
+            .collect(Collectors.toList());
     }
 
     @Override
-    public List<Course> getAllCoursesBySubjectId(Long id) {
-        return courseRepository.findBySubjectId(id);
+    public List<CourseResponseDto> getAllCoursesBySubjectId(Long id) {
+        return courseRepository.findBySubjectId(id).stream()
+            .map(this::convertToResponseDto)
+            .collect(Collectors.toList());
     }
 
     @Override
-    public Course getCourseById(Long id) {
+    public CourseResponseDto getCourseById(Long id) {
         return courseRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Course not found with ID: " + id));
+            .map(this::convertToResponseDto)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Course not found with ID: " + id));
     }
 
     @Override
-    public Course updateCourse(Long id, CourseUpdateDto courseUpdateDto, UserDetails currentUser) {
+    public CourseResponseDto updateCourse(Long id, CourseUpdateDto courseUpdateDto, UserDetails currentUser) {
         User authenticatedUser = userRepository.findByEmail(currentUser.getUsername())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized"));
 
@@ -99,7 +145,6 @@ public class CourseServiceImpl implements CourseService {
         }
 
         return courseRepository.findById(id).map(course -> {
-
             if (courseUpdateDto.getAdminId() != null) {
                 User newAdmin = userRepository.findById(courseUpdateDto.getAdminId())
                         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Assigned Admin not found"));
@@ -135,7 +180,6 @@ public class CourseServiceImpl implements CourseService {
                     default -> 
                         course.setTerm("UNDETERMINED");
                 }
-            
             }
 
             if (courseUpdateDto.getEndDate() != null) {
@@ -157,7 +201,7 @@ public class CourseServiceImpl implements CourseService {
                 course.setEndTime(courseUpdateDto.getEndTime()); 
             } 
 
-            return courseRepository.save(course);
+            return convertToResponseDto(courseRepository.save(course));
         }).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Course not found"));
     }
 

@@ -2,7 +2,6 @@ package com.hackademics.dto;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.List;
 
 public class CourseResponseDto {
     private Long id;
@@ -16,7 +15,7 @@ public class CourseResponseDto {
     private String courseNumber;
     private String courseTag;
     private String term;
-    private List<String> days;
+    private Integer days;
     private LocalTime startTime;
     private LocalTime endTime;
     private Integer numLabSection;
@@ -26,7 +25,7 @@ public class CourseResponseDto {
 
     public CourseResponseDto(Long id, AdminSummaryDto admin, SubjectResponseDto subject, String courseName,
             LocalDate startDate, LocalDate endDate, Integer enrollLimit, Integer currentEnroll,
-            String courseNumber, String courseTag, String term, List<String> days,
+            String courseNumber, String courseTag, String term, Integer days,
             LocalTime startTime, LocalTime endTime, Integer numLabSection) {
         this.id = id;
         this.admin = admin;
@@ -133,11 +132,11 @@ public class CourseResponseDto {
         this.term = term;
     }
 
-    public List<String> getDays() {
+    public Integer getDays() {
         return days;
     }
 
-    public void setDays(List<String> days) {
+    public void setDays(Integer days) {
         this.days = days;
     }
 
