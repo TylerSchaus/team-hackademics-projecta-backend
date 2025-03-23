@@ -17,8 +17,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.hackademics.dto.LabSectionDto;
+import com.hackademics.dto.LabSectionResponseDto;
 import com.hackademics.dto.LabSectionUpdateDto;
-import com.hackademics.model.LabSection;
 import com.hackademics.service.LabSectionService;
 
 import jakarta.validation.Valid;
@@ -31,29 +31,29 @@ public class LabSectionController {
     private LabSectionService labSectionService;
 
     @PostMapping
-    public ResponseEntity<LabSection> createLabSection(@Valid @RequestBody LabSectionDto labSectionDto,
+    public ResponseEntity<LabSectionResponseDto> createLabSection(@Valid @RequestBody LabSectionDto labSectionDto,
             @AuthenticationPrincipal UserDetails currentUser) {
-        LabSection createdLabSection = labSectionService.createLabSection(labSectionDto, currentUser);
+        LabSectionResponseDto createdLabSection = labSectionService.createLabSection(labSectionDto, currentUser);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdLabSection);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<LabSection> getLabSectionById(@PathVariable Long id) {
+    public ResponseEntity<LabSectionResponseDto> getLabSectionById(@PathVariable Long id) {
         return ResponseEntity.ok(labSectionService.getLabSectionById(id));
     }
 
     @GetMapping("/course/{courseId}")
-    public ResponseEntity<List<LabSection>> getLabSectionsByCourseId(@PathVariable Long courseId,
+    public ResponseEntity<List<LabSectionResponseDto>> getLabSectionsByCourseId(@PathVariable Long courseId,
             @AuthenticationPrincipal UserDetails currentUser) {
         return ResponseEntity.ok(labSectionService.findByCourseId(courseId));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<LabSection> updateLabSection(@PathVariable Long id,
+    public ResponseEntity<LabSectionResponseDto> updateLabSection(@PathVariable Long id,
             @Valid @RequestBody LabSectionUpdateDto labSectionUpdateDto,
             @AuthenticationPrincipal UserDetails currentUser) {
         labSectionUpdateDto.setCourseId(id); // Ensure the ID matches the lab section being updated
-        LabSection updatedLabSection = labSectionService.updateLabSection(labSectionUpdateDto, currentUser);
+        LabSectionResponseDto updatedLabSection = labSectionService.updateLabSection(labSectionUpdateDto, currentUser);
         return ResponseEntity.ok(updatedLabSection);
     }
 
