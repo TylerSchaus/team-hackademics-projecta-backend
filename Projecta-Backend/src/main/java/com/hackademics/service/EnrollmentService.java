@@ -5,14 +5,14 @@ import java.util.List;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import com.hackademics.dto.EnrollmentDto;
-import com.hackademics.model.Enrollment;
+import com.hackademics.dto.EnrollmentResponseDto;
 
 public interface EnrollmentService {
-    Enrollment saveEnrollment(EnrollmentDto enrollmentDto, UserDetails currentUser);
-    List<Enrollment> getAllEnrollments(UserDetails currentUser);
-    Enrollment getEnrollmentById(Long id, UserDetails currentUser);
-    List<Enrollment> getEnrollmentsByCourseId(Long id, UserDetails currentUser); 
-    List<Enrollment> getEnrollmentsByStudentId(Long id, UserDetails currentUser);
+    EnrollmentResponseDto saveEnrollment(EnrollmentDto enrollmentDto, UserDetails currentUser);
+    List<EnrollmentResponseDto> getAllEnrollments(UserDetails currentUser);
+    EnrollmentResponseDto getEnrollmentById(Long id, UserDetails currentUser);
+    List<EnrollmentResponseDto> getEnrollmentsByCourseId(Long id, UserDetails currentUser);
+    List<EnrollmentResponseDto> getEnrollmentsByStudentId(Long id, UserDetails currentUser);
     void deleteEnrollment(Long id, UserDetails currentUser);
-    List<Enrollment> getCurrentEnrollmentByStudentId(UserDetails currentUser, Long studentId);
+    List<EnrollmentResponseDto> getCurrentEnrollmentByStudentId(UserDetails currentUser, Long studentId, String term);
 }
