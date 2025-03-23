@@ -70,7 +70,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserResponseDTO saveUser(User user) {
-        return convertToResponseDto(userRepository.save(user));
+        return convertToResponseDto(userRepository.save(user)); // Reference from auth service for saving and dto conversion.
     }
 
     @Override

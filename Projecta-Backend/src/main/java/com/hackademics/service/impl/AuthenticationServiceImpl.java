@@ -9,10 +9,12 @@ import org.springframework.stereotype.Service;
 
 import com.hackademics.dto.LoginDto;
 import com.hackademics.dto.SignUpDto;
+import com.hackademics.dto.UserResponseDTO;
 import com.hackademics.model.Role;
 import com.hackademics.model.User;
 import com.hackademics.repository.UserRepository;
 import com.hackademics.service.AuthenticationService;
+import com.hackademics.service.UserService;
 
 @Service
 public class AuthenticationServiceImpl implements AuthenticationService {
@@ -26,11 +28,14 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Autowired
     AuthenticationManager authenticationManager;
 
+    @Autowired
+    UserService userService;
+
     @Override
-    public User signupUser(SignUpDto input) {
+    public UserResponseDTO signupUser(SignUpDto input) {
         Long specialId = input.getRole() == Role.ADMIN ? generateNextAdminId() : generateNextStudentId(); 
-        User admin = new User(input.getFirstName(), input.getLastName(), input.getEmail(), input.getPassword(), input.getRole(), specialId);
-        return userRepository.save(admin);
+        User newUser = new User(input.getFirstName(), input.getLastName(), input.getEmail(), passwordEncoder.encode(input.getPassword()), input.getRole(), specialId);
+        return userService.saveUser(newUser);
     }
 
     @Override
@@ -38,7 +43,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         input.getEmail(),
-                        input.getPassword()
+                        passwordEncoder.encode(input.getPassword())
                 )
         );
 
