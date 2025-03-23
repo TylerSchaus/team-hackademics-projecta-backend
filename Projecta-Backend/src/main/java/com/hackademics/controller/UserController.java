@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.hackademics.dto.UserResponseDTO;
 import com.hackademics.dto.UserUpdateDto;
 import com.hackademics.model.Role;
 import com.hackademics.model.User;
@@ -33,18 +34,18 @@ public class UserController {
     UserService userService;
 
     @GetMapping
-    public ResponseEntity<List<User>> getUsersByRole(
+    public ResponseEntity<List<UserResponseDTO>> getUsersByRole(
             @RequestParam Role role,
             @AuthenticationPrincipal UserDetails currentUser) {
 
         // Delegate the request to the service layer
-        List<User> users = userService.getUsersByRole(role, currentUser);
+        List<UserResponseDTO> users = userService.getUsersByRole(role, currentUser);
         
         return ResponseEntity.ok(users);
     }
 
     @GetMapping("/me")
-    public ResponseEntity<User> getCurrentUser() {
+    public ResponseEntity<UserResponseDTO> getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication.getPrincipal() instanceof User user) {
@@ -56,13 +57,13 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<User> updateUser(
+    public ResponseEntity<UserResponseDTO> updateUser(
             @PathVariable Long id,
             @RequestBody @Valid UserUpdateDto userUpdateDto,
             @AuthenticationPrincipal UserDetails currentUser) {
     
         // Delegate the update process to the service layer
-        User updatedUser = userService.updateUser(id, userUpdateDto, currentUser);
+        UserResponseDTO updatedUser = userService.updateUser(id, userUpdateDto, currentUser);
     
         return ResponseEntity.ok(updatedUser);
     }
@@ -77,6 +78,4 @@ public class UserController {
     
         return ResponseEntity.noContent().build();
     }
-    
-
 }
