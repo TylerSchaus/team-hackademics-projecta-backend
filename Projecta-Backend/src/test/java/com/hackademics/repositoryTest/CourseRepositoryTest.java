@@ -158,11 +158,10 @@ class CourseRepositoryTest {
         courseRepository.save(course2);
 
         // Get the current time for comparison
-        LocalDateTime now1 = LocalDateTime.now(); // startDate should be before this
-        LocalDateTime now2 = LocalDateTime.now().plusDays(1); // endDate should be after this
+        LocalDateTime now = LocalDateTime.now().plusDays(1); // startDate should be before this
 
         // Find courses with start date before now1 and end date after now2
-        List<Course> courses = courseRepository.findByStartDateBeforeAndEndDateAfter(now1, now2);
+        List<Course> courses = courseRepository.findByStartDateBeforeAndEndDateAfter(now, now);
 
         // Assert that only the correct course is returned (e.g., "Mathematics 101")
         Assertions.assertEquals(1, courses.size(), "Should find exactly 1 course with start date before now1 and end date after now2");

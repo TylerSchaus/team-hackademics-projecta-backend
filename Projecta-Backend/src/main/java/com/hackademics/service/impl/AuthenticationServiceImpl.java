@@ -43,7 +43,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         input.getEmail(),
-                        passwordEncoder.encode(input.getPassword())
+                        input.getPassword()
                 )
         );
 
