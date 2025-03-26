@@ -2,6 +2,7 @@ package com.hackademics.service.impl;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -10,6 +11,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.hackademics.dto.UserResponseDTO;
 import com.hackademics.dto.UserUpdateDto;
 import com.hackademics.model.Role;
 import com.hackademics.model.User;
@@ -25,8 +27,22 @@ public class UserServiceImpl implements UserService {
     @Autowired
     PasswordEncoder passwordEncoder;
 
+    private UserResponseDTO convertToResponseDto(User user) {
+        return new UserResponseDTO(
+            user.getId(),
+            user.getFirstName(),
+            user.getLastName(),
+            user.getEmail(),
+            user.getRole().toString(),
+            user.getStudentId() != null ? user.getStudentId().toString() : null,
+            user.getEnrollStartDate() != null ? user.getEnrollStartDate().toLocalDate() : null,
+            user.getExpectGraduationDate() != null ? user.getExpectGraduationDate().toLocalDate() : null,
+            user.getAdminId()
+        );
+    }
+
     @Override
-    public List<User> getUsersByRole(Role role, UserDetails currentUser) {
+    public List<UserResponseDTO> getUsersByRole(Role role, UserDetails currentUser) {
         User authenticatedUser = userRepository.findByEmail(currentUser.getUsername())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized"));
 
@@ -35,22 +51,26 @@ public class UserServiceImpl implements UserService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You do not have permission to view user data.");
         }
 
-        return userRepository.findByRole(role);
+        return userRepository.findByRole(role).stream()
+                .map(this::convertToResponseDto)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public Optional<User> getUserByEmail(String email) {
-        return userRepository.findByEmail(email);
+    public Optional<UserResponseDTO> getUserByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .map(this::convertToResponseDto);
     }
 
     @Override
-    public Optional<User> getUserById(Long id) {
-        return userRepository.findById(id);
+    public Optional<UserResponseDTO> getUserById(Long id) {
+        return userRepository.findById(id)
+                .map(this::convertToResponseDto);
     }
 
     @Override
-    public User saveUser(User user) {
-        return userRepository.save(user);
+    public UserResponseDTO saveUser(User user) {
+        return convertToResponseDto(userRepository.save(user)); // Reference from auth service for saving and dto conversion.
     }
 
     @Override
@@ -66,7 +86,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User updateUser(Long id, UserUpdateDto userUpdateDto, UserDetails currentUser) {
+    public UserResponseDTO updateUser(Long id, UserUpdateDto userUpdateDto, UserDetails currentUser) {
         User userToUpdate = userRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
 
@@ -108,7 +128,7 @@ public class UserServiceImpl implements UserService {
             userToUpdate.setEmail(userUpdateDto.getEmail());
         }
 
-        return userRepository.save(userToUpdate);
+        return convertToResponseDto(userRepository.save(userToUpdate));
     }
 
     @Override
@@ -139,7 +159,6 @@ public class UserServiceImpl implements UserService {
         Optional<User> existingUser = userRepository.findByStudentId(studentId);
         if (existingUser.isPresent()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Student ID is already taken.");
-
         }
     }
 
@@ -152,5 +171,4 @@ public class UserServiceImpl implements UserService {
         Long maxAdminId = userRepository.findMaxAdminId();
         return (maxAdminId != null) ? maxAdminId + 1 : 1L;
     }
-
 }

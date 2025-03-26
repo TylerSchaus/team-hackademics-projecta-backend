@@ -6,14 +6,13 @@ import java.util.Optional;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import com.hackademics.dto.SubjectDto;
+import com.hackademics.dto.SubjectResponseDto;
 import com.hackademics.dto.SubjectUpdateDto;
-import com.hackademics.model.Subject;
 
 public interface SubjectService {
-
-    List<Subject> getAllSubjects();
-    Optional<Subject> getSubjectById(Long id);
-    Optional<Subject> updateSubject(Long id, SubjectUpdateDto updatedSubjectDto, UserDetails currentUser);
-    Subject createSubject(SubjectDto subjectDto, UserDetails currentUser);
+    List<SubjectResponseDto> getAllSubjects();
+    Optional<SubjectResponseDto> getSubjectById(Long id);
+    Optional<SubjectResponseDto> updateSubject(Long id, SubjectUpdateDto updatedSubjectDto, UserDetails currentUser);
+    SubjectResponseDto createSubject(SubjectDto subjectDto, UserDetails currentUser);
     boolean deleteSubject(Long id, UserDetails currentUser);
 }

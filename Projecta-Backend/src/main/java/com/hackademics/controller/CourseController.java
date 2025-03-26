@@ -3,7 +3,6 @@ package com.hackademics.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -17,8 +16,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.hackademics.dto.CourseDto;
+import com.hackademics.dto.CourseResponseDto;
 import com.hackademics.dto.CourseUpdateDto;
-import com.hackademics.model.Course;
 import com.hackademics.service.CourseService;
 
 import jakarta.validation.Valid;
@@ -31,46 +30,44 @@ public class CourseController {
     private CourseService courseService;
 
     @GetMapping("/active")
-    public ResponseEntity<List<Course>> getAllActiveCourses() {
+    public ResponseEntity<List<CourseResponseDto>> getAllActiveCourses() {
         return ResponseEntity.ok(courseService.getAllActiveCourses());
     }
 
     @GetMapping("/upcoming")
-    public ResponseEntity<List<Course>> getAllUpcomingCourses() {
+    public ResponseEntity<List<CourseResponseDto>> getAllUpcomingCourses() {
         return ResponseEntity.ok(courseService.getAllUpcomingCourses());
     }
 
     @GetMapping("/admin")
-    public ResponseEntity<List<Course>> getAllCoursesByAdmin(@AuthenticationPrincipal UserDetails currentUser) {
+    public ResponseEntity<List<CourseResponseDto>> getAllCoursesByAdmin(@AuthenticationPrincipal UserDetails currentUser) {
         return ResponseEntity.ok(courseService.getAllCoursesByAdmin(currentUser));
     }
 
-
-    @GetMapping("/subject/{subjectId}")
-    public ResponseEntity<List<Course>> getAllCoursesBySubject(@PathVariable Long subjectId) {
-        return ResponseEntity.ok(courseService.getAllCoursesBySubjectId(subjectId));
+    @GetMapping("/subject/{id}")
+    public ResponseEntity<List<CourseResponseDto>> getAllCoursesBySubjectId(@PathVariable Long id) {
+        return ResponseEntity.ok(courseService.getAllCoursesBySubjectId(id));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Course> getCourseById(@PathVariable Long id) {
+    public ResponseEntity<CourseResponseDto> getCourseById(@PathVariable Long id) {
         return ResponseEntity.ok(courseService.getCourseById(id));
     }
 
     @PostMapping
-    public ResponseEntity<Course> createCourse(@Valid @RequestBody CourseDto courseDto, @AuthenticationPrincipal UserDetails currentUser) {
-        Course createdCourse = courseService.saveCourse(courseDto, currentUser);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdCourse);
+    public ResponseEntity<CourseResponseDto> createCourse(@Valid @RequestBody CourseDto courseDto, @AuthenticationPrincipal UserDetails currentUser) {
+        return ResponseEntity.ok(courseService.saveCourse(courseDto, currentUser));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Course> updateCourse(@PathVariable Long id, @Valid @RequestBody CourseUpdateDto courseUpdateDto, @AuthenticationPrincipal UserDetails currentUser) {
+    public ResponseEntity<CourseResponseDto> updateCourse(@PathVariable Long id, @RequestBody CourseUpdateDto courseUpdateDto, @AuthenticationPrincipal UserDetails currentUser) {
         return ResponseEntity.ok(courseService.updateCourse(id, courseUpdateDto, currentUser));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteCourse(@PathVariable Long id, @AuthenticationPrincipal UserDetails currentUser) {
         courseService.deleteCourse(id, currentUser);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok().build();
     }
 }
 

@@ -2,6 +2,7 @@ package com.hackademics.service.impl;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.hackademics.dto.SubjectDto;
+import com.hackademics.dto.SubjectResponseDto;
 import com.hackademics.dto.SubjectUpdateDto;
 import com.hackademics.model.Role;
 import com.hackademics.model.Subject;
@@ -27,18 +29,29 @@ public class SubjectServiceImpl implements SubjectService {
     @Autowired
     private UserRepository userRepository;
 
-    @Override
-    public Optional<Subject> getSubjectById(Long id) {
-        return subjectRepository.findById(id);
+    private SubjectResponseDto convertToResponseDto(Subject subject) {
+        return new SubjectResponseDto(
+            subject.getId(),
+            subject.getSubjectName(),
+            subject.getSubjectTag()
+        );
     }
 
     @Override
-    public List<Subject> getAllSubjects() {
-        return subjectRepository.findAll();
+    public Optional<SubjectResponseDto> getSubjectById(Long id) {
+        return subjectRepository.findById(id)
+            .map(this::convertToResponseDto);
     }
 
     @Override
-    public Subject createSubject(SubjectDto subjectDto, UserDetails currentUser) {
+    public List<SubjectResponseDto> getAllSubjects() {
+        return subjectRepository.findAll().stream()
+            .map(this::convertToResponseDto)
+            .collect(Collectors.toList());
+    }
+
+    @Override
+    public SubjectResponseDto createSubject(SubjectDto subjectDto, UserDetails currentUser) {
         User authenticatedUser = userRepository.findByEmail(currentUser.getUsername())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized"));
 
@@ -47,33 +60,32 @@ public class SubjectServiceImpl implements SubjectService {
         }
 
         Subject newSubject = new Subject(subjectDto.getSubjectName(), subjectDto.getSubjectTag());
-        return subjectRepository.save(newSubject);
+        return convertToResponseDto(subjectRepository.save(newSubject));
     }
 
     @Override
-public Optional<Subject> updateSubject(Long id, SubjectUpdateDto updatedSubjectDto, UserDetails currentUser) {
-    User authenticatedUser = userRepository.findByEmail(currentUser.getUsername())
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized"));
+    public Optional<SubjectResponseDto> updateSubject(Long id, SubjectUpdateDto updatedSubjectDto, UserDetails currentUser) {
+        User authenticatedUser = userRepository.findByEmail(currentUser.getUsername())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized"));
 
-    if (authenticatedUser.getRole() != Role.ADMIN) {
-        throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only admins can update subjects.");
+        if (authenticatedUser.getRole() != Role.ADMIN) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only admins can update subjects.");
+        }
+
+        return subjectRepository.findById(id).map(subject -> {
+            // Update fields only if they are provided (non-null)
+            if (updatedSubjectDto.getSubjectName() != null) {
+                subject.setSubjectName(updatedSubjectDto.getSubjectName());
+            }
+            if (updatedSubjectDto.getSubjectTag() != null) {
+                subject.setSubjectTag(updatedSubjectDto.getSubjectTag());
+            }
+
+            return convertToResponseDto(subjectRepository.save(subject));
+        });
     }
 
-    return subjectRepository.findById(id).map(subject -> {
-        // Update fields only if they are provided (non-null)
-        if (updatedSubjectDto.getSubjectName() != null) {
-            subject.setSubjectName(updatedSubjectDto.getSubjectName());
-        }
-        if (updatedSubjectDto.getSubjectTag() != null) {
-            subject.setSubjectTag(updatedSubjectDto.getSubjectTag());
-        }
-
-        return subjectRepository.save(subject);
-    });
-}
-
-
-        @Override
+    @Override
     public boolean deleteSubject(Long id, UserDetails currentUser) {
         User authenticatedUser = userRepository.findByEmail(currentUser.getUsername())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized"));

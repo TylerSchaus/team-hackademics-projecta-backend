@@ -28,9 +28,12 @@ public class Course {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "admin_id", nullable = true)
+    @JoinColumn(name = "admin_reference", nullable = true)
     @OnDelete(action = OnDeleteAction.SET_NULL)
     private User admin;
+
+    @Column (name = "admin_id")
+    private Long adminId;
 
     @ManyToOne
     @JoinColumn(name = "subject_id", nullable = false)
@@ -57,8 +60,8 @@ public class Course {
     @Column(name = "course_tag", nullable = false)
     private String courseTag;
 
-    @Column(name = "semester", nullable = false)
-    private int semester;
+    @Column(name = "term", nullable = false)
+    private String term;
 
     @Column(name = "days") // Allow null values for asynchronous classes. 
     private Integer days;  
@@ -69,6 +72,9 @@ public class Course {
     @Column(name = "end_time")
     private LocalTime endTime;  
 
+    @Column(name = "Lab_sections") 
+    private int numLabSections; 
+
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
     @OnDelete(action = OnDeleteAction.CASCADE)
     private final List<Grade> grades = new ArrayList<>();
@@ -77,23 +83,28 @@ public class Course {
     @OnDelete(action = OnDeleteAction.CASCADE)
     private final List<Enrollment> enrollments = new ArrayList<>();
 
+    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    private final List<LabSection> labSections = new ArrayList<>();
+
     // Constructor
     public Course(User admin, Subject subject, String courseName, LocalDateTime startDate, LocalDateTime endDate, int enrollLimit,
             String courseNumber, Integer days, LocalTime startTime, LocalTime endTime) {
         this.admin = admin;
+        this.adminId = admin.getAdminId();
         this.subject = subject;
         this.courseName = courseName;
         this.startDate = startDate;
         if (null == startDate.getMonth()) {
-            semester = 3;
+            term = "UNDETERMINED";
         } else {
-            semester = switch (startDate.getMonth()) {
+            term = switch (startDate.getMonth()) {
                 case SEPTEMBER ->
-                    1;
+                    startDate.getYear() + 1 + "1";
                 case JANUARY ->
-                    2;
+                    startDate.getYear() + "2";
                 default ->
-                    3;
+                    "UNDETERMINED";
             };
         }
         this.endDate = endDate;
@@ -104,6 +115,7 @@ public class Course {
         this.days = days; 
         this.startTime = startTime; 
         this.endTime = endTime;
+        this.numLabSections = 0;
     }
 
     // Getters and Setters
@@ -121,6 +133,11 @@ public class Course {
 
     public void setAdmin(User admin) {
         this.admin = admin;
+        this.adminId = admin.getAdminId();
+    }
+
+    public Long getAdminId() {
+        return adminId;
     }
 
     public Subject getSubject() {
@@ -187,12 +204,12 @@ public class Course {
         return enrollments;
     }
 
-    public int getSemester() {
-        return semester;
+    public String getTerm() {
+        return term;
     }
 
-    public void setSemester(int semester) {
-        this.semester = semester;
+    public void setTerm(String term) {
+        this.term = term;
     }
 
     public int getCurrentEnroll() {
@@ -226,6 +243,29 @@ public class Course {
     public void setEndTime(LocalTime endTime) {
         this.endTime = endTime;
     }
+
+    public int getNumLabSections() {
+        return numLabSections;
+    }
+
+    public void setNumLabSections(int numLabSections) {
+        this.numLabSections = numLabSections;
+    }
+
+    public int addLabSection(){
+        this.numLabSections++;
+        return this.numLabSections;
+    }
+
+    public void removeLabSection(){
+        if (this.numLabSections > 0){
+            numLabSections--; 
+        }
+    }
     
+    public List<LabSection> getLabSections() {
+        return labSections;
+    }
+
 
 }
