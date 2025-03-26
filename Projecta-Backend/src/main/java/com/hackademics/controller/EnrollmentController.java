@@ -64,4 +64,12 @@ public class EnrollmentController {
         enrollmentService.deleteEnrollment(id, currentUser);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/student/{studentId}/current")
+    public ResponseEntity<List<Enrollment>> getCurrentEnrollmentsByStudentId(
+            @PathVariable Long studentId,
+            @AuthenticationPrincipal UserDetails currentUser) {
+        List<Enrollment> currentEnrollments = enrollmentService.getCurrentEnrollmentByStudentId(currentUser, studentId);
+        return ResponseEntity.ok(currentEnrollments);
+    }
 }

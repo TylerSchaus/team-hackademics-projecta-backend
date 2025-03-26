@@ -24,4 +24,9 @@ hs_err_pid*
 replay_pid*
 
 # Environment Variables
-.env
+.env 
+*.env
+
+# Tar files
+*.tar
+.tar
