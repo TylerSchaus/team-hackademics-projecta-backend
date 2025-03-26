@@ -11,4 +11,6 @@ import com.hackademics.model.Subject;
 public interface SubjectRepository extends JpaRepository<Subject, Long> {
     Optional<Subject> findBySubjectName(String subjectName);
     Optional<Subject> findBySubjectTag(String subjectTag);
+    boolean existsBySubjectName(String subjectName);
+    boolean existsBySubjectTag(String subjectTag);
 }

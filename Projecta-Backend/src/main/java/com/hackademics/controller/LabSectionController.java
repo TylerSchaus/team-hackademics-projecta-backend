@@ -30,6 +30,7 @@ public class LabSectionController {
     @Autowired
     private LabSectionService labSectionService;
 
+    /* Less essential */
     @PostMapping
     public ResponseEntity<LabSectionResponseDto> createLabSection(@Valid @RequestBody LabSectionDto labSectionDto,
             @AuthenticationPrincipal UserDetails currentUser) {
@@ -37,17 +38,20 @@ public class LabSectionController {
         return ResponseEntity.status(HttpStatus.CREATED).body(createdLabSection);
     }
 
+    /* Not essential */
     @GetMapping("/{id}")
     public ResponseEntity<LabSectionResponseDto> getLabSectionById(@PathVariable Long id) {
         return ResponseEntity.ok(labSectionService.getLabSectionById(id));
     }
 
+    /* Essential */
     @GetMapping("/course/{courseId}")
     public ResponseEntity<List<LabSectionResponseDto>> getLabSectionsByCourseId(@PathVariable Long courseId,
             @AuthenticationPrincipal UserDetails currentUser) {
         return ResponseEntity.ok(labSectionService.findByCourseId(courseId));
     }
 
+    /* Less essential */
     @PutMapping("/{id}")
     public ResponseEntity<LabSectionResponseDto> updateLabSection(@PathVariable Long id,
             @Valid @RequestBody LabSectionUpdateDto labSectionUpdateDto,
@@ -57,6 +61,7 @@ public class LabSectionController {
         return ResponseEntity.ok(updatedLabSection);
     }
 
+    /* Less essential */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteLabSection(@PathVariable Long id) {
         labSectionService.deleteLabSection(id);

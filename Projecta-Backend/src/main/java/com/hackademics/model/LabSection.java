@@ -22,10 +22,10 @@ public class LabSection {
     private Long sectionId;
 
     @Column(name = "capacity")
-    private int capacity;
+    private Integer capacity;
 
     @Column(name = "current_enroll")
-    private int currentEnroll;
+    private Integer currentEnroll;
 
     @ManyToOne
     @JoinColumn(name = "course_id", nullable = false)
@@ -35,7 +35,7 @@ public class LabSection {
     private String courseTag;
 
     @Column(name = "days", nullable = false) // Bitmap for days of the week
-    private int days;
+    private Integer days;
 
     @Column(name = "start_time", nullable = false)
     private LocalTime startTime;
@@ -50,7 +50,8 @@ public class LabSection {
     private LocalDateTime endDate;
 
     // Constructor
-    public LabSection(Long sectionId, int capacity, Course course, int days, LocalTime startTime, LocalTime endTime) {
+    
+    public LabSection(Long sectionId, Integer capacity, Course course, Integer days, LocalTime startTime, LocalTime endTime) {
         this.sectionId = sectionId;
         this.capacity = capacity;
         this.course = course;
@@ -83,11 +84,11 @@ public class LabSection {
         this.sectionId = sectionId;
     }
 
-    public int getCapacity() {
+    public Integer getCapacity() {
         return capacity;
     }
 
-    public void setCapacity(int capacity) {
+    public void setCapacity(Integer capacity) {
         this.capacity = capacity;
     }
 
@@ -111,11 +112,11 @@ public class LabSection {
         this.courseTag = courseTag;
     }
 
-    public int getDays() {
+    public Integer getDays() {
         return days;
     }
 
-    public void setDays(int days) {
+    public void setDays(Integer days) {
         this.days = days;
     }
 
@@ -151,10 +152,10 @@ public class LabSection {
         this.endDate = endDate;
     }
 
-    public int getCurrentEnroll() {
+    public Integer getCurrentEnroll() {
         return currentEnroll;
     }
-    public void setCurrentEnroll(int currentEnroll){
+    public void setCurrentEnroll(Integer currentEnroll){
         this.currentEnroll = currentEnroll;
     }
 }

@@ -88,6 +88,9 @@ public class Course {
     private final List<LabSection> labSections = new ArrayList<>();
 
     // Constructor
+
+    public Course(){} 
+    
     public Course(User admin, Subject subject, String courseName, LocalDateTime startDate, LocalDateTime endDate, int enrollLimit,
             String courseNumber, Integer days, LocalTime startTime, LocalTime endTime) {
         this.admin = admin;
@@ -99,9 +102,9 @@ public class Course {
             term = "UNDETERMINED";
         } else {
             term = switch (startDate.getMonth()) {
-                case SEPTEMBER ->
+                case SEPTEMBER, OCTOBER, NOVEMBER, DECEMBER ->
                     startDate.getYear() + 1 + "1";
-                case JANUARY ->
+                case JANUARY, FEBRUARY, MARCH, APRIL ->
                     startDate.getYear() + "2";
                 default ->
                     "UNDETERMINED";

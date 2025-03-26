@@ -30,6 +30,7 @@ public class SubjectController {
     @Autowired
     private SubjectService subjectService;
 
+    /* Not essential */
     @GetMapping("/{id}")
     public ResponseEntity<SubjectResponseDto> getSubjectById(@PathVariable Long id) {
         return subjectService.getSubjectById(id)
@@ -37,24 +38,28 @@ public class SubjectController {
                .orElse(ResponseEntity.notFound().build());
     }
 
+    /* Not essential */
     @PostMapping
     public ResponseEntity<SubjectResponseDto> createSubject(@Valid @RequestBody SubjectDto subjectDto, @AuthenticationPrincipal UserDetails currentUser) {
         SubjectResponseDto createdSubject = subjectService.createSubject(subjectDto, currentUser);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdSubject);
     }
 
+    /* Not essential */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteSubject(@PathVariable Long id, @AuthenticationPrincipal UserDetails currentUser) {
         boolean deleted = subjectService.deleteSubject(id, currentUser);
         return deleted ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
     }
 
+    /* Essential */
     @GetMapping
     public ResponseEntity<List<SubjectResponseDto>> getAllSubjects() {
         List<SubjectResponseDto> subjects = subjectService.getAllSubjects();
         return ResponseEntity.ok(subjects);
     }
 
+    /* Not essential */
     @PutMapping("/{id}")
     public ResponseEntity<SubjectResponseDto> updateSubject(@PathVariable Long id, @Valid @RequestBody SubjectUpdateDto updatedSubjectDto, @AuthenticationPrincipal UserDetails currentUser) {
         return subjectService.updateSubject(id, updatedSubjectDto, currentUser)

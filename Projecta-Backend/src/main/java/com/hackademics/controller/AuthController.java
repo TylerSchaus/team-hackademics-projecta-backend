@@ -32,7 +32,7 @@ public class AuthController {
         this.authenticationService = authenticationService;
     }
 
-    @PostMapping("/signup")
+    @PostMapping("/signup") /* Essential */
     public ResponseEntity<?> register(@Valid @RequestBody SignUpDto signUpDto) {
         try {
             UserResponseDTO registeredUser = authenticationService.signupUser(signUpDto);
@@ -46,16 +46,21 @@ public class AuthController {
         }
     }
 
-    @PostMapping("/login")
-    public ResponseEntity<LoginResponse> authenticate(@Valid @RequestBody LoginDto loginDto) {
-        User authenticatedUser = authenticationService.authenticate(loginDto);
+    @PostMapping("/login") /* Essential */
+    public ResponseEntity<?> authenticate(@Valid @RequestBody LoginDto loginDto) {
+        try {
+            User authenticatedUser = authenticationService.authenticate(loginDto);
 
-        String jwtToken = jwtService.generateToken(authenticatedUser);
+            String jwtToken = jwtService.generateToken(authenticatedUser);
 
-        LoginResponse loginResponse = new LoginResponse()
-                .setToken(jwtToken)
-                .setExpiresIn(jwtService.getExpirationTime());
+            LoginResponse loginResponse = new LoginResponse()
+                    .setToken(jwtToken)
+                    .setExpiresIn(jwtService.getExpirationTime());
 
-        return ResponseEntity.ok(loginResponse);
+            return ResponseEntity.ok(loginResponse);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("Authentication failed: " + e.getMessage());
+        }
     }
 }

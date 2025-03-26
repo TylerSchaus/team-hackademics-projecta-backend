@@ -33,6 +33,10 @@ public class Subject {
     @OnDelete(action = OnDeleteAction.CASCADE)
     private List<Course> courses = new ArrayList<>();
 
+    // Default constructor
+    public Subject() {
+    }
+
     // Constructor
     public Subject(String subjectName, String subjectTag) {
         this.subjectName = subjectName;
