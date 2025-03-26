@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.hackademics.dto.EnrollmentDto;
-import com.hackademics.model.Enrollment;
+import com.hackademics.dto.EnrollmentResponseDto;
 import com.hackademics.service.EnrollmentService;
 
 import jakarta.validation.Valid;
@@ -29,31 +29,31 @@ public class EnrollmentController {
     private EnrollmentService enrollmentService;
 
     @PostMapping
-    public ResponseEntity<Enrollment> saveEnrollment(@Valid @RequestBody EnrollmentDto enrollmentDto,
+    public ResponseEntity<EnrollmentResponseDto> saveEnrollment(@Valid @RequestBody EnrollmentDto enrollmentDto,
             @AuthenticationPrincipal UserDetails currentUser) {
-        Enrollment createdEnrollment = enrollmentService.saveEnrollment(enrollmentDto, currentUser);
+        EnrollmentResponseDto createdEnrollment = enrollmentService.saveEnrollment(enrollmentDto, currentUser);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdEnrollment);
     }
 
     @GetMapping
-    public ResponseEntity<List<Enrollment>> getAllEnrollments(@AuthenticationPrincipal UserDetails currentUser) {
+    public ResponseEntity<List<EnrollmentResponseDto>> getAllEnrollments(@AuthenticationPrincipal UserDetails currentUser) {
         return ResponseEntity.ok(enrollmentService.getAllEnrollments(currentUser));
     }
 
     @GetMapping("/course/{courseId}")
-    public ResponseEntity<List<Enrollment>> getEnrollmentsByCourseId(@PathVariable Long courseId,
+    public ResponseEntity<List<EnrollmentResponseDto>> getEnrollmentsByCourseId(@PathVariable Long courseId,
             @AuthenticationPrincipal UserDetails currentUser) {
         return ResponseEntity.ok(enrollmentService.getEnrollmentsByCourseId(courseId, currentUser));
     }
 
     @GetMapping("/student/{studentId}")
-    public ResponseEntity<List<Enrollment>> getEnrollmentsByStudentId(@PathVariable Long studentId,
+    public ResponseEntity<List<EnrollmentResponseDto>> getEnrollmentsByStudentId(@PathVariable Long studentId,
             @AuthenticationPrincipal UserDetails currentUser) {
         return ResponseEntity.ok(enrollmentService.getEnrollmentsByStudentId(studentId, currentUser));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Enrollment> getEnrollmentById(@PathVariable Long id,
+    public ResponseEntity<EnrollmentResponseDto> getEnrollmentById(@PathVariable Long id,
             @AuthenticationPrincipal UserDetails currentUser) {
         return ResponseEntity.ok(enrollmentService.getEnrollmentById(id, currentUser));
     }
@@ -66,10 +66,19 @@ public class EnrollmentController {
     }
 
     @GetMapping("/student/{studentId}/current")
-    public ResponseEntity<List<Enrollment>> getCurrentEnrollmentsByStudentId(
+    public ResponseEntity<List<EnrollmentResponseDto>> getCurrentEnrollmentsByStudentId(
             @PathVariable Long studentId,
             @AuthenticationPrincipal UserDetails currentUser) {
-        List<Enrollment> currentEnrollments = enrollmentService.getCurrentEnrollmentByStudentId(currentUser, studentId);
+        List<EnrollmentResponseDto> currentEnrollments = enrollmentService.getCurrentEnrollmentByStudentId(currentUser, studentId, null);
+        return ResponseEntity.ok(currentEnrollments);
+    }
+
+    @GetMapping("/student/{studentId}/{term}")
+    public ResponseEntity<List<EnrollmentResponseDto>> getCurrentEnrollmentsByStudentId(
+            @PathVariable Long studentId,
+            @PathVariable String term,
+            @AuthenticationPrincipal UserDetails currentUser) {
+        List<EnrollmentResponseDto> currentEnrollments = enrollmentService.getCurrentEnrollmentByStudentId(currentUser, studentId, term);
         return ResponseEntity.ok(currentEnrollments);
     }
 }

@@ -4,17 +4,14 @@ import java.util.List;
 
 import org.springframework.security.core.userdetails.UserDetails;
 
-import com.hackademics.dto.LabSectionDto; 
+import com.hackademics.dto.LabSectionDto;
+import com.hackademics.dto.LabSectionResponseDto;
 import com.hackademics.dto.LabSectionUpdateDto;
-import com.hackademics.model.LabSection;
- 
 
 public interface LabSectionService {
-
-    List<LabSection> findByCourseId(Long id);
-    LabSection createLabSection(LabSectionDto labSectionDto, UserDetails userDetails);
-    LabSection getLabSectionById(Long id); 
-    LabSection updateLabSection(LabSectionUpdateDto updateLabSectionDto, UserDetails userDetails); 
-    void deleteLabSection(Long id); 
-    
+    List<LabSectionResponseDto> findByCourseId(Long id);
+    LabSectionResponseDto createLabSection(LabSectionDto labSectionDto, UserDetails userDetails);
+    LabSectionResponseDto getLabSectionById(Long id);
+    LabSectionResponseDto updateLabSection(LabSectionUpdateDto updateLabSectionDto, UserDetails userDetails);
+    void deleteLabSection(Long id);
 }

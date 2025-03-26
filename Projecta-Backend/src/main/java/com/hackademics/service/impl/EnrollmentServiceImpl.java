@@ -2,6 +2,7 @@ package com.hackademics.service.impl;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -9,7 +10,11 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.hackademics.dto.CourseResponseDto;
 import com.hackademics.dto.EnrollmentDto;
+import com.hackademics.dto.EnrollmentResponseDto;
+import com.hackademics.dto.LabSectionResponseDto;
+import com.hackademics.dto.StudentSummaryDto;
 import com.hackademics.model.Course;
 import com.hackademics.model.Enrollment;
 import com.hackademics.model.LabSection;
@@ -23,7 +28,9 @@ import com.hackademics.repository.LabSectionRepository;
 import com.hackademics.repository.UserRepository;
 import com.hackademics.repository.WaitlistEnrollmentRepository;
 import com.hackademics.repository.WaitlistRepository;
+import com.hackademics.service.CourseService;
 import com.hackademics.service.EnrollmentService;
+import com.hackademics.service.LabSectionService;
 
 @Service
 public class EnrollmentServiceImpl implements EnrollmentService {
@@ -33,10 +40,10 @@ public class EnrollmentServiceImpl implements EnrollmentService {
 
     @Autowired
     private WaitlistRepository waitlistRepository;
-    
+
     @Autowired
     private WaitlistEnrollmentRepository waitlistEnrollmentRepository;
-    
+
     @Autowired
     private EnrollmentRepository enrollmentRepository;
 
@@ -46,8 +53,33 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     @Autowired
     private CourseRepository courseRepository;
 
+    @Autowired
+    private CourseService courseService;
+
+    @Autowired
+    private LabSectionService labSectionService;
+
+    private EnrollmentResponseDto convertToResponseDto(Enrollment enrollment) {
+        CourseResponseDto courseDto = courseService.getCourseById(enrollment.getCourse().getId());
+        StudentSummaryDto studentDto = new StudentSummaryDto(
+                enrollment.getStudent().getId(),
+                enrollment.getStudent().getFirstName(),
+                enrollment.getStudent().getLastName(),
+                enrollment.getStudent().getEmail()
+        );
+        LabSectionResponseDto labSectionDto = enrollment.getLabSection() != null
+                ? labSectionService.getLabSectionById(enrollment.getLabSection().getId()) : null;
+
+        return new EnrollmentResponseDto(
+                enrollment.getId(),
+                courseDto,
+                studentDto,
+                labSectionDto
+        );
+    }
+
     @Override
-    public Enrollment saveEnrollment(EnrollmentDto enrollmentDto, UserDetails currentUser) {
+    public EnrollmentResponseDto saveEnrollment(EnrollmentDto enrollmentDto, UserDetails currentUser) {
         // User verification
         User authenticatedUser = userRepository.findByEmail(currentUser.getUsername())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized"));
@@ -72,7 +104,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
 
         if (existingEnrollment != null) {
             // Redirect to updateEnrollment if the student is already in the course
-            return updateEnrollment(existingEnrollment, enrollmentDto.getLabSectionId(), currentEnrollments);
+            return convertToResponseDto(updateEnrollment(existingEnrollment, enrollmentDto.getLabSectionId(), currentEnrollments));
         }
 
         // Check for schedule conflicts
@@ -145,54 +177,54 @@ public class EnrollmentServiceImpl implements EnrollmentService {
             labSectionRepository.save(labSection);
         }
 
-        return savedEnrollment;
+        return convertToResponseDto(savedEnrollment);
     }
 
     private Enrollment updateEnrollment(Enrollment existingEnrollment, Long labSectionId, List<Enrollment> currentEnrollments) {
         LabSection newLabSection = null;
-    
+
         // Fetch the new lab section if provided
         if (labSectionId != null) {
             newLabSection = labSectionRepository.findById(labSectionId)
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Lab section not found"));
-    
+
             // Check for schedule conflicts
             if (hasScheduleConflict(currentEnrollments, null, newLabSection)) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Schedule conflict with new lab section.");
             }
-    
+
             // Check lab section capacity
             if (newLabSection.getCurrentEnroll() >= newLabSection.getCapacity()) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "New lab section is at capacity.");
             }
-    
+
             // Ensure the lab section corresponds to the course
             if (!newLabSection.getCourse().getId().equals(existingEnrollment.getCourse().getId())) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Lab section does not correspond to the course.");
             }
         }
-    
+
         // Update the lab section in the enrollment
         LabSection oldLabSection = existingEnrollment.getLabSection();
         existingEnrollment.setLabSection(newLabSection);
         Enrollment updatedEnrollment = enrollmentRepository.save(existingEnrollment);
-    
+
         // Update lab section enrollment counts
         if (oldLabSection != null) {
             oldLabSection.setCurrentEnroll(oldLabSection.getCurrentEnroll() - 1);
             labSectionRepository.save(oldLabSection);
         }
-    
+
         if (newLabSection != null) {
             newLabSection.setCurrentEnroll(newLabSection.getCurrentEnroll() + 1);
             labSectionRepository.save(newLabSection);
         }
-    
+
         return updatedEnrollment;
     }
 
     @Override
-    public List<Enrollment> getAllEnrollments(UserDetails currentUser) {
+    public List<EnrollmentResponseDto> getAllEnrollments(UserDetails currentUser) {
         User authenticatedUser = userRepository.findByEmail(currentUser.getUsername())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized"));
 
@@ -200,11 +232,13 @@ public class EnrollmentServiceImpl implements EnrollmentService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only admins can view all enrollments.");
         }
 
-        return enrollmentRepository.findAll();
+        return enrollmentRepository.findAll().stream()
+                .map(this::convertToResponseDto)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public List<Enrollment> getEnrollmentsByCourseId(Long courseId, UserDetails currentUser) {
+    public List<EnrollmentResponseDto> getEnrollmentsByCourseId(Long courseId, UserDetails currentUser) {
         User authenticatedUser = userRepository.findByEmail(currentUser.getUsername())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized"));
 
@@ -216,11 +250,13 @@ public class EnrollmentServiceImpl implements EnrollmentService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only admins can view enrollments for a course.");
         }
 
-        return enrollmentRepository.findByCourseId(courseId);
+        return enrollmentRepository.findByCourseId(courseId).stream()
+                .map(this::convertToResponseDto)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public List<Enrollment> getEnrollmentsByStudentId(Long studentId, UserDetails currentUser) {
+    public List<EnrollmentResponseDto> getEnrollmentsByStudentId(Long studentId, UserDetails currentUser) {
         User authenticatedUser = userRepository.findByEmail(currentUser.getUsername())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized"));
 
@@ -228,11 +264,13 @@ public class EnrollmentServiceImpl implements EnrollmentService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Students can only view their own enrollments.");
         }
 
-        return enrollmentRepository.findByStudentId(studentId);
+        return enrollmentRepository.findByStudentId(studentId).stream()
+                .map(this::convertToResponseDto)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public Enrollment getEnrollmentById(Long id, UserDetails currentUser) {
+    public EnrollmentResponseDto getEnrollmentById(Long id, UserDetails currentUser) {
         User authenticatedUser = userRepository.findByEmail(currentUser.getUsername())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized"));
 
@@ -243,7 +281,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only admins can view specific enrollments.");
         }
 
-        return enrollment;
+        return convertToResponseDto(enrollment);
     }
 
     @Override
@@ -269,7 +307,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     }
 
     @Override
-    public List<Enrollment> getCurrentEnrollmentByStudentId(UserDetails currentUser, Long studentId) {
+    public List<EnrollmentResponseDto> getCurrentEnrollmentByStudentId(UserDetails currentUser, Long studentId, String term) {
         User authenticatedUser = userRepository.findByEmail(currentUser.getUsername())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized"));
 
@@ -277,16 +315,28 @@ public class EnrollmentServiceImpl implements EnrollmentService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Students can only view their own enrollments.");
         }
 
-        String currentTerm = switch (LocalDateTime.now().getMonth()) {
-            case SEPTEMBER, OCTOBER, NOVEMBER, DECEMBER ->
-                LocalDateTime.now().getYear() + 1 + "1";
-            case JANUARY, FEBRUARY, MARCH, APRIL ->
-                LocalDateTime.now().getYear() + "2";
-            default ->
-                "UNDETERMINED";
-        };
+        String currentTerm = term;
 
-        return enrollmentRepository.findByTermAndStudentId(currentTerm, studentId);
+        if (currentTerm == null) {
+
+            currentTerm = switch (LocalDateTime.now().getMonth()) {
+                case SEPTEMBER, OCTOBER, NOVEMBER, DECEMBER ->
+                    LocalDateTime.now().getYear() + 1 + "1";
+                case JANUARY, FEBRUARY, MARCH, APRIL ->
+                    LocalDateTime.now().getYear() + "2";
+                default ->
+                    "UNDETERMINED";
+            };
+
+        }
+
+        if (term.charAt(5) != '1' && term.charAt(5) != '2') {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid term format. Must be in the format YY1 or YY2.");
+        }
+
+        return enrollmentRepository.findByTermAndStudentId(currentTerm, studentId).stream()
+                .map(this::convertToResponseDto)
+                .collect(Collectors.toList());
     }
 
     // Helper method
