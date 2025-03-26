@@ -28,14 +28,21 @@ public class WaitlistEnrollment implements Serializable {
     private Waitlist waitlist; 
 
     @ManyToOne
-    @JoinColumn(name = "student_id", nullable = false)
+    @JoinColumn(name = "student_reference", nullable = false)
     private User student;
+
+    private String term;
+
+    @Column(name="student_id")
+    private Long studentId;
 
     // Constructor
     public WaitlistEnrollment(int waitlistPosition, Waitlist waitlist, User student) {
         this.waitlistPosition = waitlistPosition;
         this.waitlist = waitlist;
         this.student = student;
+        this.term = waitlist.getTerm();
+        this.studentId = student.getStudentId();
     }
 
     // Getters and Setters
@@ -70,5 +77,21 @@ public class WaitlistEnrollment implements Serializable {
 
     public void setStudent(User student) {
         this.student = student;
+    }
+    
+    public String getTerm() {
+        return term;
+    }
+
+    public void setTerm(String term) {
+        this.term = term;
+    }
+
+    public Long getStudentId() {
+        return studentId;
+    }
+
+    public void setStudentId(Long studentId) {
+        this.studentId = studentId;
     }
 }

@@ -36,10 +36,13 @@ public class Waitlist {
     @OnDelete(action = OnDeleteAction.CASCADE)
     private final List<WaitlistEnrollment> waitlistEnrollments = new ArrayList<>();
 
+    private String term;
+
     // Constructor
     public Waitlist (Course course, int waitlistLimit){
         this.course = course;
         this.waitlistLimit = waitlistLimit;
+        this.term = course.getTerm(); 
     }
 
     // Getters and Setters
@@ -70,5 +73,13 @@ public class Waitlist {
 
     public List<WaitlistEnrollment> getWaitlistEnrollments() {
         return waitlistEnrollments;
+    }
+
+    public String getTerm() {
+        return term;
+    }
+
+    public void setTerm(String term) {
+        this.term = term;
     }
 }
