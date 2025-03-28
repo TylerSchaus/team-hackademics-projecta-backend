@@ -33,6 +33,7 @@ public class UserController {
     @Autowired
     UserService userService;
 
+    /* Essential */
     @GetMapping
     public ResponseEntity<List<UserResponseDTO>> getUsersByRole(
             @RequestParam Role role,
@@ -44,6 +45,7 @@ public class UserController {
         return ResponseEntity.ok(users);
     }
 
+    /* Essential */
     @GetMapping("/me")
     public ResponseEntity<UserResponseDTO> getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -56,6 +58,7 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     }
 
+    /* Essential */
     @PutMapping("/{id}")
     public ResponseEntity<UserResponseDTO> updateUser(
             @PathVariable Long id,
@@ -68,6 +71,7 @@ public class UserController {
         return ResponseEntity.ok(updatedUser);
     }
     
+    /* Essential */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteUser(
             @PathVariable Long id,

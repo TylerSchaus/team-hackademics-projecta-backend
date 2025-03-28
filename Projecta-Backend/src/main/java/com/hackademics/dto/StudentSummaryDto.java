@@ -4,12 +4,12 @@ public class StudentSummaryDto {
     private Long id;
     private String firstName;
     private String lastName;
-    private String studentId;
+    private Long studentId;
 
     public StudentSummaryDto() {
     }
 
-    public StudentSummaryDto(Long id, String firstName, String lastName, String studentId) {
+    public StudentSummaryDto(Long id, String firstName, String lastName, Long studentId) {
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -40,11 +40,11 @@ public class StudentSummaryDto {
         this.lastName = lastName;
     }
 
-    public String getStudentId() {
+    public Long getStudentId() {
         return studentId;
     }
 
-    public void setStudentId(String studentId) {
+    public void setStudentId(Long studentId) {
         this.studentId = studentId;
     }
 } 

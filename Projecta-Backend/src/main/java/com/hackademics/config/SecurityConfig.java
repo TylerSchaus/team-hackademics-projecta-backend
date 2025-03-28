@@ -17,7 +17,6 @@ public class SecurityConfig {
 
     public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
-
     }
 
     @Bean
@@ -26,9 +25,10 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable()) // Disable CSRF for API endpoints
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // API should be stateless
                 .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/auth/**").permitAll() // Allow login/signup endpoints
-                .requestMatchers("/api/users/me").authenticated() // Secure /me endpoints
-                .anyRequest().authenticated() // Allow other requests 
+                    .requestMatchers("/auth/**").permitAll() // Allow login/signup endpoints
+                    .requestMatchers("/error").permitAll() // Allow access to error endpoint
+                    .requestMatchers("/api/users/me").authenticated() // Secure /me endpoints
+                    .anyRequest().authenticated() // Allow other requests 
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
@@ -44,5 +44,4 @@ public class SecurityConfig {
     public BCryptPasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
-
 }
