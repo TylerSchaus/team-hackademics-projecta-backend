@@ -8,7 +8,10 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
-
+    env:
+      PROJECT_JWT_KEY: ${{ secrets.PROJECT_JWT_KEY }}
+      PROJECT_DB_USERNAME: ${{ secrets.PROJECT_DB_USERNAME }}
+      PROJECT_DB_PASSWORD: ${{ secrets.PROJECT_DB_PASSWORD }}
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
