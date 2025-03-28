@@ -7,3 +7,4 @@ services:
     envVars:
       - key: PROJECT_DB_USERNAME
       - key: PROJECT_DB_PASSWORD
+      - key: PROJECT_JWT_KEY
