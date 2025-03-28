@@ -93,6 +93,8 @@ public class User implements UserDetails {
             this.adminId = specialId;
         } else {
             this.studentId = specialId;
+            this.enrollStartDate = LocalDateTime.now();
+            this.expectGraduationDate = LocalDateTime.now().plusYears(4);
         }
     }
 

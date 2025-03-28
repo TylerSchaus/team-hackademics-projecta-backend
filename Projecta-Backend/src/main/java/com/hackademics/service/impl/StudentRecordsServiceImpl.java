@@ -29,6 +29,7 @@ public class StudentRecordsServiceImpl implements StudentRecordsService {
 
     @Override
     public StudentRecordDto getStudentRecord(Long studentId, UserDetails currentUser) {
+
         User authenticatedUser = userRepository.findByEmail(currentUser.getUsername())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized"));
 
@@ -81,6 +82,8 @@ public class StudentRecordsServiceImpl implements StudentRecordsService {
         StudentRecordDto record = getStudentRecord(studentId, currentUser);
         StringBuilder sb = new StringBuilder();
 
+        System.out.println("String builder initialized, got past dto creation.");
+
         // Student Info
         sb.append(record.getStudentName()).append("\n");
         sb.append(record.getStudentNumber()).append("\n");
@@ -114,6 +117,8 @@ public class StudentRecordsServiceImpl implements StudentRecordsService {
         sb.append(String.format("%.1f / %.0f%%\n",
                 record.getAcademicPerformance().getGpa(),
                 record.getAcademicPerformance().getPercentage()));
+
+        System.out.println("String builder completed, got past stringbuilder creation.");
 
         return sb.toString();
     }
