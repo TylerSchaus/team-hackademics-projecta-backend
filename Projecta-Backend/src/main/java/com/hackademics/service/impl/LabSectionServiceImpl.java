@@ -41,18 +41,19 @@ public class LabSectionServiceImpl implements LabSectionService {
     private LabSectionResponseDto convertToResponseDto(LabSection labSection) {
         CourseResponseDto courseDto = courseService.getCourseById(labSection.getCourse().getId());
         
-        return new LabSectionResponseDto(
+        LabSectionResponseDto responseDto = new LabSectionResponseDto(
             labSection.getId(),
-            String.valueOf(labSection.getSectionId()),
+            labSection.getSectionId(),
             labSection.getCapacity(),
             labSection.getCurrentEnroll(),
             courseDto,
-            List.of(String.valueOf(labSection.getDays())),
+            labSection.getDays(),
             labSection.getStartTime(),
             labSection.getEndTime(),
             labSection.getStartDate().toLocalDate(),
             labSection.getEndDate().toLocalDate()
         );
+        return responseDto;
     }
 
     @Override

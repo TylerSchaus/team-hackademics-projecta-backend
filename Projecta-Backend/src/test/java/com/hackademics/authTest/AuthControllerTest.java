@@ -43,9 +43,9 @@ class AuthControllerTest {
 
     @BeforeEach
     void setUp() {
-        System.out.println("Before deleteAll, user count: " + userRepository.count());
+        
         userRepository.deleteAll();
-        System.out.println("After deleteAll, user count: " + userRepository.count());
+        
     }
 
     @Test
@@ -88,7 +88,7 @@ class AuthControllerTest {
         mockMvc.perform(post("/auth/login")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(loginDto)))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized());
     }
 
     @Test

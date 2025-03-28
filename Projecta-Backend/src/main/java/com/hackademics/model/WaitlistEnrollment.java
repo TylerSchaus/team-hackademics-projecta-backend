@@ -37,6 +37,8 @@ public class WaitlistEnrollment implements Serializable {
     private Long studentId;
 
     // Constructor
+
+    public WaitlistEnrollment(){}
     public WaitlistEnrollment(int waitlistPosition, Waitlist waitlist, User student) {
         this.waitlistPosition = waitlistPosition;
         this.waitlist = waitlist;

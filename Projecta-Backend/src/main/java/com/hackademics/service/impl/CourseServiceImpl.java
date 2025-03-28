@@ -50,7 +50,7 @@ public class CourseServiceImpl implements CourseService {
             course.getSubject().getSubjectTag()
         );
 
-        return new CourseResponseDto(
+        CourseResponseDto responseDto = new CourseResponseDto(
             course.getId(),
             adminDto,
             subjectDto,
@@ -67,6 +67,7 @@ public class CourseServiceImpl implements CourseService {
             course.getEndTime(),
             course.getNumLabSections()
         );
+        return responseDto;
     }
 
     @Override
@@ -78,7 +79,7 @@ public class CourseServiceImpl implements CourseService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only admins can create courses.");
         }
         Course newCourse = new Course(
-                userRepository.findById(courseDto.getAdminId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Admin not found")),
+                userRepository.findByAdminId(courseDto.getAdminId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Admin not found")),
                 subjectRepository.findById(courseDto.getSubjectId()).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Subject not found")),
                 courseDto.getCourseName(),
                 courseDto.getStartDate(),
@@ -116,7 +117,7 @@ public class CourseServiceImpl implements CourseService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only admins can view their courses.");
         }
 
-        return courseRepository.findByAdminId(authenticatedUser.getId()).stream()
+        return courseRepository.findByAdminId(authenticatedUser.getAdminId()).stream()
             .map(this::convertToResponseDto)
             .collect(Collectors.toList());
     }

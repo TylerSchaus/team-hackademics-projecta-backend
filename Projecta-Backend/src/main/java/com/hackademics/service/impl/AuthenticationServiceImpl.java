@@ -40,15 +40,19 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     @Override
     public User authenticate(LoginDto input) {
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        input.getEmail(),
-                        input.getPassword()
-                )
-        );
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            input.getEmail(),
+                            input.getPassword()
+                    )
+            );
 
-        return userRepository.findByEmail(input.getEmail())
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+            return userRepository.findByEmail(input.getEmail())
+                    .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        } catch (Exception e) {
+            throw new RuntimeException("Authentication failed: " + e.getMessage(), e);
+        }
     }
 
     // Other methods for user management...

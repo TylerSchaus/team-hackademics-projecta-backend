@@ -59,6 +59,16 @@ public class SubjectServiceImpl implements SubjectService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only admins can create subjects.");
         }
 
+        // Check for duplicate subject name
+        if (subjectRepository.existsBySubjectName(subjectDto.getSubjectName())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "A subject with this name already exists.");
+        }
+
+        // Check for duplicate subject tag
+        if (subjectRepository.existsBySubjectTag(subjectDto.getSubjectTag())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "A subject with this tag already exists.");
+        }
+
         Subject newSubject = new Subject(subjectDto.getSubjectName(), subjectDto.getSubjectTag());
         return convertToResponseDto(subjectRepository.save(newSubject));
     }

@@ -28,6 +28,7 @@ public class EnrollmentController {
     @Autowired
     private EnrollmentService enrollmentService;
 
+    /* Essential */
     @PostMapping
     public ResponseEntity<EnrollmentResponseDto> saveEnrollment(@Valid @RequestBody EnrollmentDto enrollmentDto,
             @AuthenticationPrincipal UserDetails currentUser) {
@@ -35,29 +36,34 @@ public class EnrollmentController {
         return ResponseEntity.status(HttpStatus.CREATED).body(createdEnrollment);
     }
 
+    /* Less essential */
     @GetMapping
     public ResponseEntity<List<EnrollmentResponseDto>> getAllEnrollments(@AuthenticationPrincipal UserDetails currentUser) {
         return ResponseEntity.ok(enrollmentService.getAllEnrollments(currentUser));
     }
 
+    /* Semi essential */
     @GetMapping("/course/{courseId}")
     public ResponseEntity<List<EnrollmentResponseDto>> getEnrollmentsByCourseId(@PathVariable Long courseId,
             @AuthenticationPrincipal UserDetails currentUser) {
         return ResponseEntity.ok(enrollmentService.getEnrollmentsByCourseId(courseId, currentUser));
     }
 
+    /* Essential */
     @GetMapping("/student/{studentId}")
     public ResponseEntity<List<EnrollmentResponseDto>> getEnrollmentsByStudentId(@PathVariable Long studentId,
             @AuthenticationPrincipal UserDetails currentUser) {
         return ResponseEntity.ok(enrollmentService.getEnrollmentsByStudentId(studentId, currentUser));
     }
 
+    /* Not essential */
     @GetMapping("/{id}")
     public ResponseEntity<EnrollmentResponseDto> getEnrollmentById(@PathVariable Long id,
             @AuthenticationPrincipal UserDetails currentUser) {
         return ResponseEntity.ok(enrollmentService.getEnrollmentById(id, currentUser));
     }
 
+    /* Essential */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteEnrollment(@PathVariable Long id,
             @AuthenticationPrincipal UserDetails currentUser) {
@@ -65,6 +71,7 @@ public class EnrollmentController {
         return ResponseEntity.noContent().build();
     }
 
+    /* Essential */
     @GetMapping("/student/{studentId}/current")
     public ResponseEntity<List<EnrollmentResponseDto>> getCurrentEnrollmentsByStudentId(
             @PathVariable Long studentId,
@@ -73,6 +80,7 @@ public class EnrollmentController {
         return ResponseEntity.ok(currentEnrollments);
     }
 
+    /* Essential */
     @GetMapping("/student/{studentId}/{term}")
     public ResponseEntity<List<EnrollmentResponseDto>> getCurrentEnrollmentsByStudentId(
             @PathVariable Long studentId,
