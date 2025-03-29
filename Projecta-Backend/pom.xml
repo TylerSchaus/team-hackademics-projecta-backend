@@ -114,13 +114,4 @@
         </plugins>
     </build>
 
-    <profiles>
-        <profile>
-            <id>cleanup</id>
-            <properties>
-                <app.database.cleanup>true</app.database.cleanup>
-            </properties>
-        </profile>
-    </profiles>
-
 </project>
