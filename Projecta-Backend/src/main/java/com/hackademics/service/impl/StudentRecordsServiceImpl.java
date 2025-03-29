@@ -21,7 +21,10 @@ import com.hackademics.model.User;
 import com.hackademics.repository.UserRepository;
 import com.hackademics.service.StudentRecordsService;
 
+import jakarta.transaction.Transactional;
+
 @Service
+@Transactional
 public class StudentRecordsServiceImpl implements StudentRecordsService {
 
     @Autowired
