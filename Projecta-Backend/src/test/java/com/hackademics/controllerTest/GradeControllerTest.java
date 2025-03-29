@@ -199,12 +199,49 @@ class GradeControllerTest {
     void shouldAllowAdminToDeleteGrade() throws Exception {
         mockMvc.perform(delete("/api/grades/" + grade.getId())
                 .header("Authorization", "Bearer " + generateToken(admin)))
-                .andExpect(status().isOk());
+                .andExpect(status().isNoContent());
     }
 
     @Test
     void shouldNotAllowStudentToDeleteGrade() throws Exception {
         mockMvc.perform(delete("/api/grades/" + grade.getId())
+                .header("Authorization", "Bearer " + generateToken(student)))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void shouldAllowAdminToGetGradesByStudentId() throws Exception {
+        mockMvc.perform(get("/api/grades/student/" + student.getId())
+                .header("Authorization", "Bearer " + generateToken(admin)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].grade").value(85.0))
+                .andExpect(jsonPath("$[0].student.id").value(student.getId()))
+                .andExpect(jsonPath("$[0].course.id").value(course.getId()));
+    }
+
+    @Test
+    void shouldAllowStudentToGetTheirOwnGrades() throws Exception {
+        mockMvc.perform(get("/api/grades/student/" + student.getId())
+                .header("Authorization", "Bearer " + generateToken(student)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].grade").value(85.0))
+                .andExpect(jsonPath("$[0].student.id").value(student.getId()))
+                .andExpect(jsonPath("$[0].course.id").value(course.getId()));
+    }
+
+    @Test
+    void shouldNotAllowStudentToGetOtherStudentGrades() throws Exception {
+        // Create another student
+        User anotherStudent = new User("Another", "Student", "another@example.com", passwordEncoder.encode("studentPass"), Role.STUDENT, 456L);
+        anotherStudent = userRepository.save(anotherStudent);
+
+        // Create a grade for the other student
+        Grade anotherGrade = new Grade(anotherStudent, course, 90.0);
+        gradeRepository.save(anotherGrade);
+
+        mockMvc.perform(get("/api/grades/student/" + anotherStudent.getId())
                 .header("Authorization", "Bearer " + generateToken(student)))
                 .andExpect(status().isForbidden());
     }
