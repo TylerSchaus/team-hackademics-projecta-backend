@@ -1,7 +1,6 @@
 package com.hackademics.controller;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -33,81 +32,83 @@ public class GradeController {
     @Autowired
     private UserRepository userRepository;
 
-    // Create a new grade (Admin only)
     @PostMapping
     public ResponseEntity<Grade> createGrade(@RequestBody Grade grade, @AuthenticationPrincipal UserDetails currentUser) {
         User user = userRepository.findByEmail(currentUser.getUsername())
                 .orElseThrow(() -> new RuntimeException("User not found"));
+        
         if (user.getRole() != Role.ADMIN) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
-        Grade savedGrade = gradeService.saveGrade(grade);
-        return ResponseEntity.ok(savedGrade);
+        
+        grade.setStudentId(grade.getStudent().getStudentId());
+        return ResponseEntity.ok(gradeService.saveGrade(grade));
     }
 
-    // Get all grades (Admin only)
     @GetMapping
     public ResponseEntity<List<Grade>> getAllGrades(@AuthenticationPrincipal UserDetails currentUser) {
         User user = userRepository.findByEmail(currentUser.getUsername())
                 .orElseThrow(() -> new RuntimeException("User not found"));
+        
         if (user.getRole() != Role.ADMIN) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
-        List<Grade> grades = gradeService.getAllGrades();
-        return ResponseEntity.ok(grades);
+        
+        return ResponseEntity.ok(gradeService.getAllGrades());
     }
 
-    // Get a grade by its ID (Admin only)
     @GetMapping("/{id}")
     public ResponseEntity<Grade> getGradeById(@PathVariable Long id, @AuthenticationPrincipal UserDetails currentUser) {
         User user = userRepository.findByEmail(currentUser.getUsername())
                 .orElseThrow(() -> new RuntimeException("User not found"));
+        
         if (user.getRole() != Role.ADMIN) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
-        Grade grade = gradeService.getGradeById(id);
-        return ResponseEntity.ok(grade);
+        
+        return ResponseEntity.ok(gradeService.getGradeById(id));
     }
 
-    // Update a grade (Admin only)
     @PutMapping("/{id}")
     public ResponseEntity<Grade> updateGrade(@PathVariable Long id, @RequestBody Grade grade, @AuthenticationPrincipal UserDetails currentUser) {
         User user = userRepository.findByEmail(currentUser.getUsername())
                 .orElseThrow(() -> new RuntimeException("User not found"));
+        
         if (user.getRole() != Role.ADMIN) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
-        grade.setId(id); // Ensure the ID is set for the update
-        Grade updatedGrade = gradeService.updateGrade(grade);
-        return ResponseEntity.ok(updatedGrade);
+        
+        grade.setId(id);
+        grade.setStudentId(grade.getStudent().getStudentId());
+        return ResponseEntity.ok(gradeService.updateGrade(grade));
     }
 
-    // Delete a grade by its ID (Admin only)
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteGrade(@PathVariable Long id, @AuthenticationPrincipal UserDetails currentUser) {
         User user = userRepository.findByEmail(currentUser.getUsername())
                 .orElseThrow(() -> new RuntimeException("User not found"));
+        
         if (user.getRole() != Role.ADMIN) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
+        
         gradeService.deleteGrade(id);
         return ResponseEntity.noContent().build();
     }
 
-    // Get all grades for a specific user (Admin or student for their own grades)
     @GetMapping("/student/{studentId}")
     public ResponseEntity<List<Grade>> getGradesByStudentId(@PathVariable Long studentId, @AuthenticationPrincipal UserDetails currentUser) {
         User user = userRepository.findByEmail(currentUser.getUsername())
                 .orElseThrow(() -> new RuntimeException("User not found"));
+        
         if (user.getRole() != Role.ADMIN && !user.getId().equals(studentId)) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
-
-        // Fetch all grades and filter by student ID
+        
         List<Grade> allGrades = gradeService.getAllGrades();
         List<Grade> studentGrades = allGrades.stream()
                 .filter(grade -> grade.getStudent().getId().equals(studentId))
-                .collect(Collectors.toList());
+                .toList();
 
         return ResponseEntity.ok(studentGrades);
     }
