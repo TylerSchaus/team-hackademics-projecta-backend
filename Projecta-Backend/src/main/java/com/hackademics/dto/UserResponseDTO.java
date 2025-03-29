@@ -8,7 +8,7 @@ public class UserResponseDTO {
     private String lastName;
     private String email;
     private String role;
-    private String studentId;
+    private Long studentId;
     private LocalDate enrollStartDate;
     private LocalDate expectGraduationDate;
     private Long adminId;
@@ -17,7 +17,7 @@ public class UserResponseDTO {
     }
 
     public UserResponseDTO(Long id, String firstName, String lastName, String email, String role, 
-            String studentId, LocalDate enrollStartDate, LocalDate expectGraduationDate, Long adminId) {
+            Long studentId, LocalDate enrollStartDate, LocalDate expectGraduationDate, Long adminId) {
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -69,11 +69,11 @@ public class UserResponseDTO {
         this.role = role;
     }
 
-    public String getStudentId() {
+    public Long getStudentId() {
         return studentId;
     }
 
-    public void setStudentId(String studentId) {
+    public void setStudentId(Long studentId) {
         this.studentId = studentId;
     }
 

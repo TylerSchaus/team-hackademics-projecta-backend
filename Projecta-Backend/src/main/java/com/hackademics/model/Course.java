@@ -8,6 +8,8 @@ import java.util.List;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
+import com.hackademics.util.TermDeterminator;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -88,6 +90,9 @@ public class Course {
     private final List<LabSection> labSections = new ArrayList<>();
 
     // Constructor
+
+    public Course(){} 
+    
     public Course(User admin, Subject subject, String courseName, LocalDateTime startDate, LocalDateTime endDate, int enrollLimit,
             String courseNumber, Integer days, LocalTime startTime, LocalTime endTime) {
         this.admin = admin;
@@ -95,18 +100,7 @@ public class Course {
         this.subject = subject;
         this.courseName = courseName;
         this.startDate = startDate;
-        if (null == startDate.getMonth()) {
-            term = "UNDETERMINED";
-        } else {
-            term = switch (startDate.getMonth()) {
-                case SEPTEMBER ->
-                    startDate.getYear() + 1 + "1";
-                case JANUARY ->
-                    startDate.getYear() + "2";
-                default ->
-                    "UNDETERMINED";
-            };
-        }
+        this.term = TermDeterminator.determineTerm(startDate);
         this.endDate = endDate;
         this.enrollLimit = enrollLimit;
         this.courseNumber = courseNumber;

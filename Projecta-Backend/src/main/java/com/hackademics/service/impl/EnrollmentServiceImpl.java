@@ -1,6 +1,5 @@
 package com.hackademics.service.impl;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,6 +30,8 @@ import com.hackademics.repository.WaitlistRepository;
 import com.hackademics.service.CourseService;
 import com.hackademics.service.EnrollmentService;
 import com.hackademics.service.LabSectionService;
+import com.hackademics.util.ScheduleConflictChecker;
+import com.hackademics.util.TermDeterminator;
 
 @Service
 public class EnrollmentServiceImpl implements EnrollmentService {
@@ -65,38 +66,48 @@ public class EnrollmentServiceImpl implements EnrollmentService {
                 enrollment.getStudent().getId(),
                 enrollment.getStudent().getFirstName(),
                 enrollment.getStudent().getLastName(),
-                enrollment.getStudent().getEmail()
+                enrollment.getStudent().getStudentId()
         );
         LabSectionResponseDto labSectionDto = enrollment.getLabSection() != null
                 ? labSectionService.getLabSectionById(enrollment.getLabSection().getId()) : null;
 
-        return new EnrollmentResponseDto(
+        EnrollmentResponseDto responseDto = new EnrollmentResponseDto(
                 enrollment.getId(),
                 courseDto,
                 studentDto,
                 labSectionDto
         );
+        return responseDto;
     }
 
     @Override
     public EnrollmentResponseDto saveEnrollment(EnrollmentDto enrollmentDto, UserDetails currentUser) {
+        System.out.println("Entered saveEnrollment"); 
         // User verification
         User authenticatedUser = userRepository.findByEmail(currentUser.getUsername())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized"));
 
-        User student = userRepository.findById(enrollmentDto.getStudentId())
+        User student = userRepository.findByStudentId(enrollmentDto.getStudentId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found"));
 
-        if (authenticatedUser.getRole() != Role.ADMIN && !authenticatedUser.getId().equals(student.getId())) {
+        if (authenticatedUser.getRole() != Role.ADMIN && !authenticatedUser.getStudentId().equals(student.getStudentId())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Students can only enroll themselves.");
         }
+
+        System.out.println("Got past RBA verfication. Still processing...");
 
         // Check that the course exists
         Course course = courseRepository.findById(enrollmentDto.getCourseId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Course not found"));
 
+        System.out.println("Course found. Still processing...");
+
         // Check if the student is already enrolled in the course
-        List<Enrollment> currentEnrollments = enrollmentRepository.findByStudentId(student.getId());
+        List<Enrollment> currentEnrollments = enrollmentRepository.findByTermAndStudentId(course.getTerm(),student.getStudentId());
+
+        boolean existingEnrollmentsEmpty = currentEnrollments.isEmpty();
+        System.out.println("Existing enrollments empty? "+ existingEnrollmentsEmpty);
+        
         Enrollment existingEnrollment = currentEnrollments.stream()
                 .filter(e -> e.getCourse().getId().equals(course.getId()))
                 .findFirst()
@@ -104,18 +115,24 @@ public class EnrollmentServiceImpl implements EnrollmentService {
 
         if (existingEnrollment != null) {
             // Redirect to updateEnrollment if the student is already in the course
+            System.out.println("Existing enrollment found. Still processing...");
             return convertToResponseDto(updateEnrollment(existingEnrollment, enrollmentDto.getLabSectionId(), currentEnrollments));
         }
 
+        System.out.println("No existing enrollment found. Still processing...");
+
         // Check for schedule conflicts
-        if (hasScheduleConflict(currentEnrollments, course, null)) {
+        if (ScheduleConflictChecker.hasScheduleConflict(currentEnrollments, course, null)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Schedule conflict detected with course section.");
         }
+
+        System.out.println("No schedule conflicts with course found. Still processing...");
 
         // Check course capacity
         if (course.getCurrentEnroll() >= course.getEnrollLimit()) {
             // Query the waitlist repository for a waitlist associated with the course
             Waitlist waitlist = waitlistRepository.findByCourseId(course.getId());
+            System.out.println("Waitlist accquired. Still processing...");
             if (waitlist != null) {
                 // Proceed with waitlist logic
                 List<WaitlistEnrollment> waitlistEnrollments = waitlistEnrollmentRepository.findByWaitlistId(waitlist.getId());
@@ -136,16 +153,19 @@ public class EnrollmentServiceImpl implements EnrollmentService {
             }
         }
 
+        System.out.println("Course is not at capacity or waitlist enrollment successful/skipped. Still processing...");
+
         // Proceed with creating the enrollment
         LabSection labSection = null;
 
         // Fetch lab section if provided
         if (enrollmentDto.getLabSectionId() != null) {
+            System.out.println("Lab section ID provided, beginning enrollment process...");
             labSection = labSectionRepository.findById(enrollmentDto.getLabSectionId())
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Lab section not found"));
 
             // Check for lab section schedule conflicts
-            if (hasScheduleConflict(currentEnrollments, null, labSection)) {
+            if (ScheduleConflictChecker.hasScheduleConflict(currentEnrollments, null, labSection)) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Schedule conflict with lab section.");
             }
 
@@ -157,15 +177,19 @@ public class EnrollmentServiceImpl implements EnrollmentService {
             // Auto-enroll in a lab section if none is provided
             List<LabSection> labSections = labSectionRepository.findByCourseId(course.getId());
             for (LabSection section : labSections) {
-                if (!hasScheduleConflict(currentEnrollments, null, section) && section.getCurrentEnroll() < section.getCapacity()) {
+                if (!ScheduleConflictChecker.hasScheduleConflict(currentEnrollments, course, section) && section.getCurrentEnroll() < section.getCapacity()) {
                     labSection = section;
                     break;
                 }
             }
         }
 
+        boolean labSectionFound = labSection != null;
+        System.out.println("Lab section found and okay? "+ labSectionFound);
+
         // Create and save the enrollment
         Enrollment enrollment = new Enrollment(course, student, labSection);
+        enrollment.setTerm(course.getTerm()); // Ensure term is set from the course
         Enrollment savedEnrollment = enrollmentRepository.save(enrollment);
 
         // Update course and lab section enrollment counts
@@ -182,6 +206,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
 
     private Enrollment updateEnrollment(Enrollment existingEnrollment, Long labSectionId, List<Enrollment> currentEnrollments) {
         LabSection newLabSection = null;
+        Course course = existingEnrollment.getCourse();
 
         // Fetch the new lab section if provided
         if (labSectionId != null) {
@@ -189,7 +214,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Lab section not found"));
 
             // Check for schedule conflicts
-            if (hasScheduleConflict(currentEnrollments, null, newLabSection)) {
+            if (ScheduleConflictChecker.hasScheduleConflict(currentEnrollments, null, newLabSection)) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Schedule conflict with new lab section.");
             }
 
@@ -203,7 +228,16 @@ public class EnrollmentServiceImpl implements EnrollmentService {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Lab section does not correspond to the course.");
             }
         }
-
+        else {
+            // Auto-enroll in a lab section if none is provided
+            List<LabSection> labSections = labSectionRepository.findByCourseId(course.getId());
+            for (LabSection section : labSections) {
+                if (!ScheduleConflictChecker.hasScheduleConflict(currentEnrollments, course, section) && section.getCurrentEnroll() < section.getCapacity()) {
+                    newLabSection = section;
+                    break;
+                }
+            }
+        }  
         // Update the lab section in the enrollment
         LabSection oldLabSection = existingEnrollment.getLabSection();
         existingEnrollment.setLabSection(newLabSection);
@@ -260,7 +294,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
         User authenticatedUser = userRepository.findByEmail(currentUser.getUsername())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized"));
 
-        if (authenticatedUser.getRole() == Role.STUDENT && !authenticatedUser.getId().equals(studentId)) {
+        if (authenticatedUser.getRole() == Role.STUDENT && !authenticatedUser.getStudentId().equals(studentId)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Students can only view their own enrollments.");
         }
 
@@ -294,7 +328,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
 
         Course course = enrollment.getCourse();
 
-        if (authenticatedUser.getRole() != Role.ADMIN && !authenticatedUser.getId().equals(enrollment.getStudent().getId())) {
+        if (authenticatedUser.getRole() != Role.ADMIN && !authenticatedUser.getStudentId().equals(enrollment.getStudent().getStudentId())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Students can only delete their own enrollments.");
         }
 
@@ -311,47 +345,25 @@ public class EnrollmentServiceImpl implements EnrollmentService {
         User authenticatedUser = userRepository.findByEmail(currentUser.getUsername())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized"));
 
-        if (authenticatedUser.getRole() == Role.STUDENT && !authenticatedUser.getId().equals(studentId)) {
+        if (authenticatedUser.getRole() == Role.STUDENT && !authenticatedUser.getStudentId().equals(studentId)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Students can only view their own enrollments.");
         }
 
         String currentTerm = term;
 
         if (currentTerm == null) {
-
-            currentTerm = switch (LocalDateTime.now().getMonth()) {
-                case SEPTEMBER, OCTOBER, NOVEMBER, DECEMBER ->
-                    LocalDateTime.now().getYear() + 1 + "1";
-                case JANUARY, FEBRUARY, MARCH, APRIL ->
-                    LocalDateTime.now().getYear() + "2";
-                default ->
-                    "UNDETERMINED";
-            };
-
+            currentTerm = TermDeterminator.determineCurrentTerm();
         }
 
-        if (term.charAt(5) != '1' && term.charAt(5) != '2') {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid term format. Must be in the format YY1 or YY2.");
+        // Only validate term format if it's not "UNDETERMINED"
+        if (!currentTerm.equals("UNDETERMINED")) {
+            if (!TermDeterminator.isValidTermFormat(currentTerm)) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid term format. Must be in the format YYYY1 or YYYY2.");
+            }
         }
 
         return enrollmentRepository.findByTermAndStudentId(currentTerm, studentId).stream()
                 .map(this::convertToResponseDto)
                 .collect(Collectors.toList());
-    }
-
-    // Helper method
-    private boolean hasScheduleConflict(List<Enrollment> currentEnrollments, Course course, LabSection labSection) {
-        for (Enrollment enrollment : currentEnrollments) {
-            if (course != null && enrollment.getCourse().getId().equals(course.getId())) {
-                return true; // Conflict with the same course
-            }
-            if (labSection != null && enrollment.getLabSection() != null
-                    && enrollment.getLabSection().getDays() == labSection.getDays()
-                    && enrollment.getLabSection().getStartTime().isBefore(labSection.getEndTime())
-                    && enrollment.getLabSection().getEndTime().isAfter(labSection.getStartTime())) {
-                return true; // Time conflict with lab section
-            }
-        }
-        return false;
     }
 }

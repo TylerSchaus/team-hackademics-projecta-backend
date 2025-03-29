@@ -1,11 +1,8 @@
 package com.hackademics.dto;
 
-import com.hackademics.model.Gender;
-
 public class UserUpdateDto {
     private String firstName;
     private String lastName;
-    private Gender gender;
     private String email;
     private Long studentId;
 
@@ -25,14 +22,6 @@ public class UserUpdateDto {
 
     public void setLastName(String lastName) {
         this.lastName = lastName;
-    }
-
-    public Gender getGender() {
-        return gender;
-    }
-
-    public void setGender(Gender gender) {
-        this.gender = gender;
     }
 
     public String getEmail() {

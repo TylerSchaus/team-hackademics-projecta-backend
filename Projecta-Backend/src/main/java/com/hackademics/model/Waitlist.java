@@ -39,6 +39,9 @@ public class Waitlist {
     private String term;
 
     // Constructor
+
+    public Waitlist(){}
+
     public Waitlist (Course course, int waitlistLimit){
         this.course = course;
         this.waitlistLimit = waitlistLimit;

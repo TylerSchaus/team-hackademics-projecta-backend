@@ -10,6 +10,6 @@ import com.hackademics.model.Enrollment;
 @Repository
 public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
     List<Enrollment> findByCourseId(Long id);
-    List<Enrollment> findByStudentId(Long id);
-    List<Enrollment> findByTermAndStudentId(String term, Long id);
+    List<Enrollment> findByStudentId(Long studentId);
+    List<Enrollment> findByTermAndStudentId(String term, Long studentId);
 }
