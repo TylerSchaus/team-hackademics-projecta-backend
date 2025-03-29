@@ -1,177 +1,195 @@
 package com.hackademics.controllerTest;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-
-import java.util.Arrays;
-import java.util.List;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hackademics.controller.WaitlistEnrollmentController;
 import com.hackademics.model.Course;
 import com.hackademics.model.Role;
 import com.hackademics.model.Subject;
 import com.hackademics.model.User;
 import com.hackademics.model.Waitlist;
 import com.hackademics.model.WaitlistEnrollment;
+import com.hackademics.repository.CourseRepository;
+import com.hackademics.repository.SubjectRepository;
+import com.hackademics.repository.UserRepository;
+import com.hackademics.repository.WaitlistEnrollmentRepository;
 import com.hackademics.repository.WaitlistRepository;
-import com.hackademics.service.WaitlistEnrollmentService;
+import com.hackademics.service.JwtService;
 
-@WebMvcTest(WaitlistEnrollmentController.class)
-public class WaitlistEnrollmentControllerTest {
+import jakarta.transaction.Transactional;
+
+@SpringBootTest
+@AutoConfigureMockMvc
+@Transactional
+@ActiveProfiles("test")
+class WaitlistEnrollmentControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
-    private WaitlistEnrollmentService waitlistEnrollmentService;
-    
-    @MockBean
+    @Autowired
+    private WaitlistEnrollmentRepository waitlistEnrollmentRepository;
+
+    @Autowired
     private WaitlistRepository waitlistRepository;
+
+    @Autowired
+    private CourseRepository courseRepository;
+
+    @Autowired
+    private SubjectRepository subjectRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @Autowired
     private ObjectMapper objectMapper;
 
-    private WaitlistEnrollment testEnrollment;
-    private Waitlist testWaitlist;
-    private User testStudent;
-    private Course testCourse;
-    private Subject testSubject;
+    @Autowired
+    private JwtService jwtService;
+
+    private User admin;
+    private User student;
+    private Subject subject;
+    private Course course;
+    private Waitlist waitlist;
+    private WaitlistEnrollment waitlistEnrollment;
+
+    // Helper method
+    private String generateToken(User user) {
+        return jwtService.generateToken(user);
+    }
 
     @BeforeEach
     void setUp() {
-        testSubject = new Subject("Computer Science", "COSC");
-        testSubject.setId(1L);
-        
-        testCourse = new Course(null, testSubject, "Introduction to Programming", null, null, 100, "121", null, null, null);
-        testCourse.setId(1L);
-        
-        testWaitlist = new Waitlist(testCourse, 50);
-        testWaitlist.setId(1L);
-        
-        testStudent = new User("John", "Doe", "john@example.com", "password", Role.STUDENT, 1L);
-        testStudent.setId(1L);
-        
-        testEnrollment = new WaitlistEnrollment(1, testWaitlist, testStudent);
-        testEnrollment.setId(1L);
+        waitlistEnrollmentRepository.deleteAll();
+        waitlistRepository.deleteAll();
+        courseRepository.deleteAll();
+        subjectRepository.deleteAll();
+        userRepository.deleteAll();
+
+        // Create test users
+        admin = new User("Admin", "User", "admin@example.com", passwordEncoder.encode("adminPass"), Role.ADMIN, 100L);
+        admin = userRepository.save(admin);
+
+        student = new User("Student", "User", "student@example.com", passwordEncoder.encode("studentPass"), Role.STUDENT, 123L);
+        student = userRepository.save(student);
+
+        // Create test subject
+        subject = new Subject("Computer Science", "COSC");
+        subject = subjectRepository.save(subject);
+
+        // Create test course
+        course = new Course(
+            admin,
+            subject,
+            "Introduction to Programming",
+            LocalDateTime.now().plusDays(1),
+            LocalDateTime.now().plusMonths(4),
+            50,
+            "101",
+            1,
+            LocalTime.of(9, 0),
+            LocalTime.of(10, 30)
+        );
+        course = courseRepository.save(course);
+
+        // Create test waitlist
+        waitlist = new Waitlist(course, 10);
+        waitlist = waitlistRepository.save(waitlist);
+
+        // Create test waitlist enrollment
+        waitlistEnrollment = new WaitlistEnrollment(1, waitlist, student);
+        waitlistEnrollment = waitlistEnrollmentRepository.save(waitlistEnrollment);
     }
 
     @Test
-    @WithMockUser(roles = "ADMIN")
-    void createWaitlistEnrollment_AdminUser_Success() throws Exception {
-        when(waitlistRepository.findById(1L)).thenReturn(java.util.Optional.of(testWaitlist));
-        when(waitlistEnrollmentService.getAllWaitlistEnrollments()).thenReturn(Arrays.asList());
-        when(waitlistEnrollmentService.saveWaitlistEnrollment(any(WaitlistEnrollment.class))).thenReturn(testEnrollment);
+    void shouldAllowStudentToCreateWaitlistEnrollment() throws Exception {
+        WaitlistEnrollment newEnrollment = new WaitlistEnrollment(1, waitlist, student);
 
         mockMvc.perform(post("/api/waitlist-enrollments")
+                .header("Authorization", "Bearer " + generateToken(student))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(testEnrollment)))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id").value(1))
-                .andExpect(jsonPath("$.waitlistPosition").value(1))
-                .andExpect(jsonPath("$.student.id").value(1));
-    }
-
-    @Test
-    @WithMockUser(roles = "STUDENT")
-    void createWaitlistEnrollment_StudentUser_Success() throws Exception {
-        when(waitlistRepository.findById(1L)).thenReturn(java.util.Optional.of(testWaitlist));
-        when(waitlistEnrollmentService.getAllWaitlistEnrollments()).thenReturn(Arrays.asList());
-        when(waitlistEnrollmentService.saveWaitlistEnrollment(any(WaitlistEnrollment.class))).thenReturn(testEnrollment);
-
-        mockMvc.perform(post("/api/waitlist-enrollments")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(testEnrollment)))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id").value(1))
-                .andExpect(jsonPath("$.waitlistPosition").value(1))
-                .andExpect(jsonPath("$.student.id").value(1));
-    }
-
-    @Test
-    @WithMockUser(roles = "ADMIN")
-    void getAllWaitlistEnrollments_AdminUser_Success() throws Exception {
-        List<WaitlistEnrollment> enrollments = Arrays.asList(testEnrollment);
-        when(waitlistEnrollmentService.getAllWaitlistEnrollments()).thenReturn(enrollments);
-
-        mockMvc.perform(get("/api/waitlist-enrollments"))
+                .content(objectMapper.writeValueAsString(newEnrollment)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id").value(1))
-                .andExpect(jsonPath("$[0].waitlistPosition").value(1));
+                .andExpect(jsonPath("$.waitlist.id").value(waitlist.getId()))
+                .andExpect(jsonPath("$.student.id").value(student.getId()));
     }
 
     @Test
-    @WithMockUser(roles = "STUDENT")
-    void getAllWaitlistEnrollments_NonAdminUser_Forbidden() throws Exception {
-        mockMvc.perform(get("/api/waitlist-enrollments"))
+    void shouldNotAllowAdminToCreateWaitlistEnrollment() throws Exception {
+        WaitlistEnrollment newEnrollment = new WaitlistEnrollment(1, waitlist, student);
+
+        mockMvc.perform(post("/api/waitlist-enrollments")
+                .header("Authorization", "Bearer " + generateToken(admin))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(newEnrollment)))
                 .andExpect(status().isForbidden());
     }
 
     @Test
-    @WithMockUser(roles = "ADMIN")
-    void getWaitlistEnrollmentById_AdminUser_Success() throws Exception {
-        when(waitlistEnrollmentService.getWaitlistEnrollmentById(1L)).thenReturn(testEnrollment);
-
-        mockMvc.perform(get("/api/waitlist-enrollments/1"))
+    void shouldAllowAdminToGetAllWaitlistEnrollments() throws Exception {
+        mockMvc.perform(get("/api/waitlist-enrollments")
+                .header("Authorization", "Bearer " + generateToken(admin)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(1))
-                .andExpect(jsonPath("$.waitlistPosition").value(1))
-                .andExpect(jsonPath("$.student.id").value(1));
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].waitlist.id").value(waitlist.getId()))
+                .andExpect(jsonPath("$[0].student.id").value(student.getId()));
     }
 
     @Test
-    @WithMockUser(roles = "STUDENT")
-    void getWaitlistEnrollmentById_NonAdminUser_Forbidden() throws Exception {
-        mockMvc.perform(get("/api/waitlist-enrollments/1"))
+    void shouldNotAllowStudentToGetAllWaitlistEnrollments() throws Exception {
+        mockMvc.perform(get("/api/waitlist-enrollments")
+                .header("Authorization", "Bearer " + generateToken(student)))
                 .andExpect(status().isForbidden());
     }
 
     @Test
-    @WithMockUser(roles = "ADMIN")
-    void deleteWaitlistEnrollment_AdminUser_Success() throws Exception {
-        when(waitlistEnrollmentService.getWaitlistEnrollmentById(1L)).thenReturn(testEnrollment);
-
-        mockMvc.perform(delete("/api/waitlist-enrollments/1"))
-                .andExpect(status().isNoContent());
-    }
-
-    @Test
-    @WithMockUser(roles = "STUDENT")
-    void deleteWaitlistEnrollment_StudentUser_Success() throws Exception {
-        when(waitlistEnrollmentService.getWaitlistEnrollmentById(1L)).thenReturn(testEnrollment);
-
-        mockMvc.perform(delete("/api/waitlist-enrollments/1"))
-                .andExpect(status().isNoContent());
-    }
-
-    @Test
-    @WithMockUser(roles = "ADMIN")
-    void getWaitlistEnrollmentsByCourseId_AdminUser_Success() throws Exception {
-        List<WaitlistEnrollment> enrollments = Arrays.asList(testEnrollment);
-        when(waitlistEnrollmentService.getAllWaitlistEnrollments()).thenReturn(enrollments);
-
-        mockMvc.perform(get("/api/waitlist-enrollments/course/1"))
+    void shouldAllowAdminToGetWaitlistEnrollmentById() throws Exception {
+        mockMvc.perform(get("/api/waitlist-enrollments/" + waitlistEnrollment.getId())
+                .header("Authorization", "Bearer " + generateToken(admin)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id").value(1))
-                .andExpect(jsonPath("$[0].waitlist.id").value(1))
-                .andExpect(jsonPath("$[0].waitlist.course.id").value(1));
+                .andExpect(jsonPath("$.waitlist.id").value(waitlist.getId()))
+                .andExpect(jsonPath("$.student.id").value(student.getId()));
     }
 
     @Test
-    @WithMockUser(roles = "STUDENT")
-    void getWaitlistEnrollmentsByCourseId_NonAdminUser_Forbidden() throws Exception {
-        mockMvc.perform(get("/api/waitlist-enrollments/course/1"))
+    void shouldNotAllowStudentToGetWaitlistEnrollmentById() throws Exception {
+        mockMvc.perform(get("/api/waitlist-enrollments/" + waitlistEnrollment.getId())
+                .header("Authorization", "Bearer " + generateToken(student)))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void shouldAllowAdminToDeleteWaitlistEnrollment() throws Exception {
+        mockMvc.perform(delete("/api/waitlist-enrollments/" + waitlistEnrollment.getId())
+                .header("Authorization", "Bearer " + generateToken(admin)))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    void shouldNotAllowStudentToDeleteWaitlistEnrollment() throws Exception {
+        mockMvc.perform(delete("/api/waitlist-enrollments/" + waitlistEnrollment.getId())
+                .header("Authorization", "Bearer " + generateToken(student)))
                 .andExpect(status().isForbidden());
     }
 } 

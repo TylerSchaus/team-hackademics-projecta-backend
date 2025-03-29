@@ -109,10 +109,6 @@ public class UserServiceImpl implements UserService {
             if (userUpdateDto.getLastName() != null) {
                 userToUpdate.setLastName(userUpdateDto.getLastName());
             }
-            if (userUpdateDto.getGender() != null) {
-                userToUpdate.setGender(userUpdateDto.getGender());
-            }
-
             // Ensure Student ID is unique before updating
             if (userUpdateDto.getStudentId() != null) {
                 validateUniqueStudentId(userUpdateDto.getStudentId());
