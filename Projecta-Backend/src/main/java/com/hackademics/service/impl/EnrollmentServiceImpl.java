@@ -1,6 +1,5 @@
 package com.hackademics.service.impl;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,6 +30,8 @@ import com.hackademics.repository.WaitlistRepository;
 import com.hackademics.service.CourseService;
 import com.hackademics.service.EnrollmentService;
 import com.hackademics.service.LabSectionService;
+import com.hackademics.util.ScheduleConflictChecker;
+import com.hackademics.util.TermDeterminator;
 
 @Service
 public class EnrollmentServiceImpl implements EnrollmentService {
@@ -121,7 +122,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
         System.out.println("No existing enrollment found. Still processing...");
 
         // Check for schedule conflicts
-        if (hasScheduleConflict(currentEnrollments, course, null)) {
+        if (ScheduleConflictChecker.hasScheduleConflict(currentEnrollments, course, null)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Schedule conflict detected with course section.");
         }
 
@@ -164,7 +165,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Lab section not found"));
 
             // Check for lab section schedule conflicts
-            if (hasScheduleConflict(currentEnrollments, null, labSection)) {
+            if (ScheduleConflictChecker.hasScheduleConflict(currentEnrollments, null, labSection)) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Schedule conflict with lab section.");
             }
 
@@ -176,7 +177,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
             // Auto-enroll in a lab section if none is provided
             List<LabSection> labSections = labSectionRepository.findByCourseId(course.getId());
             for (LabSection section : labSections) {
-                if (!hasScheduleConflict(currentEnrollments, course, section) && section.getCurrentEnroll() < section.getCapacity()) {
+                if (!ScheduleConflictChecker.hasScheduleConflict(currentEnrollments, course, section) && section.getCurrentEnroll() < section.getCapacity()) {
                     labSection = section;
                     break;
                 }
@@ -213,7 +214,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Lab section not found"));
 
             // Check for schedule conflicts
-            if (hasScheduleConflict(currentEnrollments, null, newLabSection)) {
+            if (ScheduleConflictChecker.hasScheduleConflict(currentEnrollments, null, newLabSection)) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Schedule conflict with new lab section.");
             }
 
@@ -231,7 +232,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
             // Auto-enroll in a lab section if none is provided
             List<LabSection> labSections = labSectionRepository.findByCourseId(course.getId());
             for (LabSection section : labSections) {
-                if (!hasScheduleConflict(currentEnrollments, course, section) && section.getCurrentEnroll() < section.getCapacity()) {
+                if (!ScheduleConflictChecker.hasScheduleConflict(currentEnrollments, course, section) && section.getCurrentEnroll() < section.getCapacity()) {
                     newLabSection = section;
                     break;
                 }
@@ -351,20 +352,12 @@ public class EnrollmentServiceImpl implements EnrollmentService {
         String currentTerm = term;
 
         if (currentTerm == null) {
-            currentTerm = switch (LocalDateTime.now().getMonth()) {
-                case SEPTEMBER, OCTOBER, NOVEMBER, DECEMBER ->
-                    LocalDateTime.now().getYear() + 1 + "1";
-                case JANUARY, FEBRUARY, MARCH, APRIL ->
-                    LocalDateTime.now().getYear() + "2";
-                default ->
-                    "UNDETERMINED";
-            };
+            currentTerm = TermDeterminator.determineCurrentTerm();
         }
 
         // Only validate term format if it's not "UNDETERMINED"
         if (!currentTerm.equals("UNDETERMINED")) {
-            // Check if the term ends with 1 or 2
-            if (!currentTerm.matches("\\d{4}[12]")) {
+            if (!TermDeterminator.isValidTermFormat(currentTerm)) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid term format. Must be in the format YYYY1 or YYYY2.");
             }
         }
@@ -372,63 +365,5 @@ public class EnrollmentServiceImpl implements EnrollmentService {
         return enrollmentRepository.findByTermAndStudentId(currentTerm, studentId).stream()
                 .map(this::convertToResponseDto)
                 .collect(Collectors.toList());
-    }
-
-    // Helper method
-    private boolean hasScheduleConflict(List<Enrollment> currentEnrollments, Course course, LabSection labSection) {
-        System.out.println("Checking for schedule conflicts...");
-        
-        // First check for course conflicts
-        if (course != null) {
-            for (Enrollment enrollment : currentEnrollments) {
-                // Skip if this is the same course (for updating enrollments)
-                if (enrollment.getCourse().getId().equals(course.getId())) {
-                    continue;
-                }
-                
-                // Check if the days overlap
-                if (enrollment.getCourse().getDays().equals(course.getDays())) {
-                    // Check for time overlap between courses
-                    if (!(enrollment.getCourse().getEndTime().isBefore(course.getStartTime()) ||
-                          enrollment.getCourse().getStartTime().isAfter(course.getEndTime()))) {
-                        return true;
-                    }
-                }
-            }
-        }
-        
-        // Then check for lab section conflicts if a lab section is provided
-        if (labSection != null) {
-            for (Enrollment enrollment : currentEnrollments) {
-                // Skip if this is the same lab section (for updating enrollments)
-                if (enrollment.getLabSection() != null && 
-                    enrollment.getLabSection().getId().equals(labSection.getId())) {
-                    continue;
-                }
-                
-                // Check for conflicts with existing lab sections
-                if (enrollment.getLabSection() != null) {
-                    // Check if they're on the same day
-                    if (enrollment.getLabSection().getDays() == labSection.getDays()) {
-                        // Check for time overlap
-                        if (!(enrollment.getLabSection().getEndTime().isBefore(labSection.getStartTime()) ||
-                              enrollment.getLabSection().getStartTime().isAfter(labSection.getEndTime()))) {
-                            return true;
-                        }
-                    }
-                }
-                
-                // Check for conflicts with existing courses
-                if (enrollment.getCourse().getDays() == labSection.getDays()) {
-                    // Check for time overlap between course and lab section
-                    if (!(enrollment.getCourse().getEndTime().isBefore(labSection.getStartTime()) ||
-                          enrollment.getCourse().getStartTime().isAfter(labSection.getEndTime()))) {
-                        return true;
-                    }
-                }
-            }
-        }
-        
-        return false;
     }
 }
