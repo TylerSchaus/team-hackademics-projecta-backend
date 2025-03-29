@@ -34,7 +34,7 @@ public class UserServiceImpl implements UserService {
             user.getLastName(),
             user.getEmail(),
             user.getRole().toString(),
-            user.getStudentId() != null ? user.getStudentId().toString() : null,
+            user.getStudentId(),
             user.getEnrollStartDate() != null ? user.getEnrollStartDate().toLocalDate() : null,
             user.getExpectGraduationDate() != null ? user.getExpectGraduationDate().toLocalDate() : null,
             user.getAdminId()
