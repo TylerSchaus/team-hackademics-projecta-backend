@@ -35,6 +35,7 @@ import com.hackademics.repository.SubjectRepository;
 import com.hackademics.repository.UserRepository;
 import com.hackademics.service.EnrollmentService;
 import com.hackademics.service.JwtService;
+import com.hackademics.util.TermDeterminator;
 
 import jakarta.transaction.Transactional;
 
@@ -281,14 +282,7 @@ class EnrollmentControllerTest {
 
     @Test
     void shouldAllowStudentToViewTheirEnrollmentsByTerm() throws Exception {
-        String currentTerm = switch (LocalDateTime.now().getMonth()) {
-            case SEPTEMBER, OCTOBER, NOVEMBER, DECEMBER ->
-                LocalDateTime.now().getYear() + 1 + "1";
-            case JANUARY, FEBRUARY, MARCH, APRIL ->
-                LocalDateTime.now().getYear() + "2";
-            default ->
-                "UNDETERMINED";
-        };
+        String currentTerm = TermDeterminator.determineCurrentTerm();
         mockMvc.perform(get("/api/enrollments/student/" + student1.getStudentId() + "/" + currentTerm)
                 .header("Authorization", "Bearer " + generateToken(student1)))
                 .andExpect(status().isOk())
