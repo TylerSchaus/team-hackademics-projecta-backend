@@ -27,14 +27,20 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .cors(cors -> cors.disable())
                 .csrf(csrf -> csrf.disable()) // Disable CSRF for API endpoints
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // API should be stateless
                 .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/auth/**").permitAll() // Allow login/signup endpoints
-                .requestMatchers("/error").permitAll() // Allow access to error endpoint
-                .requestMatchers("/api/users/me").authenticated() // Secure /me endpoints
-                .anyRequest().authenticated() // Allow other requests 
+                    .requestMatchers("/auth/**").permitAll() // Allow login/signup endpoints
+                    .requestMatchers("/error").permitAll() // Allow access to error endpoint
+                    .requestMatchers("/api/users/me").authenticated() // Secure /me endpoints
+                    // Swagger UI v3 (OpenAPI)
+                    .requestMatchers("/swagger-ui/**").permitAll()
+                    .requestMatchers("/swagger-ui.html").permitAll()
+                    .requestMatchers("/api-docs/**").permitAll()
+                    .requestMatchers("/v3/api-docs/**").permitAll()
+                    .requestMatchers("/webjars/**").permitAll()
+                    .anyRequest().authenticated() // Allow other requests 
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
