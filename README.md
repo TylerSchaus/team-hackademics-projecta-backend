@@ -47,14 +47,16 @@ The only remaining core functionality is:
 
 Bug Report: 
 
-Issue #80 - Student Records
-Issue #81 - 401 Responses
-Issue #82 - Over enrollment possibility 
-Issue #83 - Schedule conflict verification 
+- Issue #80 - Student Records
+- Issue #81 - 401 Responses
+- Issue #82 - Over enrollment possibility 
+- Issue #83 - Schedule conflict verification 
 
 All bugs are detailed in their descriptions in the respective issues, including their description, reproducibility, affected components, and severity level. 
 
 As I continue testing to the APIs, I intend to add more bugs to this list whenever I identify them. 
+
+Bug #83 and #82 will be handled at the very least. 
 
 Coverage testing: 
 
