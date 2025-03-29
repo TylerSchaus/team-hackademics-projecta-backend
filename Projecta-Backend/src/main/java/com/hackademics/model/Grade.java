@@ -18,8 +18,11 @@ public class Grade {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "student_id", nullable = false)
+    @JoinColumn(name = "student_reference", nullable = false)
     private User student;
+
+    @Column(name = "student_id", nullable = false)
+    private Long studentId;
 
     @ManyToOne
     @JoinColumn(name = "course_id", nullable = false)
@@ -37,6 +40,7 @@ public class Grade {
     // Constructor
     public Grade(User student, Course course, Double grade) {
         this.student = student;
+        this.studentId = student.getStudentId();
         this.course = course;
         this.grade = grade;
         this.courseTagCopy = course.getCourseTag(); 
@@ -91,5 +95,13 @@ public class Grade {
 
     public void setCourseNameCopy(String courseNameCopy) {
         this.courseNameCopy = courseNameCopy;
+    }
+
+    public Long getStudentId() {
+        return studentId;
+    }
+
+    public void setStudentId(Long studentId) {
+        this.studentId = studentId;
     }
 }

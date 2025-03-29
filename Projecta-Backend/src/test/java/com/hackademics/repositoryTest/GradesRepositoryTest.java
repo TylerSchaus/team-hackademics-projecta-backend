@@ -116,7 +116,7 @@ public class GradesRepositoryTest {
         gradeRepository.save(grade2);
 
         // Find grades by studentId (e.g., student1)
-        Long studentId = testStudent1.getId(); // student1's ID
+        Long studentId = testStudent1.getStudentId(); // student1's ID
 
         List<Grade> grades = gradeRepository.findByStudentId(studentId);
 

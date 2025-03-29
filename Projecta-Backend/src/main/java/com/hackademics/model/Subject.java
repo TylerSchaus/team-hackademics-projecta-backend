@@ -40,7 +40,7 @@ public class Subject {
     // Constructor
     public Subject(String subjectName, String subjectTag) {
         this.subjectName = subjectName;
-        this.subjectTag = subjectTag;
+        this.subjectTag = subjectTag.toUpperCase();
     }
 
     // Getters and Setters
