@@ -23,6 +23,7 @@ import com.hackademics.repository.CourseRepository;
 import com.hackademics.repository.SubjectRepository;
 import com.hackademics.repository.UserRepository;
 import com.hackademics.service.CourseService;
+import com.hackademics.util.TermDeterminator;
 
 @Service
 public class CourseServiceImpl implements CourseService {
@@ -172,15 +173,7 @@ public class CourseServiceImpl implements CourseService {
 
             if (courseUpdateDto.getStartDate() != null) {
                 course.setStartDate(courseUpdateDto.getStartDate());
-                
-                switch (courseUpdateDto.getStartDate().getMonth()) {
-                    case SEPTEMBER -> 
-                        course.setTerm((courseUpdateDto.getStartDate().getYear() + 1) + "1");
-                    case JANUARY -> 
-                        course.setTerm(courseUpdateDto.getStartDate().getYear() + "2");
-                    default -> 
-                        course.setTerm("UNDETERMINED");
-                }
+                course.setTerm(TermDeterminator.determineTerm(courseUpdateDto.getStartDate()));
             }
 
             if (courseUpdateDto.getEndDate() != null) {

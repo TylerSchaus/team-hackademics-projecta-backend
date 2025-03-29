@@ -17,11 +17,19 @@ import com.hackademics.model.User;
 import com.hackademics.service.AuthenticationService;
 import com.hackademics.service.JwtService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/auth")
 @Validated
+@Tag(name = "Authentication", description = "APIs for user authentication and registration")
 public class AuthController {
 
     private final JwtService jwtService;
@@ -32,8 +40,17 @@ public class AuthController {
         this.authenticationService = authenticationService;
     }
 
-    @PostMapping("/signup") /* Essential */
-    public ResponseEntity<?> register(@Valid @RequestBody SignUpDto signUpDto) {
+    @Operation(summary = "Register new user", description = "Registers a new user in the system")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successfully registered user",
+                    content = @Content(schema = @Schema(implementation = UserResponseDTO.class))),
+        @ApiResponse(responseCode = "400", description = "Invalid input data or email already in use"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    @PostMapping("/signup")
+    public ResponseEntity<?> register(
+            @Parameter(description = "User registration data", required = true) 
+            @Valid @RequestBody SignUpDto signUpDto) {
         try {
             UserResponseDTO registeredUser = authenticationService.signupUser(signUpDto);
             return ResponseEntity.ok(registeredUser);
@@ -46,8 +63,17 @@ public class AuthController {
         }
     }
 
-    @PostMapping("/login") /* Essential */
-    public ResponseEntity<?> authenticate(@Valid @RequestBody LoginDto loginDto) {
+    @Operation(summary = "User login", description = "Authenticates a user and returns a JWT token")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successfully authenticated",
+                    content = @Content(schema = @Schema(implementation = LoginResponse.class))),
+        @ApiResponse(responseCode = "401", description = "Invalid credentials"),
+        @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    @PostMapping("/login")
+    public ResponseEntity<?> authenticate(
+            @Parameter(description = "User login credentials", required = true) 
+            @Valid @RequestBody LoginDto loginDto) {
         try {
             User authenticatedUser = authenticationService.authenticate(loginDto);
 

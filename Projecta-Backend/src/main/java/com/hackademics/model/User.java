@@ -43,10 +43,6 @@ public class User implements UserDetails {
     private String password;
 
     @Enumerated(EnumType.STRING)
-    @Column(/* nullable = false */)
-    private Gender gender; // MALE, FEMALE, OTHER
-
-    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role role; // STUDENT or ADMIN
 
@@ -93,6 +89,8 @@ public class User implements UserDetails {
             this.adminId = specialId;
         } else {
             this.studentId = specialId;
+            this.enrollStartDate = LocalDateTime.now();
+            this.expectGraduationDate = LocalDateTime.now().plusYears(4);
         }
     }
 
@@ -135,14 +133,6 @@ public class User implements UserDetails {
 
     public void setPassword(String password) {
         this.password = password;
-    }
-
-    public Gender getGender() {
-        return gender;
-    }
-
-    public void setGender(Gender gender) {
-        this.gender = gender;
     }
 
     public Role getRole() {

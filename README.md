@@ -34,12 +34,38 @@ If you see this, the application is running. To terminate the application, in yo
 - Lexi Loudiadis
 - Aditi Bajaj
 
-## March 14 (Milestone 2) Update 
+## March 28 (Milestone 3) Update 
 
-Approx. 60% of Backend complete. 
-Endpoints are defined for Users, Subjects, Courses, and Enrollments, allowing all functionality related to these entities. 
+Approx. 90% of Backend complete. 
+Endpoints are defined for Users, Subjects, Courses, Enrollments, Lab Sections, Waitlists, Waitlist Enrollments, and Grades allowing all functionality related to these entities. 
 Along with endpoints, their corresponding service, repository, and model implementations are complete. 
 JWT Authetnication is set up, and tested. 
+
+The only remaining core functionality is: 
+- Email notifcations for enrollment and unenrollment.
+- Improved filtering for students.
+
+Bug Report: 
+
+Issue #80 - Student Records
+Issue #81 - 401 Responses
+Issue #82 - Over enrollment possibility 
+Issue #83 - Schedule conflict verification 
+
+All bugs are detailed in their descriptions in the respective issues, including their description, reproducibility, affected components, and severity level. 
+
+As I continue testing to the APIs, I intend to add more bugs to this list whenever I identify them. 
+
+Coverage testing: 
+
+The following documents demonstrate the system overall coverage from testing. 
+
+
+[test-coverage.zip](https://github.com/user-attachments/files/19515951/test-coverage.zip)
+
+I do want to clarify one thing about these reports.
+
+When developing the backend for this system (early - middle stages) ... I was under the impression that allowing administrators to create courses, subjects, lab sections, and waitlists was a requirement. However, upon discussing with the TA, I understand this is NOT a requirement. Therefore upon realizing this, I opted not to write testing for the endpoints and logic that involves this functionality. I intend to thoroughly go over the codebase to remove this now unnecessary code, and replace it with a preloader class that preloads the database this kind of data. Since this code is still there, but not tested, coverage lies around ~60%. I am confident that once we remove the code we do not need, it will improve to ~80. 
 
 
 
