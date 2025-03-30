@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 
 import com.hackademics.dto.GradeDto;
 import com.hackademics.dto.GradeUpdateDto;
+import com.hackademics.dto.GradeResponseDto;
+import com.hackademics.dto.StudentSummaryDto;
 import com.hackademics.model.Course;
 import com.hackademics.model.Grade;
 import com.hackademics.model.Role;
@@ -17,10 +19,14 @@ import com.hackademics.repository.CourseRepository;
 import com.hackademics.repository.GradeRepository;
 import com.hackademics.repository.UserRepository;
 import com.hackademics.service.GradeService;
+import com.hackademics.service.CourseService;
 
 @Service
 public class GradeServiceImpl implements GradeService {
 
+    @Autowired
+    private CourseService courseService;
+    
     @Autowired
     private GradeRepository gradeRepository;
 
@@ -30,8 +36,17 @@ public class GradeServiceImpl implements GradeService {
     @Autowired
     private CourseRepository courseRepository;
 
+    private GradeResponseDto convertToGradeResponseDto(Grade grade) {
+        return new GradeResponseDto(
+            grade.getId(),
+            grade.getGrade(),
+            new StudentSummaryDto(grade.getStudent().getId(), grade.getStudent().getFirstName(), grade.getStudent().getLastName(), grade.getStudentId()),
+            courseService.convertToResponseDto(grade.getCourse())
+        );
+    }
+
     @Override
-    public Grade saveGrade(GradeDto gradeDto, UserDetails currentUser) {
+    public GradeResponseDto saveGrade(GradeDto gradeDto, UserDetails currentUser) {
         User user = userRepository.findByEmail(currentUser.getUsername())
                 .orElseThrow(() -> new RuntimeException("User not found"));
         
@@ -46,11 +61,11 @@ public class GradeServiceImpl implements GradeService {
                 .orElseThrow(() -> new RuntimeException("Course not found with ID: " + gradeDto.getCourseId()));
         
         Grade grade = new Grade(student, course, gradeDto.getGrade());
-        return gradeRepository.save(grade);
+        return convertToGradeResponseDto(gradeRepository.save(grade));
     }
 
     @Override
-    public List<Grade> getAllGrades(UserDetails currentUser) {
+    public List<GradeResponseDto> getAllGrades(UserDetails currentUser) {
         User user = userRepository.findByEmail(currentUser.getUsername())
                 .orElseThrow(() -> new RuntimeException("User not found"));
         
@@ -58,11 +73,13 @@ public class GradeServiceImpl implements GradeService {
             throw new RuntimeException("Access denied. Only admins can view all grades.");
         }
         
-        return gradeRepository.findAll();
+        return gradeRepository.findAll().stream()
+                .map(this::convertToGradeResponseDto)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public Grade getGradeById(Long id, UserDetails currentUser) {
+    public GradeResponseDto getGradeById(Long id, UserDetails currentUser) {
         User user = userRepository.findByEmail(currentUser.getUsername())
                 .orElseThrow(() -> new RuntimeException("User not found"));
         
@@ -70,12 +87,12 @@ public class GradeServiceImpl implements GradeService {
             throw new RuntimeException("Access denied. Only admins can view grade details.");
         }
         
-        return gradeRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Grade not found with ID: " + id));
+        return convertToGradeResponseDto(gradeRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Grade not found with ID: " + id)));
     }
 
     @Override
-    public Grade updateGrade(Long id, GradeUpdateDto gradeUpdateDto, UserDetails currentUser) {
+    public GradeResponseDto updateGrade(Long id, GradeUpdateDto gradeUpdateDto, UserDetails currentUser) {
         User user = userRepository.findByEmail(currentUser.getUsername())
                 .orElseThrow(() -> new RuntimeException("User not found"));
         
@@ -87,7 +104,7 @@ public class GradeServiceImpl implements GradeService {
                 .orElseThrow(() -> new RuntimeException("Grade not found with ID: " + id));
         
         grade.setGrade(gradeUpdateDto.getGrade());
-        return gradeRepository.save(grade);
+        return convertToGradeResponseDto(gradeRepository.save(grade));
     }
 
     @Override
@@ -103,7 +120,7 @@ public class GradeServiceImpl implements GradeService {
     }
 
     @Override
-    public List<Grade> getGradesByStudentId(Long studentId, UserDetails currentUser) {
+    public List<GradeResponseDto> getGradesByStudentId(Long studentId, UserDetails currentUser) {
         User user = userRepository.findByEmail(currentUser.getUsername())
                 .orElseThrow(() -> new RuntimeException("User not found"));
         
@@ -113,6 +130,7 @@ public class GradeServiceImpl implements GradeService {
         
         return gradeRepository.findAll().stream()
                 .filter(grade -> grade.getStudent().getId().equals(studentId))
+                .map(this::convertToGradeResponseDto)
                 .collect(Collectors.toList());
     }
 }

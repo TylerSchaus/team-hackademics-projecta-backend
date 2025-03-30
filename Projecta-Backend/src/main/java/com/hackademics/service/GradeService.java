@@ -6,15 +6,15 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import com.hackademics.dto.GradeDto;
 import com.hackademics.dto.GradeUpdateDto;
-import com.hackademics.model.Grade;
+import com.hackademics.dto.GradeResponseDto;
 
 public interface GradeService {
 
-    Grade saveGrade(GradeDto gradeDto, UserDetails currentUser); 
-    List<Grade> getAllGrades(UserDetails currentUser);
-    Grade getGradeById(Long id, UserDetails currentUser); 
-    Grade updateGrade(Long id, GradeUpdateDto gradeUpdateDto, UserDetails currentUser); 
+    GradeResponseDto saveGrade(GradeDto gradeDto, UserDetails currentUser); 
+    List<GradeResponseDto> getAllGrades(UserDetails currentUser);
+    GradeResponseDto getGradeById(Long id, UserDetails currentUser); 
+    GradeResponseDto updateGrade(Long id, GradeUpdateDto gradeUpdateDto, UserDetails currentUser); 
     void deleteGrade(Long id, UserDetails currentUser); 
-    List<Grade> getGradesByStudentId(Long studentId, UserDetails currentUser);
+    List<GradeResponseDto> getGradesByStudentId(Long studentId, UserDetails currentUser);
     
 }

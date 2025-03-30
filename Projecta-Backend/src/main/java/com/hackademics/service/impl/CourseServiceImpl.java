@@ -37,7 +37,8 @@ public class CourseServiceImpl implements CourseService {
     @Autowired
     private SubjectRepository subjectRepository;
 
-    private CourseResponseDto convertToResponseDto(Course course) {
+    @Override
+    public CourseResponseDto convertToResponseDto(Course course) {
         AdminSummaryDto adminDto = new AdminSummaryDto(
             course.getAdmin().getId(),
             course.getAdmin().getFirstName(),

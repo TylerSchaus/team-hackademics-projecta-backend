@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.hackademics.dto.GradeDto;
 import com.hackademics.dto.GradeUpdateDto;
-import com.hackademics.model.Grade;
+import com.hackademics.dto.GradeResponseDto;
 import com.hackademics.service.GradeService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -42,13 +42,13 @@ public class GradeController {
     @Operation(summary = "Create grade", description = "Creates a new grade")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Successfully created grade",
-                    content = @Content(schema = @Schema(implementation = Grade.class))),
+                    content = @Content(schema = @Schema(implementation = GradeResponseDto.class))),
         @ApiResponse(responseCode = "400", description = "Invalid input data"),
         @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token"),
         @ApiResponse(responseCode = "403", description = "Forbidden - Insufficient permissions")
     })
     @PostMapping
-    public ResponseEntity<Grade> createGrade(
+    public ResponseEntity<GradeResponseDto> createGrade(
             @Parameter(description = "Grade data", required = true) 
             @Valid @RequestBody GradeDto gradeDto,
             @AuthenticationPrincipal UserDetails currentUser) {
@@ -58,25 +58,25 @@ public class GradeController {
     @Operation(summary = "Get all grades", description = "Retrieves all grades (admin only)")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Successfully retrieved grades",
-                    content = @Content(schema = @Schema(implementation = Grade.class))),
+                    content = @Content(schema = @Schema(implementation = GradeResponseDto.class))),
         @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token"),
         @ApiResponse(responseCode = "403", description = "Forbidden - Insufficient permissions")
     })
     @GetMapping
-    public ResponseEntity<List<Grade>> getAllGrades(@AuthenticationPrincipal UserDetails currentUser) {
+    public ResponseEntity<List<GradeResponseDto>> getAllGrades(@AuthenticationPrincipal UserDetails currentUser) {
         return ResponseEntity.ok(gradeService.getAllGrades(currentUser));
     }
 
     @Operation(summary = "Get grade by ID", description = "Retrieves a specific grade by its ID")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Successfully retrieved grade",
-                    content = @Content(schema = @Schema(implementation = Grade.class))),
+                    content = @Content(schema = @Schema(implementation = GradeResponseDto.class))),
         @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token"),
         @ApiResponse(responseCode = "403", description = "Forbidden - Insufficient permissions"),
         @ApiResponse(responseCode = "404", description = "Grade not found")
     })
     @GetMapping("/{id}")
-    public ResponseEntity<Grade> getGradeById(
+    public ResponseEntity<GradeResponseDto> getGradeById(
             @Parameter(description = "ID of the grade", required = true) 
             @PathVariable Long id,
             @AuthenticationPrincipal UserDetails currentUser) {
@@ -86,14 +86,14 @@ public class GradeController {
     @Operation(summary = "Update grade", description = "Updates an existing grade")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Successfully updated grade",
-                    content = @Content(schema = @Schema(implementation = Grade.class))),
+                    content = @Content(schema = @Schema(implementation = GradeResponseDto.class))),
         @ApiResponse(responseCode = "400", description = "Invalid input data"),
         @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token"),
         @ApiResponse(responseCode = "403", description = "Forbidden - Insufficient permissions"),
         @ApiResponse(responseCode = "404", description = "Grade not found")
     })
     @PutMapping("/{id}")
-    public ResponseEntity<Grade> updateGrade(
+    public ResponseEntity<GradeResponseDto> updateGrade(
             @Parameter(description = "ID of the grade to update", required = true) 
             @PathVariable Long id,
             @Parameter(description = "Updated grade data", required = true) 
@@ -121,12 +121,12 @@ public class GradeController {
     @Operation(summary = "Get student grades", description = "Retrieves all grades for a specific student")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Successfully retrieved student grades",
-                    content = @Content(schema = @Schema(implementation = Grade.class))),
+                    content = @Content(schema = @Schema(implementation = GradeResponseDto.class))),
         @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token"),
         @ApiResponse(responseCode = "403", description = "Forbidden - Insufficient permissions")
     })
     @GetMapping("/student/{studentId}")
-    public ResponseEntity<List<Grade>> getGradesByStudentId(
+    public ResponseEntity<List<GradeResponseDto>> getGradesByStudentId(
             @Parameter(description = "ID of the student", required = true) 
             @PathVariable Long studentId,
             @AuthenticationPrincipal UserDetails currentUser) {
