@@ -3,7 +3,6 @@ package com.hackademics.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -16,100 +15,121 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.hackademics.dto.GradeDto;
+import com.hackademics.dto.GradeUpdateDto;
 import com.hackademics.model.Grade;
-import com.hackademics.model.Role;
-import com.hackademics.model.User;
-import com.hackademics.repository.UserRepository;
 import com.hackademics.service.GradeService;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/grades")
+@Tag(name = "Grades", description = "APIs for managing grades")
+@SecurityRequirement(name = "bearer-jwt")
 public class GradeController {
 
     @Autowired
     private GradeService gradeService;
 
-    @Autowired
-    private UserRepository userRepository;
-
+    @Operation(summary = "Create grade", description = "Creates a new grade")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successfully created grade",
+                    content = @Content(schema = @Schema(implementation = Grade.class))),
+        @ApiResponse(responseCode = "400", description = "Invalid input data"),
+        @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token"),
+        @ApiResponse(responseCode = "403", description = "Forbidden - Insufficient permissions")
+    })
     @PostMapping
-    public ResponseEntity<Grade> createGrade(@RequestBody Grade grade, @AuthenticationPrincipal UserDetails currentUser) {
-        User user = userRepository.findByEmail(currentUser.getUsername())
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        
-        if (user.getRole() != Role.ADMIN) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
-        
-        grade.setStudentId(grade.getStudent().getStudentId());
-        return ResponseEntity.ok(gradeService.saveGrade(grade));
+    public ResponseEntity<Grade> createGrade(
+            @Parameter(description = "Grade data", required = true) 
+            @Valid @RequestBody GradeDto gradeDto,
+            @AuthenticationPrincipal UserDetails currentUser) {
+        return ResponseEntity.ok(gradeService.saveGrade(gradeDto, currentUser));
     }
 
+    @Operation(summary = "Get all grades", description = "Retrieves all grades (admin only)")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successfully retrieved grades",
+                    content = @Content(schema = @Schema(implementation = Grade.class))),
+        @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token"),
+        @ApiResponse(responseCode = "403", description = "Forbidden - Insufficient permissions")
+    })
     @GetMapping
     public ResponseEntity<List<Grade>> getAllGrades(@AuthenticationPrincipal UserDetails currentUser) {
-        User user = userRepository.findByEmail(currentUser.getUsername())
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        
-        if (user.getRole() != Role.ADMIN) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
-        
-        return ResponseEntity.ok(gradeService.getAllGrades());
+        return ResponseEntity.ok(gradeService.getAllGrades(currentUser));
     }
 
+    @Operation(summary = "Get grade by ID", description = "Retrieves a specific grade by its ID")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successfully retrieved grade",
+                    content = @Content(schema = @Schema(implementation = Grade.class))),
+        @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token"),
+        @ApiResponse(responseCode = "403", description = "Forbidden - Insufficient permissions"),
+        @ApiResponse(responseCode = "404", description = "Grade not found")
+    })
     @GetMapping("/{id}")
-    public ResponseEntity<Grade> getGradeById(@PathVariable Long id, @AuthenticationPrincipal UserDetails currentUser) {
-        User user = userRepository.findByEmail(currentUser.getUsername())
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        
-        if (user.getRole() != Role.ADMIN) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
-        
-        return ResponseEntity.ok(gradeService.getGradeById(id));
+    public ResponseEntity<Grade> getGradeById(
+            @Parameter(description = "ID of the grade", required = true) 
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserDetails currentUser) {
+        return ResponseEntity.ok(gradeService.getGradeById(id, currentUser));
     }
 
+    @Operation(summary = "Update grade", description = "Updates an existing grade")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successfully updated grade",
+                    content = @Content(schema = @Schema(implementation = Grade.class))),
+        @ApiResponse(responseCode = "400", description = "Invalid input data"),
+        @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token"),
+        @ApiResponse(responseCode = "403", description = "Forbidden - Insufficient permissions"),
+        @ApiResponse(responseCode = "404", description = "Grade not found")
+    })
     @PutMapping("/{id}")
-    public ResponseEntity<Grade> updateGrade(@PathVariable Long id, @RequestBody Grade grade, @AuthenticationPrincipal UserDetails currentUser) {
-        User user = userRepository.findByEmail(currentUser.getUsername())
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        
-        if (user.getRole() != Role.ADMIN) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
-        
-        grade.setId(id);
-        grade.setStudentId(grade.getStudent().getStudentId());
-        return ResponseEntity.ok(gradeService.updateGrade(grade));
+    public ResponseEntity<Grade> updateGrade(
+            @Parameter(description = "ID of the grade to update", required = true) 
+            @PathVariable Long id,
+            @Parameter(description = "Updated grade data", required = true) 
+            @Valid @RequestBody GradeUpdateDto gradeUpdateDto,
+            @AuthenticationPrincipal UserDetails currentUser) {
+        return ResponseEntity.ok(gradeService.updateGrade(id, gradeUpdateDto, currentUser));
     }
 
+    @Operation(summary = "Delete grade", description = "Deletes a grade")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successfully deleted grade"),
+        @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token"),
+        @ApiResponse(responseCode = "403", description = "Forbidden - Insufficient permissions"),
+        @ApiResponse(responseCode = "404", description = "Grade not found")
+    })
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteGrade(@PathVariable Long id, @AuthenticationPrincipal UserDetails currentUser) {
-        User user = userRepository.findByEmail(currentUser.getUsername())
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        
-        if (user.getRole() != Role.ADMIN) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
-        
-        gradeService.deleteGrade(id);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<Void> deleteGrade(
+            @Parameter(description = "ID of the grade to delete", required = true) 
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserDetails currentUser) {
+        gradeService.deleteGrade(id, currentUser);
+        return ResponseEntity.ok().build();
     }
 
+    @Operation(summary = "Get student grades", description = "Retrieves all grades for a specific student")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successfully retrieved student grades",
+                    content = @Content(schema = @Schema(implementation = Grade.class))),
+        @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token"),
+        @ApiResponse(responseCode = "403", description = "Forbidden - Insufficient permissions")
+    })
     @GetMapping("/student/{studentId}")
-    public ResponseEntity<List<Grade>> getGradesByStudentId(@PathVariable Long studentId, @AuthenticationPrincipal UserDetails currentUser) {
-        User user = userRepository.findByEmail(currentUser.getUsername())
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        
-        if (user.getRole() != Role.ADMIN && !user.getId().equals(studentId)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
-        
-        List<Grade> allGrades = gradeService.getAllGrades();
-        List<Grade> studentGrades = allGrades.stream()
-                .filter(grade -> grade.getStudent().getId().equals(studentId))
-                .toList();
-
-        return ResponseEntity.ok(studentGrades);
+    public ResponseEntity<List<Grade>> getGradesByStudentId(
+            @Parameter(description = "ID of the student", required = true) 
+            @PathVariable Long studentId,
+            @AuthenticationPrincipal UserDetails currentUser) {
+        return ResponseEntity.ok(gradeService.getGradesByStudentId(studentId, currentUser));
     }
 }
