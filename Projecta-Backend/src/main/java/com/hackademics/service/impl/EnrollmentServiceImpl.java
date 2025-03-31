@@ -30,6 +30,7 @@ import com.hackademics.repository.WaitlistRepository;
 import com.hackademics.service.CourseService;
 import com.hackademics.service.EnrollmentService;
 import com.hackademics.service.LabSectionService;
+import com.hackademics.service.MailService;
 import com.hackademics.util.ScheduleConflictChecker;
 import com.hackademics.util.TermDeterminator;
 
@@ -60,6 +61,9 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     @Autowired
     private LabSectionService labSectionService;
 
+    @Autowired
+    private MailService mailService;
+
     private EnrollmentResponseDto convertToResponseDto(Enrollment enrollment) {
         CourseResponseDto courseDto = courseService.getCourseById(enrollment.getCourse().getId());
         StudentSummaryDto studentDto = new StudentSummaryDto(
@@ -77,7 +81,16 @@ public class EnrollmentServiceImpl implements EnrollmentService {
                 studentDto,
                 labSectionDto
         );
+        sendEmail(responseDto);
         return responseDto;
+    }
+
+    private void sendEmail(EnrollmentResponseDto enrollmentResponseDto){
+        User student = userRepository.findByStudentId(enrollmentResponseDto.getStudent().getStudentId())
+        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found"));
+
+        mailService.sendEnrollmentEmail(enrollmentResponseDto, student);
+
     }
 
     @Override
