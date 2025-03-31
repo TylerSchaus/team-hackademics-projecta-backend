@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -64,6 +65,9 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     @Autowired
     private MailService mailService;
 
+    @Value("${email.sending.enabled:true}")
+    private boolean emailSendingEnabled;
+
     private EnrollmentResponseDto convertToResponseDto(Enrollment enrollment) {
         CourseResponseDto courseDto = courseService.getCourseById(enrollment.getCourse().getId());
         StudentSummaryDto studentDto = new StudentSummaryDto(
@@ -81,7 +85,9 @@ public class EnrollmentServiceImpl implements EnrollmentService {
                 studentDto,
                 labSectionDto
         );
-        sendEmail(responseDto);
+        if (emailSendingEnabled) {
+            sendEmail(responseDto);
+        }
         return responseDto;
     }
 

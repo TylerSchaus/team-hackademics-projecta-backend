@@ -19,21 +19,33 @@ public class MailServiceImpl implements MailService {
     @Override
     public void sendEnrollmentEmail(EnrollmentResponseDto enrollmentResponseDto, User student) {
         SimpleMailMessage message = new SimpleMailMessage();
-        message.setFrom("hackademicsuniversity@gmail.com");
         message.setTo(student.getEmail());
-        message.setSubject("Enrollment Confirmation");
-        message.setText("You have been enrolled in the course " + enrollmentResponseDto.getCourse().getCourseName() + " for the term " + enrollmentResponseDto.getCourse().getTerm());
+        message.setSubject("Course Enrollment Confirmation");
+        message.setText("Dear " + student.getFirstName() + ",\n\n" +
+                "You have been successfully enrolled in " + enrollmentResponseDto.getCourse().getCourseName() + ".\n\n" +
+                "Course Details:\n" +
+                "Course: " + enrollmentResponseDto.getCourse().getCourseName() + "\n" +
+                "Course Number: " + enrollmentResponseDto.getCourse().getCourseNumber() + "\n" +
+                "Term: " + enrollmentResponseDto.getCourse().getTerm() + "\n\n" +
+                "Best regards,\nHackademics Team");
+
         javaMailSender.send(message);
-        System.out.println("Enrollment email sent to " + student.getEmail());
     }
 
     @Override
     public void sendWaitlistEmail(WaitlistEnrollmentResponseDto waitlistEnrollmentResponseDto, User student) {
         SimpleMailMessage message = new SimpleMailMessage();
-        message.setFrom("hackademicsuniversity@gmail.com");
         message.setTo(student.getEmail());
-        message.setSubject("Waitlist Confirmation");
-        message.setText("You have been added to the waitlist for the course " + waitlistEnrollmentResponseDto.getWaitlistResponseDto().getCourse().getCourseName() + " for the term " + waitlistEnrollmentResponseDto.getTerm());
+        message.setSubject("Waitlist Enrollment Confirmation");
+        message.setText("Dear " + student.getFirstName() + ",\n\n" +
+                "You have been added to the waitlist for " + waitlistEnrollmentResponseDto.getWaitlistResponseDto().getCourse().getCourseName() + ".\n\n" +
+                "Course Details:\n" +
+                "Course: " + waitlistEnrollmentResponseDto.getWaitlistResponseDto().getCourse().getCourseName() + "\n" +
+                "Course Number: " + waitlistEnrollmentResponseDto.getWaitlistResponseDto().getCourse().getCourseNumber() + "\n" +
+                "Term: " + waitlistEnrollmentResponseDto.getWaitlistResponseDto().getCourse().getTerm() + "\n" +
+                "Waitlist Position: " + waitlistEnrollmentResponseDto.getWaitlistPosition() + "\n\n" +
+                "Best regards,\nHackademics Team");
+
         javaMailSender.send(message);
     }
 
@@ -56,5 +68,4 @@ public class MailServiceImpl implements MailService {
         message.setText("You have been removed from the waitlist for the course " + waitlistEnrollmentResponseDto.getWaitlistResponseDto().getCourse().getCourseName() + " for the term " + waitlistEnrollmentResponseDto.getTerm());
         javaMailSender.send(message);
     }
-
 }
