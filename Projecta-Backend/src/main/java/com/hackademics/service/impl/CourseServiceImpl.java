@@ -237,7 +237,7 @@ public class CourseServiceImpl implements CourseService {
         if (course.getCurrentEnroll() < course.getEnrollLimit()) {
             return;
         }
-        if (course.isWaitlistAvailable()) {
+        if (Boolean.TRUE.equals(course.isWaitlistAvailable())) {
             Waitlist waitlist = waitlistRepository.findByCourseId(course.getId());
             if (waitlist != null) {
                 if (waitlist.getWaitlistEnrollments().size() < waitlist.getWaitlistLimit()) {

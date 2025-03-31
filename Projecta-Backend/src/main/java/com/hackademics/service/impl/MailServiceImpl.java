@@ -24,6 +24,7 @@ public class MailServiceImpl implements MailService {
         message.setSubject("Enrollment Confirmation");
         message.setText("You have been enrolled in the course " + enrollmentResponseDto.getCourse().getCourseName() + " for the term " + enrollmentResponseDto.getCourse().getTerm());
         javaMailSender.send(message);
+        System.out.println("Enrollment email sent to " + student.getEmail());
     }
 
     @Override
