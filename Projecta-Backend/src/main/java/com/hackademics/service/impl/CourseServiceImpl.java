@@ -19,10 +19,13 @@ import com.hackademics.model.Course;
 import com.hackademics.model.Role;
 import com.hackademics.model.Subject;
 import com.hackademics.model.User;
+import com.hackademics.model.Waitlist;
 import com.hackademics.repository.CourseRepository;
 import com.hackademics.repository.SubjectRepository;
 import com.hackademics.repository.UserRepository;
+import com.hackademics.repository.WaitlistRepository;
 import com.hackademics.service.CourseService;
+import com.hackademics.service.WaitlistService;
 import com.hackademics.util.TermDeterminator;
 
 @Service
@@ -37,38 +40,45 @@ public class CourseServiceImpl implements CourseService {
     @Autowired
     private SubjectRepository subjectRepository;
 
+    @Autowired
+    private WaitlistRepository waitlistRepository;
+
+    @Autowired
+    private WaitlistService waitlistService;
+
     @Override
     public CourseResponseDto convertToResponseDto(Course course) {
         AdminSummaryDto adminDto = new AdminSummaryDto(
-            course.getAdmin().getId(),
-            course.getAdmin().getFirstName(),
-            course.getAdmin().getLastName(),
-            course.getAdmin().getAdminId()
+                course.getAdmin().getId(),
+                course.getAdmin().getFirstName(),
+                course.getAdmin().getLastName(),
+                course.getAdmin().getAdminId()
         );
 
         SubjectResponseDto subjectDto = new SubjectResponseDto(
-            course.getSubject().getId(),
-            course.getSubject().getSubjectName(),
-            course.getSubject().getSubjectTag()
+                course.getSubject().getId(),
+                course.getSubject().getSubjectName(),
+                course.getSubject().getSubjectTag()
         );
 
         CourseResponseDto responseDto = new CourseResponseDto(
-            course.getId(),
-            adminDto,
-            subjectDto,
-            course.getCourseName(),
-            course.getStartDate().toLocalDate(),
-            course.getEndDate().toLocalDate(),
-            course.getEnrollLimit(),
-            course.getCurrentEnroll(),
-            course.getCourseNumber(),
-            course.getCourseTag(),
-            course.getTerm(),
-            course.getDays(),
-            course.getStartTime(),
-            course.getEndTime(),
-            course.getNumLabSections()
+                course.getId(),
+                adminDto,
+                subjectDto,
+                course.getCourseName(),
+                course.getStartDate().toLocalDate(),
+                course.getEndDate().toLocalDate(),
+                course.getEnrollLimit(),
+                course.getCurrentEnroll(),
+                course.getCourseNumber(),
+                course.getCourseTag(),
+                course.getTerm(),
+                course.getDays(),
+                course.getStartTime(),
+                course.getEndTime(),
+                course.getNumLabSections()
         );
+        handleWaitlisting(responseDto, course);
         return responseDto;
     }
 
@@ -98,16 +108,16 @@ public class CourseServiceImpl implements CourseService {
     public List<CourseResponseDto> getAllActiveCourses() {
         LocalDateTime now = LocalDateTime.now();
         return courseRepository.findByStartDateBeforeAndEndDateAfter(now, now).stream()
-            .map(this::convertToResponseDto)
-            .collect(Collectors.toList());
+                .map(this::convertToResponseDto)
+                .collect(Collectors.toList());
     }
 
     @Override
     public List<CourseResponseDto> getAllUpcomingCourses() {
         LocalDateTime now = LocalDateTime.now();
         return courseRepository.findByStartDateAfter(now).stream()
-            .map(this::convertToResponseDto)
-            .collect(Collectors.toList());
+                .map(this::convertToResponseDto)
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -120,22 +130,22 @@ public class CourseServiceImpl implements CourseService {
         }
 
         return courseRepository.findByAdminId(authenticatedUser.getAdminId()).stream()
-            .map(this::convertToResponseDto)
-            .collect(Collectors.toList());
+                .map(this::convertToResponseDto)
+                .collect(Collectors.toList());
     }
 
     @Override
     public List<CourseResponseDto> getAllCoursesBySubjectId(Long id) {
         return courseRepository.findBySubjectId(id).stream()
-            .map(this::convertToResponseDto)
-            .collect(Collectors.toList());
+                .map(this::convertToResponseDto)
+                .collect(Collectors.toList());
     }
 
     @Override
     public CourseResponseDto getCourseById(Long id) {
         return courseRepository.findById(id)
-            .map(this::convertToResponseDto)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Course not found with ID: " + id));
+                .map(this::convertToResponseDto)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Course not found with ID: " + id));
     }
 
     @Override
@@ -185,16 +195,16 @@ public class CourseServiceImpl implements CourseService {
                 course.setCourseTag(course.getSubject().getSubjectTag() + " " + course.getCourseNumber());
             }
 
-            if (courseUpdateDto.getDays() != null){
-                course.setDays(courseUpdateDto.getDays()); 
+            if (courseUpdateDto.getDays() != null) {
+                course.setDays(courseUpdateDto.getDays());
             }
 
-            if (courseUpdateDto.getStartTime() != null){
-                course.setStartTime(courseUpdateDto.getStartTime()); 
+            if (courseUpdateDto.getStartTime() != null) {
+                course.setStartTime(courseUpdateDto.getStartTime());
             }
-            if (courseUpdateDto.getEndTime() != null){
-                course.setEndTime(courseUpdateDto.getEndTime()); 
-            } 
+            if (courseUpdateDto.getEndTime() != null) {
+                course.setEndTime(courseUpdateDto.getEndTime());
+            }
 
             return convertToResponseDto(courseRepository.save(course));
         }).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Course not found"));
@@ -215,4 +225,22 @@ public class CourseServiceImpl implements CourseService {
 
         courseRepository.deleteById(id);
     }
+
+    // For each course, we check if the course if full. If it does, we check if the waitlist is available. 
+    // If the waitlist is available, we add the waitlist to the course response to tell front end they can offer the waitlist.
+    private void handleWaitlisting(CourseResponseDto courseResponse, Course course) {
+        if (course.getCurrentEnroll() < course.getEnrollLimit()) {
+            return;
+        }
+        if (course.isWaitlistAvailable()) {
+            Waitlist waitlist = waitlistRepository.findByCourseId(course.getId());
+            if (waitlist != null) {
+                if (waitlist.getWaitlistEnrollments().size() < waitlist.getWaitlistLimit()) {
+                    courseResponse.setWaitlist(waitlistService.convertToResponseDto(waitlist));
+                }
+            }
+        }
+
+    }
+
 }

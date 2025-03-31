@@ -44,6 +44,7 @@ public class Waitlist {
 
     public Waitlist (Course course, Integer waitlistLimit){
         this.course = course;
+        this.course.setWaitlistAvailable(true);
         this.waitlistLimit = waitlistLimit;
         this.term = course.getTerm(); 
     }

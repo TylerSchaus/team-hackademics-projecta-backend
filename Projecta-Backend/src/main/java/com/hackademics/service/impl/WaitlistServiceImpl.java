@@ -8,8 +8,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import com.hackademics.dto.WaitlistDto;
-import com.hackademics.dto.WaitlistUpdateDto;
 import com.hackademics.dto.WaitlistResponseDto;
+import com.hackademics.dto.WaitlistUpdateDto;
 import com.hackademics.model.Course;
 import com.hackademics.model.Role;
 import com.hackademics.model.User;
@@ -17,8 +17,8 @@ import com.hackademics.model.Waitlist;
 import com.hackademics.repository.CourseRepository;
 import com.hackademics.repository.UserRepository;
 import com.hackademics.repository.WaitlistRepository;
-import com.hackademics.service.WaitlistService;
 import com.hackademics.service.CourseService;
+import com.hackademics.service.WaitlistService;
 
 @Service
 public class WaitlistServiceImpl implements WaitlistService {
@@ -35,7 +35,8 @@ public class WaitlistServiceImpl implements WaitlistService {
     @Autowired
     private CourseService courseService;
 
-    private WaitlistResponseDto convertToResponseDto(Waitlist waitlist) {
+    @Override
+    public WaitlistResponseDto convertToResponseDto(Waitlist waitlist) {
         return new WaitlistResponseDto(
             waitlist.getId(),
             waitlist.getWaitlistLimit(),
@@ -116,6 +117,12 @@ public class WaitlistServiceImpl implements WaitlistService {
             throw new RuntimeException("Access denied. Only admins can delete waitlists.");
         }
         
+        Waitlist waitlist = waitlistRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Waitlist not found with ID: " + id));
+        
+        waitlist.getCourse().setWaitlistAvailable(false);
+        courseRepository.save(waitlist.getCourse());
         waitlistRepository.deleteById(id);
+
     }
 }

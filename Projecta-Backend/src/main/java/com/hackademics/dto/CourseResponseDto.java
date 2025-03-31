@@ -19,6 +19,7 @@ public class CourseResponseDto {
     private LocalTime startTime;
     private LocalTime endTime;
     private Integer numLabSection;
+    private WaitlistResponseDto waitlist;
 
     public CourseResponseDto() {
     }
@@ -42,6 +43,7 @@ public class CourseResponseDto {
         this.startTime = startTime;
         this.endTime = endTime;
         this.numLabSection = numLabSection;
+        this.waitlist = null; 
     }
 
     public Long getId() {
@@ -162,5 +164,13 @@ public class CourseResponseDto {
 
     public void setNumLabSection(Integer numLabSection) {
         this.numLabSection = numLabSection;
+    }
+
+    public WaitlistResponseDto getWaitlist() {
+        return waitlist;
+    }
+
+    public void setWaitlist(WaitlistResponseDto waitlist) {
+        this.waitlist = waitlist;
     }
 } 
