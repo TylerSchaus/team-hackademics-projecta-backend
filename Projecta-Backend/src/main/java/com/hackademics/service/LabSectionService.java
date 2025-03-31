@@ -4,9 +4,9 @@ import java.util.List;
 
 import org.springframework.security.core.userdetails.UserDetails;
 
-import com.hackademics.dto.LabSectionDto;
-import com.hackademics.dto.LabSectionResponseDto;
-import com.hackademics.dto.LabSectionUpdateDto;
+import com.hackademics.dto.RequestDto.LabSectionDto;
+import com.hackademics.dto.ResponseDto.LabSectionResponseDto;
+import com.hackademics.dto.UpdateDto.LabSectionUpdateDto;
 
 public interface LabSectionService {
     List<LabSectionResponseDto> findByCourseId(Long id);

@@ -15,8 +15,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.hackademics.dto.EnrollmentDto;
-import com.hackademics.dto.EnrollmentResponseDto;
+import com.hackademics.dto.RequestDto.EnrollmentDto;
+import com.hackademics.dto.ResponseDto.EnrollmentResponseDto;
 import com.hackademics.service.EnrollmentService;
 
 import io.swagger.v3.oas.annotations.Operation;

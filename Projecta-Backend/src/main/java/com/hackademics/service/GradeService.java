@@ -4,9 +4,9 @@ import java.util.List;
 
 import org.springframework.security.core.userdetails.UserDetails;
 
-import com.hackademics.dto.GradeDto;
-import com.hackademics.dto.GradeUpdateDto;
-import com.hackademics.dto.GradeResponseDto;
+import com.hackademics.dto.RequestDto.GradeDto;
+import com.hackademics.dto.ResponseDto.GradeResponseDto;
+import com.hackademics.dto.UpdateDto.GradeUpdateDto;
 
 public interface GradeService {
 

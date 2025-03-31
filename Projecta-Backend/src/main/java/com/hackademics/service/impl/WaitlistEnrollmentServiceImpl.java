@@ -8,13 +8,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
-import com.hackademics.dto.AdminSummaryDto;
-import com.hackademics.dto.CourseResponseDto;
-import com.hackademics.dto.StudentSummaryDto;
-import com.hackademics.dto.SubjectResponseDto;
-import com.hackademics.dto.WaitlistEnrollmentDto;
-import com.hackademics.dto.WaitlistEnrollmentResponseDto;
-import com.hackademics.dto.WaitlistResponseDto;
+import com.hackademics.dto.RequestDto.WaitlistEnrollmentDto;
+import com.hackademics.dto.ResponseDto.AdminSummaryDto;
+import com.hackademics.dto.ResponseDto.CourseResponseDto;
+import com.hackademics.dto.ResponseDto.StudentSummaryDto;
+import com.hackademics.dto.ResponseDto.SubjectResponseDto;
+import com.hackademics.dto.ResponseDto.WaitlistEnrollmentResponseDto;
+import com.hackademics.dto.ResponseDto.WaitlistResponseDto;
 import com.hackademics.model.Role;
 import com.hackademics.model.User;
 import com.hackademics.model.Waitlist;
@@ -124,7 +124,7 @@ public class WaitlistEnrollmentServiceImpl implements WaitlistEnrollmentService 
             throw new RuntimeException("Access denied. You can only delete your own waitlist enrollments.");
         }
 
-        // Delete first, then update positions
+        // Delete the enrollment and update the waitlist positions
         waitlistEnrollmentRepository.deleteById(id);
         updateWaitlistPositions(enrollment.getWaitlist().getId());
     }

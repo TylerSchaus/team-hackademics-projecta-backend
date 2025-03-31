@@ -20,8 +20,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hackademics.dto.GradeDto;
-import com.hackademics.dto.GradeUpdateDto;
+import com.hackademics.dto.RequestDto.GradeDto;
+import com.hackademics.dto.UpdateDto.GradeUpdateDto;
 import com.hackademics.model.Course;
 import com.hackademics.model.Grade;
 import com.hackademics.model.Role;

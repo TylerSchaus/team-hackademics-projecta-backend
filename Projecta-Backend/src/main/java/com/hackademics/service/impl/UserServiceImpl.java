@@ -11,8 +11,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import com.hackademics.dto.UserResponseDTO;
-import com.hackademics.dto.UserUpdateDto;
+import com.hackademics.dto.ResponseDto.UserResponseDTO;
+import com.hackademics.dto.UpdateDto.UserUpdateDto;
 import com.hackademics.model.Role;
 import com.hackademics.model.User;
 import com.hackademics.repository.UserRepository;

@@ -10,9 +10,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import com.hackademics.dto.SubjectDto;
-import com.hackademics.dto.SubjectResponseDto;
-import com.hackademics.dto.SubjectUpdateDto;
+import com.hackademics.dto.RequestDto.SubjectDto;
+import com.hackademics.dto.ResponseDto.SubjectResponseDto;
+import com.hackademics.dto.UpdateDto.SubjectUpdateDto;
 import com.hackademics.model.Role;
 import com.hackademics.model.Subject;
 import com.hackademics.model.User;

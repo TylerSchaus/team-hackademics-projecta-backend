@@ -1,4 +1,4 @@
-package com.hackademics.dto;
+package com.hackademics.dto.UpdateDto;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Max;

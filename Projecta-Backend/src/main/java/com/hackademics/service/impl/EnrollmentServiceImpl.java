@@ -9,11 +9,11 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import com.hackademics.dto.CourseResponseDto;
-import com.hackademics.dto.EnrollmentDto;
-import com.hackademics.dto.EnrollmentResponseDto;
-import com.hackademics.dto.LabSectionResponseDto;
-import com.hackademics.dto.StudentSummaryDto;
+import com.hackademics.dto.RequestDto.EnrollmentDto;
+import com.hackademics.dto.ResponseDto.CourseResponseDto;
+import com.hackademics.dto.ResponseDto.EnrollmentResponseDto;
+import com.hackademics.dto.ResponseDto.LabSectionResponseDto;
+import com.hackademics.dto.ResponseDto.StudentSummaryDto;
 import com.hackademics.model.Course;
 import com.hackademics.model.Enrollment;
 import com.hackademics.model.LabSection;
@@ -94,19 +94,12 @@ public class EnrollmentServiceImpl implements EnrollmentService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Students can only enroll themselves.");
         }
 
-        System.out.println("Got past RBA verfication. Still processing...");
-
         // Check that the course exists
         Course course = courseRepository.findById(enrollmentDto.getCourseId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Course not found"));
 
-        System.out.println("Course found. Still processing...");
-
         // Check if the student is already enrolled in the course
         List<Enrollment> currentEnrollments = enrollmentRepository.findByTermAndStudentId(course.getTerm(),student.getStudentId());
-
-        boolean existingEnrollmentsEmpty = currentEnrollments.isEmpty();
-        System.out.println("Existing enrollments empty? "+ existingEnrollmentsEmpty);
         
         Enrollment existingEnrollment = currentEnrollments.stream()
                 .filter(e -> e.getCourse().getId().equals(course.getId()))
@@ -115,24 +108,18 @@ public class EnrollmentServiceImpl implements EnrollmentService {
 
         if (existingEnrollment != null) {
             // Redirect to updateEnrollment if the student is already in the course
-            System.out.println("Existing enrollment found. Still processing...");
             return convertToResponseDto(updateEnrollment(existingEnrollment, enrollmentDto.getLabSectionId(), currentEnrollments));
         }
-
-        System.out.println("No existing enrollment found. Still processing...");
 
         // Check for schedule conflicts
         if (ScheduleConflictChecker.hasScheduleConflict(currentEnrollments, course, null)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Schedule conflict detected with course section.");
         }
 
-        System.out.println("No schedule conflicts with course found. Still processing...");
-
         // Check course capacity
         if (course.getCurrentEnroll() >= course.getEnrollLimit()) {
             // Query the waitlist repository for a waitlist associated with the course
             Waitlist waitlist = waitlistRepository.findByCourseId(course.getId());
-            System.out.println("Waitlist accquired. Still processing...");
             if (waitlist != null) {
                 // Proceed with waitlist logic
                 List<WaitlistEnrollment> waitlistEnrollments = waitlistEnrollmentRepository.findByWaitlistId(waitlist.getId());
@@ -152,8 +139,6 @@ public class EnrollmentServiceImpl implements EnrollmentService {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Course is at capacity and does not have a waitlist.");
             }
         }
-
-        System.out.println("Course is not at capacity or waitlist enrollment successful/skipped. Still processing...");
 
         // Proceed with creating the enrollment
         LabSection labSection = null;
@@ -183,9 +168,6 @@ public class EnrollmentServiceImpl implements EnrollmentService {
                 }
             }
         }
-
-        boolean labSectionFound = labSection != null;
-        System.out.println("Lab section found and okay? "+ labSectionFound);
 
         // Create and save the enrollment
         Enrollment enrollment = new Enrollment(course, student, labSection);

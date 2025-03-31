@@ -4,9 +4,9 @@ import java.util.List;
 
 import org.springframework.security.core.userdetails.UserDetails;
 
-import com.hackademics.dto.CourseDto;
-import com.hackademics.dto.CourseResponseDto;
-import com.hackademics.dto.CourseUpdateDto;
+import com.hackademics.dto.RequestDto.CourseDto;
+import com.hackademics.dto.ResponseDto.CourseResponseDto;
+import com.hackademics.dto.UpdateDto.CourseUpdateDto;
 import com.hackademics.model.Course;
 
 public interface CourseService {

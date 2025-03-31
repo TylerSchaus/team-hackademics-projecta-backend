@@ -1,25 +1,26 @@
-package com.hackademics.dto;
+package com.hackademics.dto.ResponseDto;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
+public class SubjectResponseDto {
+    private Long id;
+    private String subjectName;
+    private String subjectTag;
 
-public class SubjectDto {
+    public SubjectResponseDto() {
+    }
 
-    @NotBlank 
-    private String subjectName; 
-
-    @NotBlank
-    @Size(min = 4, max = 4) 
-    private String subjectTag; 
-    
-    // Constructor
-
-    public SubjectDto(String subjectName, String subjectTag) {
+    public SubjectResponseDto(Long id, String subjectName, String subjectTag) {
+        this.id = id;
         this.subjectName = subjectName;
         this.subjectTag = subjectTag;
     }
 
-    // Getters and Setters
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
 
     public String getSubjectName() {
         return subjectName;
@@ -36,4 +37,4 @@ public class SubjectDto {
     public void setSubjectTag(String subjectTag) {
         this.subjectTag = subjectTag;
     }
-}
+} 

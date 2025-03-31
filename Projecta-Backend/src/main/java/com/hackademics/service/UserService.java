@@ -5,8 +5,8 @@ import java.util.Optional;
 
 import org.springframework.security.core.userdetails.UserDetails;
 
-import com.hackademics.dto.UserResponseDTO;
-import com.hackademics.dto.UserUpdateDto;
+import com.hackademics.dto.ResponseDto.UserResponseDTO;
+import com.hackademics.dto.UpdateDto.UserUpdateDto;
 import com.hackademics.model.Role;
 import com.hackademics.model.User;
 

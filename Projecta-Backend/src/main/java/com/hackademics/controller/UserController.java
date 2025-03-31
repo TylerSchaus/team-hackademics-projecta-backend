@@ -18,8 +18,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.hackademics.dto.UserResponseDTO;
-import com.hackademics.dto.UserUpdateDto;
+import com.hackademics.dto.ResponseDto.UserResponseDTO;
+import com.hackademics.dto.UpdateDto.UserUpdateDto;
 import com.hackademics.model.Role;
 import com.hackademics.model.User;
 import com.hackademics.service.UserService;

@@ -1,42 +1,17 @@
-package com.hackademics.dto;
+package com.hackademics.dto.UpdateDto;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
-import jakarta.validation.constraints.NotNull;
+public class LabSectionUpdateDto {
 
-public class LabSectionDto {
-
-    @NotNull 
     private Long courseId; 
-
-    @NotNull 
     private Integer capacity;
-
-    @NotNull
     private Integer days; // Bitmap for days of the week
-
-    @NotNull
     private LocalTime startTime;
-
-    @NotNull
     private LocalTime endTime;
-
-    @NotNull
     private LocalDateTime startDate;
-
-    @NotNull
     private LocalDateTime endDate;
-
-    public LabSectionDto(Long courseId, Integer capacity, Integer days, LocalTime startTime, LocalTime endTime, LocalDateTime startDate, LocalDateTime endDate) {
-        this.courseId = courseId;
-        this.capacity = capacity;
-        this.days = days;
-        this.startTime = startTime;
-        this.endTime = endTime;
-        this.startDate = startDate;
-        this.endDate = endDate;
-    }
 
     // Getters and Setters
 

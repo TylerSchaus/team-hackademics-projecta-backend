@@ -10,12 +10,12 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import com.hackademics.dto.AdminSummaryDto;
-import com.hackademics.dto.CourseDto;
-import com.hackademics.dto.CourseResponseDto;
-import com.hackademics.dto.CourseUpdateDto;
-import com.hackademics.dto.SubjectResponseDto;
-import com.hackademics.dto.WaitlistResponseDto;
+import com.hackademics.dto.RequestDto.CourseDto;
+import com.hackademics.dto.ResponseDto.AdminSummaryDto;
+import com.hackademics.dto.ResponseDto.CourseResponseDto;
+import com.hackademics.dto.ResponseDto.SubjectResponseDto;
+import com.hackademics.dto.ResponseDto.WaitlistResponseDto;
+import com.hackademics.dto.UpdateDto.CourseUpdateDto;
 import com.hackademics.model.Course;
 import com.hackademics.model.Role;
 import com.hackademics.model.Subject;

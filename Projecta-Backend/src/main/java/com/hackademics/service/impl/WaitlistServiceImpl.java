@@ -7,12 +7,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
-import com.hackademics.dto.AdminSummaryDto;
-import com.hackademics.dto.CourseResponseDto;
-import com.hackademics.dto.SubjectResponseDto;
-import com.hackademics.dto.WaitlistDto;
-import com.hackademics.dto.WaitlistResponseDto;
-import com.hackademics.dto.WaitlistUpdateDto;
+import com.hackademics.dto.RequestDto.WaitlistDto;
+import com.hackademics.dto.ResponseDto.AdminSummaryDto;
+import com.hackademics.dto.ResponseDto.CourseResponseDto;
+import com.hackademics.dto.ResponseDto.SubjectResponseDto;
+import com.hackademics.dto.ResponseDto.WaitlistResponseDto;
+import com.hackademics.dto.UpdateDto.WaitlistUpdateDto;
 import com.hackademics.model.Course;
 import com.hackademics.model.Role;
 import com.hackademics.model.User;

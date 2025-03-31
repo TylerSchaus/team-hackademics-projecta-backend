@@ -1,4 +1,4 @@
-package com.hackademics.dto;
+package com.hackademics.dto.ResponseDto;
 
 public class GradeResponseDto {
     private Long id; 

@@ -1,18 +1,30 @@
-package com.hackademics.dto;
+package com.hackademics.dto.RequestDto;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 
-public class WaitlistUpdateDto {
+public class WaitlistDto {
+    @NotNull(message = "Course ID is required")
+    private Long courseId;
+    
     @NotNull(message = "Capacity is required")
     @Min(value = 1, message = "Capacity must be at least 1")
     private Integer capacity;
 
-    public WaitlistUpdateDto() {
+    public WaitlistDto() {
     }
 
-    public WaitlistUpdateDto(Integer capacity) {
+    public WaitlistDto(Long courseId, Integer capacity) {
+        this.courseId = courseId;
         this.capacity = capacity;
+    }
+
+    public Long getCourseId() {
+        return courseId;
+    }
+
+    public void setCourseId(Long courseId) {
+        this.courseId = courseId;
     }
 
     public Integer getCapacity() {
