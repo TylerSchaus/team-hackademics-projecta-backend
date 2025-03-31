@@ -27,7 +27,7 @@ jobs:
           distribution: temurin
           java-version: '21'
 
-      - name: Build and Test
+      - name: Build Test
         run: |
           cd Projecta-Backend
           mvn clean test -Dspring.profiles.active=test
