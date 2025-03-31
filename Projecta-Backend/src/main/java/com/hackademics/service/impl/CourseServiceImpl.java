@@ -15,6 +15,7 @@ import com.hackademics.dto.CourseDto;
 import com.hackademics.dto.CourseResponseDto;
 import com.hackademics.dto.CourseUpdateDto;
 import com.hackademics.dto.SubjectResponseDto;
+import com.hackademics.dto.WaitlistResponseDto;
 import com.hackademics.model.Course;
 import com.hackademics.model.Role;
 import com.hackademics.model.Subject;
@@ -25,7 +26,6 @@ import com.hackademics.repository.SubjectRepository;
 import com.hackademics.repository.UserRepository;
 import com.hackademics.repository.WaitlistRepository;
 import com.hackademics.service.CourseService;
-import com.hackademics.service.WaitlistService;
 import com.hackademics.util.TermDeterminator;
 
 @Service
@@ -43,8 +43,13 @@ public class CourseServiceImpl implements CourseService {
     @Autowired
     private WaitlistRepository waitlistRepository;
 
-    @Autowired
-    private WaitlistService waitlistService;
+    private WaitlistResponseDto convertWaitlistToResponseDto(Waitlist waitlist, CourseResponseDto courseResponseDto) {
+        return new WaitlistResponseDto(
+            waitlist.getId(),
+            waitlist.getWaitlistLimit(),
+            courseResponseDto
+        );
+    }
 
     @Override
     public CourseResponseDto convertToResponseDto(Course course) {
@@ -236,11 +241,9 @@ public class CourseServiceImpl implements CourseService {
             Waitlist waitlist = waitlistRepository.findByCourseId(course.getId());
             if (waitlist != null) {
                 if (waitlist.getWaitlistEnrollments().size() < waitlist.getWaitlistLimit()) {
-                    courseResponse.setWaitlist(waitlistService.convertToResponseDto(waitlist));
+                    courseResponse.setWaitlist(convertWaitlistToResponseDto(waitlist, courseResponse));
                 }
             }
         }
-
     }
-
 }

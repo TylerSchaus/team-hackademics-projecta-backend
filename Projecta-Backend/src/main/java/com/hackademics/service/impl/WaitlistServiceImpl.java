@@ -7,6 +7,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
+import com.hackademics.dto.AdminSummaryDto;
+import com.hackademics.dto.CourseResponseDto;
+import com.hackademics.dto.SubjectResponseDto;
 import com.hackademics.dto.WaitlistDto;
 import com.hackademics.dto.WaitlistResponseDto;
 import com.hackademics.dto.WaitlistUpdateDto;
@@ -17,7 +20,6 @@ import com.hackademics.model.Waitlist;
 import com.hackademics.repository.CourseRepository;
 import com.hackademics.repository.UserRepository;
 import com.hackademics.repository.WaitlistRepository;
-import com.hackademics.service.CourseService;
 import com.hackademics.service.WaitlistService;
 
 @Service
@@ -32,15 +34,45 @@ public class WaitlistServiceImpl implements WaitlistService {
     @Autowired
     private CourseRepository courseRepository;
 
-    @Autowired
-    private CourseService courseService;
+    private CourseResponseDto convertCourseToResponseDto(Course course) {
+        AdminSummaryDto adminDto = new AdminSummaryDto(
+            course.getAdmin().getId(),
+            course.getAdmin().getFirstName(),
+            course.getAdmin().getLastName(),
+            course.getAdmin().getAdminId()
+        );
+
+        SubjectResponseDto subjectDto = new SubjectResponseDto(
+            course.getSubject().getId(),
+            course.getSubject().getSubjectName(),
+            course.getSubject().getSubjectTag()
+        );
+
+        return new CourseResponseDto(
+            course.getId(),
+            adminDto,
+            subjectDto,
+            course.getCourseName(),
+            course.getStartDate().toLocalDate(),
+            course.getEndDate().toLocalDate(),
+            course.getEnrollLimit(),
+            course.getCurrentEnroll(),
+            course.getCourseNumber(),
+            course.getCourseTag(),
+            course.getTerm(),
+            course.getDays(),
+            course.getStartTime(),
+            course.getEndTime(),
+            course.getNumLabSections()
+        );
+    }
 
     @Override
     public WaitlistResponseDto convertToResponseDto(Waitlist waitlist) {
         return new WaitlistResponseDto(
             waitlist.getId(),
             waitlist.getWaitlistLimit(),
-            courseService.convertToResponseDto(waitlist.getCourse())
+            convertCourseToResponseDto(waitlist.getCourse())
         );
     }
 
@@ -55,7 +87,6 @@ public class WaitlistServiceImpl implements WaitlistService {
 
         Course course = courseRepository.findById(waitlistDto.getCourseId())
                 .orElseThrow(() -> new RuntimeException("Course not found with ID: " + waitlistDto.getCourseId()));
-
 
         Waitlist waitlist = new Waitlist(course, waitlistDto.getCapacity());
 
@@ -123,6 +154,5 @@ public class WaitlistServiceImpl implements WaitlistService {
         waitlist.getCourse().setWaitlistAvailable(false);
         courseRepository.save(waitlist.getCourse());
         waitlistRepository.deleteById(id);
-
     }
 }

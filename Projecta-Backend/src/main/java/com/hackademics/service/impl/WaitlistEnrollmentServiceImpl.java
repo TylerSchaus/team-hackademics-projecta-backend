@@ -90,11 +90,11 @@ public class WaitlistEnrollmentServiceImpl implements WaitlistEnrollmentService 
                 .orElseThrow(() -> new RuntimeException("Waitlist not found with ID: " + waitlistEnrollmentDto.getWaitlistId()));
         
         // Get the student
-        User student = userRepository.findById(waitlistEnrollmentDto.getStudentId())
+        User student = userRepository.findByStudentId(waitlistEnrollmentDto.getStudentId())
                 .orElseThrow(() -> new RuntimeException("Student not found with ID: " + waitlistEnrollmentDto.getStudentId()));
         
         // Check if user is admin or the student themselves
-        if (user.getRole() != Role.ADMIN && !user.getId().equals(student.getId())) {
+        if (user.getRole() != Role.ADMIN && !user.getStudentId().equals(student.getStudentId())) {
             throw new RuntimeException("Access denied. Only admins or the student themselves can create waitlist enrollments.");
         }
         
@@ -120,13 +120,13 @@ public class WaitlistEnrollmentServiceImpl implements WaitlistEnrollmentService 
                 .orElseThrow(() -> new RuntimeException("WaitlistEnrollment not found with ID: " + id));
         
         // Allow deletion if user is admin or if the enrollment belongs to the student
-        if (user.getRole() != Role.ADMIN && !enrollment.getStudent().getId().equals(user.getId())) {
+        if (user.getRole() != Role.ADMIN && !user.getStudentId().equals(enrollment.getStudent().getStudentId())) {
             throw new RuntimeException("Access denied. You can only delete your own waitlist enrollments.");
         }
 
-        updateWaitlistPositions(enrollment.getWaitlist().getId());
-        
+        // Delete first, then update positions
         waitlistEnrollmentRepository.deleteById(id);
+        updateWaitlistPositions(enrollment.getWaitlist().getId());
     }
 
     @Override
