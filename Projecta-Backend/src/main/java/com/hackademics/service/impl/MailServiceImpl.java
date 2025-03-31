@@ -22,6 +22,10 @@ public class MailServiceImpl implements MailService {
 
     @Override
     public void sendEnrollmentEmail(EnrollmentResponseDto enrollmentResponseDto, User student) {
+        if (!emailSendingEnabled) {
+            System.out.println("Email sending is disabled. Skipping enrollment email.");
+            return;
+        }
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom("hackademicsuniversity@gmail.com");
         message.setTo(student.getEmail());
@@ -33,6 +37,10 @@ public class MailServiceImpl implements MailService {
 
     @Override
     public void sendWaitlistEmail(WaitlistEnrollmentResponseDto waitlistEnrollmentResponseDto, User student) {
+        if (!emailSendingEnabled) {
+            System.out.println("Email sending is disabled. Skipping waitlist email.");
+            return;
+        }
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom("hackademicsuniversity@gmail.com");
         message.setTo(student.getEmail());
@@ -43,6 +51,10 @@ public class MailServiceImpl implements MailService {
 
     @Override
     public void sendEnrollmentRemovalEmail(EnrollmentResponseDto enrollmentResponseDto, User student) {
+        if (!emailSendingEnabled) {
+            System.out.println("Email sending is disabled. Skipping enrollment removal email.");
+            return;
+        }
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom("hackademicsuniversity@gmail.com");
         message.setTo(student.getEmail());
@@ -53,6 +65,10 @@ public class MailServiceImpl implements MailService {
 
     @Override
     public void sendWaitlistRemovalEmail(WaitlistEnrollmentResponseDto waitlistEnrollmentResponseDto, User student) {
+        if (!emailSendingEnabled) {
+            System.out.println("Email sending is disabled. Skipping waitlist removal email.");
+            return;
+        }
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom("hackademicsuniversity@gmail.com");
         message.setTo(student.getEmail());

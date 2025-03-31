@@ -86,6 +86,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
                 labSectionDto
         );
         if (emailSendingEnabled) {
+            System.out.println("Sending email...");
             sendEmail(responseDto);
         }
         return responseDto;
