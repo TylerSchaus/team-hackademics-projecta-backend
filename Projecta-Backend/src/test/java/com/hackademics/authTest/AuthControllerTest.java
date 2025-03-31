@@ -48,6 +48,7 @@ class AuthControllerTest {
         
     }
 
+    // Comment for testing. 
     @Test
     void shouldRegisterNewUserSuccessfully() throws Exception {
         SignUpDto signUpDto = new SignUpDto("John", "Doe", "john@example.com", "password123", Role.STUDENT);
