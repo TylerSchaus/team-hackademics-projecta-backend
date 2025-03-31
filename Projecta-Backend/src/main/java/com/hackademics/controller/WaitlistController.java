@@ -7,72 +7,109 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
-import com.hackademics.model.Waitlist;
+import com.hackademics.dto.WaitlistDto;
+import com.hackademics.dto.WaitlistUpdateDto;
+import com.hackademics.dto.WaitlistResponseDto;
 import com.hackademics.service.WaitlistService;
 
 import java.util.List;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping("/api/waitlists")
+@Tag(name = "Waitlists", description = "APIs for managing course waitlists")
+@SecurityRequirement(name = "bearer-jwt")
 public class WaitlistController {
 
     @Autowired
     private WaitlistService waitlistService;
 
-    // Create a new waitlist (Admin only)
+    @Operation(summary = "Create waitlist", description = "Creates a new waitlist for a course (admin only)")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", description = "Successfully created waitlist",
+                    content = @Content(schema = @Schema(implementation = WaitlistResponseDto.class))),
+        @ApiResponse(responseCode = "400", description = "Invalid input data"),
+        @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token"),
+        @ApiResponse(responseCode = "403", description = "Forbidden - Insufficient permissions")
+    })
     @PostMapping
-    public ResponseEntity<Waitlist> createWaitlist(@RequestBody Waitlist waitlist, @AuthenticationPrincipal UserDetails currentUser) {
-        if (!isAdmin(currentUser)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
-        Waitlist savedWaitlist = waitlistService.saveWaitlist(waitlist);
-        return ResponseEntity.status(HttpStatus.CREATED).body(savedWaitlist);
+    public ResponseEntity<WaitlistResponseDto> createWaitlist(
+            @Parameter(description = "Waitlist data", required = true) 
+            @Valid @RequestBody WaitlistDto waitlistDto, 
+            @AuthenticationPrincipal UserDetails currentUser) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(waitlistService.saveWaitlist(waitlistDto, currentUser));
     }
 
-    // Get all waitlists (Admin only)
+    @Operation(summary = "Get all waitlists", description = "Retrieves all waitlists (admin only)")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successfully retrieved waitlists",
+                    content = @Content(schema = @Schema(implementation = WaitlistResponseDto.class))),
+        @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token"),
+        @ApiResponse(responseCode = "403", description = "Forbidden - Insufficient permissions")
+    })
     @GetMapping
-    public ResponseEntity<List<Waitlist>> getAllWaitlists(@AuthenticationPrincipal UserDetails currentUser) {
-        if (!isAdmin(currentUser)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
-        List<Waitlist> waitlists = waitlistService.getAllWaitlists();
-        return ResponseEntity.ok(waitlists);
+    public ResponseEntity<List<WaitlistResponseDto>> getAllWaitlists(@AuthenticationPrincipal UserDetails currentUser) {
+        return ResponseEntity.ok(waitlistService.getAllWaitlists(currentUser));
     }
 
-    // Get a waitlist by its ID (Admin only)
+    @Operation(summary = "Get waitlist by ID", description = "Retrieves a specific waitlist by its ID (admin only)")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successfully retrieved waitlist",
+                    content = @Content(schema = @Schema(implementation = WaitlistResponseDto.class))),
+        @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token"),
+        @ApiResponse(responseCode = "403", description = "Forbidden - Insufficient permissions"),
+        @ApiResponse(responseCode = "404", description = "Waitlist not found")
+    })
     @GetMapping("/{id}")
-    public ResponseEntity<Waitlist> getWaitlistById(@PathVariable Long id, @AuthenticationPrincipal UserDetails currentUser) {
-        if (!isAdmin(currentUser)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
-        Waitlist waitlist = waitlistService.getWaitlistById(id);
-        return ResponseEntity.ok(waitlist);
+    public ResponseEntity<WaitlistResponseDto> getWaitlistById(
+            @Parameter(description = "ID of the waitlist", required = true) 
+            @PathVariable Long id, 
+            @AuthenticationPrincipal UserDetails currentUser) {
+        return ResponseEntity.ok(waitlistService.getWaitlistById(id, currentUser));
     }
 
-    // Update a waitlist (Admin only)
+    @Operation(summary = "Update waitlist", description = "Updates an existing waitlist (admin only)")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successfully updated waitlist",
+                    content = @Content(schema = @Schema(implementation = WaitlistResponseDto.class))),
+        @ApiResponse(responseCode = "400", description = "Invalid input data"),
+        @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token"),
+        @ApiResponse(responseCode = "403", description = "Forbidden - Insufficient permissions"),
+        @ApiResponse(responseCode = "404", description = "Waitlist not found")
+    })
     @PutMapping("/{id}")
-    public ResponseEntity<Waitlist> updateWaitlist(@PathVariable Long id, @RequestBody Waitlist waitlist, @AuthenticationPrincipal UserDetails currentUser) {
-        if (!isAdmin(currentUser)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
-        waitlist.setId(id); // Ensure the ID is set for the update
-        Waitlist updatedWaitlist = waitlistService.updateWaitlist(waitlist);
-        return ResponseEntity.ok(updatedWaitlist);
+    public ResponseEntity<WaitlistResponseDto> updateWaitlist(
+            @Parameter(description = "ID of the waitlist to update", required = true) 
+            @PathVariable Long id,
+            @Parameter(description = "Updated waitlist data", required = true) 
+            @Valid @RequestBody WaitlistUpdateDto waitlistUpdateDto, 
+            @AuthenticationPrincipal UserDetails currentUser) {
+        return ResponseEntity.ok(waitlistService.updateWaitlist(id, waitlistUpdateDto, currentUser));
     }
 
-    // Delete a waitlist by its ID (Admin only)
+    @Operation(summary = "Delete waitlist", description = "Deletes a waitlist (admin only)")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "204", description = "Successfully deleted waitlist"),
+        @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token"),
+        @ApiResponse(responseCode = "403", description = "Forbidden - Insufficient permissions"),
+        @ApiResponse(responseCode = "404", description = "Waitlist not found")
+    })
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteWaitlist(@PathVariable Long id, @AuthenticationPrincipal UserDetails currentUser) {
-        if (!isAdmin(currentUser)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
-        waitlistService.deleteWaitlist(id);
+    public ResponseEntity<Void> deleteWaitlist(
+            @Parameter(description = "ID of the waitlist to delete", required = true) 
+            @PathVariable Long id, 
+            @AuthenticationPrincipal UserDetails currentUser) {
+        waitlistService.deleteWaitlist(id, currentUser);
         return ResponseEntity.noContent().build();
-    }
-
-    // Helper method to check if the current user is an admin
-    private boolean isAdmin(UserDetails currentUser) {
-        return currentUser.getAuthorities().stream()
-                .anyMatch(auth -> auth.getAuthority().equals("ROLE_ADMIN"));
     }
 }

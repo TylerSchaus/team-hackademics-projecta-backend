@@ -77,6 +77,9 @@ public class Course {
     @Column(name = "Lab_sections") 
     private int numLabSections; 
 
+    @Column(name = "waitlist_available")
+    private boolean waitlistAvailable;
+
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
     @OnDelete(action = OnDeleteAction.CASCADE)
     private final List<Grade> grades = new ArrayList<>();
@@ -110,6 +113,7 @@ public class Course {
         this.startTime = startTime; 
         this.endTime = endTime;
         this.numLabSections = 0;
+        this.waitlistAvailable = false;
     }
 
     // Getters and Setters
@@ -261,5 +265,11 @@ public class Course {
         return labSections;
     }
 
+    public boolean isWaitlistAvailable() {
+        return waitlistAvailable;
+    }
 
+    public void setWaitlistAvailable(boolean waitlistAvailable) {
+        this.waitlistAvailable = waitlistAvailable;
+    }
 }

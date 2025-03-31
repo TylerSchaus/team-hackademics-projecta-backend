@@ -3,6 +3,9 @@ package com.hackademics.dto;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
+import com.hackademics.model.OfferingType;
+
+
 public class CourseResponseDto {
     private Long id;
     private AdminSummaryDto admin;
@@ -19,6 +22,8 @@ public class CourseResponseDto {
     private LocalTime startTime;
     private LocalTime endTime;
     private Integer numLabSection;
+    private WaitlistResponseDto waitlist;
+    private OfferingType offeringType;
 
     public CourseResponseDto() {
     }
@@ -42,6 +47,9 @@ public class CourseResponseDto {
         this.startTime = startTime;
         this.endTime = endTime;
         this.numLabSection = numLabSection;
+        this.waitlist = null; 
+        this.offeringType = OfferingType.COURSE;
+
     }
 
     public Long getId() {
@@ -162,5 +170,26 @@ public class CourseResponseDto {
 
     public void setNumLabSection(Integer numLabSection) {
         this.numLabSection = numLabSection;
+    }
+
+    public WaitlistResponseDto getWaitlist() {
+        return waitlist;
+    }
+
+    public void setWaitlist(WaitlistResponseDto waitlist) {
+        this.waitlist = waitlist;
+        if (waitlist != null) {
+            this.offeringType = OfferingType.WAITLIST;
+        } else {
+            this.offeringType = OfferingType.COURSE;
+        }
+    }
+
+    public OfferingType getOfferingType() {
+        return offeringType;
+    }
+
+    public void setOfferingType(OfferingType offeringType) {
+        this.offeringType = offeringType;
     }
 } 

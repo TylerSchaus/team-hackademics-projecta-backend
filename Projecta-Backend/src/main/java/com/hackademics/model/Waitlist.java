@@ -30,7 +30,7 @@ public class Waitlist {
     private Course course;
 
     @Column(name = "waitlist_limit", nullable = false)
-    private int waitlistLimit;
+    private Integer waitlistLimit;
 
     @OneToMany(mappedBy = "waitlist", cascade = CascadeType.ALL, orphanRemoval=true)
     @OnDelete(action = OnDeleteAction.CASCADE)
@@ -42,8 +42,9 @@ public class Waitlist {
 
     public Waitlist(){}
 
-    public Waitlist (Course course, int waitlistLimit){
+    public Waitlist (Course course, Integer waitlistLimit){
         this.course = course;
+        this.course.setWaitlistAvailable(true);
         this.waitlistLimit = waitlistLimit;
         this.term = course.getTerm(); 
     }
@@ -66,11 +67,11 @@ public class Waitlist {
         this.course = course;
     }
 
-    public int getWaitlistLimit() {
+    public Integer getWaitlistLimit() {
         return waitlistLimit;
     }
 
-    public void setWaitlistLimit(int waitlistLimit) {
+    public void setWaitlistLimit(Integer waitlistLimit) {
         this.waitlistLimit = waitlistLimit;
     }
 

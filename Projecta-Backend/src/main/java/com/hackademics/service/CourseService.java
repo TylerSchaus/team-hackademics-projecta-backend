@@ -7,8 +7,10 @@ import org.springframework.security.core.userdetails.UserDetails;
 import com.hackademics.dto.CourseDto;
 import com.hackademics.dto.CourseResponseDto;
 import com.hackademics.dto.CourseUpdateDto;
+import com.hackademics.model.Course;
 
 public interface CourseService {
+    CourseResponseDto convertToResponseDto(Course course);
     CourseResponseDto saveCourse(CourseDto courseDto, UserDetails currentUser);
     List<CourseResponseDto> getAllActiveCourses();
     List<CourseResponseDto> getAllUpcomingCourses();
