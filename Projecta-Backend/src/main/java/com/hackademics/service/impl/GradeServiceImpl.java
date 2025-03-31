@@ -54,7 +54,7 @@ public class GradeServiceImpl implements GradeService {
             throw new RuntimeException("Access denied. Only admins can create grades.");
         }
 
-        User student = userRepository.findById(gradeDto.getStudentId())
+        User student = userRepository.findByStudentId(gradeDto.getStudentId())
                 .orElseThrow(() -> new RuntimeException("Student not found with ID: " + gradeDto.getStudentId()));
         
         Course course = courseRepository.findById(gradeDto.getCourseId())
@@ -83,12 +83,15 @@ public class GradeServiceImpl implements GradeService {
         User user = userRepository.findByEmail(currentUser.getUsername())
                 .orElseThrow(() -> new RuntimeException("User not found"));
         
-        if (user.getRole() != Role.ADMIN) {
-            throw new RuntimeException("Access denied. Only admins can view grade details.");
+        Grade grade = gradeRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Grade not found with ID: " + id));
+        
+        // Allow access if user is admin or if the grade belongs to the user
+        if (user.getRole() != Role.ADMIN && !grade.getStudent().getId().equals(user.getId())) {
+            throw new RuntimeException("Access denied. You can only view your own grades.");
         }
         
-        return convertToGradeResponseDto(gradeRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Grade not found with ID: " + id)));
+        return convertToGradeResponseDto(grade);
     }
 
     @Override
@@ -124,12 +127,13 @@ public class GradeServiceImpl implements GradeService {
         User user = userRepository.findByEmail(currentUser.getUsername())
                 .orElseThrow(() -> new RuntimeException("User not found"));
         
-        if (user.getRole() != Role.ADMIN && !user.getId().equals(studentId)) {
+        // Allow access if user is admin or if the grades belong to the user
+        if (user.getRole() != Role.ADMIN && !user.getStudentId().equals(studentId)) {
             throw new RuntimeException("Access denied. You can only view your own grades.");
         }
         
         return gradeRepository.findAll().stream()
-                .filter(grade -> grade.getStudent().getId().equals(studentId))
+                .filter(grade -> grade.getStudent().getStudentId().equals(studentId))
                 .map(this::convertToGradeResponseDto)
                 .collect(Collectors.toList());
     }

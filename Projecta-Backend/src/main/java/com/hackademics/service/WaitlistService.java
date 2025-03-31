@@ -2,12 +2,16 @@ package com.hackademics.service;
 
 import java.util.List;
 
-import com.hackademics.model.Waitlist;
+import org.springframework.security.core.userdetails.UserDetails;
+
+import com.hackademics.dto.WaitlistDto;
+import com.hackademics.dto.WaitlistUpdateDto;
+import com.hackademics.dto.WaitlistResponseDto;
 
 public interface WaitlistService {
-    Waitlist saveWaitlist(Waitlist waitlist);
-    List<Waitlist> getAllWaitlists();
-    Waitlist getWaitlistById(Long id);
-    Waitlist updateWaitlist(Waitlist waitlist);
-    void deleteWaitlist(Long id);
+    WaitlistResponseDto saveWaitlist(WaitlistDto waitlistDto, UserDetails currentUser);
+    List<WaitlistResponseDto> getAllWaitlists(UserDetails currentUser);
+    WaitlistResponseDto getWaitlistById(Long id, UserDetails currentUser);
+    WaitlistResponseDto updateWaitlist(Long id, WaitlistUpdateDto waitlistUpdateDto, UserDetails currentUser);
+    void deleteWaitlist(Long id, UserDetails currentUser);
 }

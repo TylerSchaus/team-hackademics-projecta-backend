@@ -141,7 +141,7 @@ class GradeControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(gradeDto))
                 .header("Authorization", "Bearer " + generateToken(student1)))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
@@ -164,7 +164,7 @@ class GradeControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(gradeUpdateDto))
                 .header("Authorization", "Bearer " + generateToken(student1)))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
@@ -181,7 +181,7 @@ class GradeControllerTest {
     void shouldNotAllowStudentToViewOtherStudentGrade() throws Exception {
         mockMvc.perform(get("/api/grades/" + grade.getId())
                 .header("Authorization", "Bearer " + generateToken(student2)))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
@@ -205,7 +205,7 @@ class GradeControllerTest {
     void shouldNotAllowStudentToDeleteGrade() throws Exception {
         mockMvc.perform(delete("/api/grades/" + grade.getId())
                 .header("Authorization", "Bearer " + generateToken(student1)))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
@@ -221,7 +221,7 @@ class GradeControllerTest {
     void shouldNotAllowStudentToViewOtherStudentGrades() throws Exception {
         mockMvc.perform(get("/api/grades/student/" + student2.getStudentId())
                 .header("Authorization", "Bearer " + generateToken(student1)))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
@@ -245,6 +245,6 @@ class GradeControllerTest {
     void shouldNotAllowStudentToGetAllGrades() throws Exception {
         mockMvc.perform(get("/api/grades")
                 .header("Authorization", "Bearer " + generateToken(student1)))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized());
     }
 }
