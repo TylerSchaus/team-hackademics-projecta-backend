@@ -193,4 +193,95 @@ class StudentRecordsControllerTest {
         mockMvc.perform(get("/api/student-records/" + student.getStudentId()))
                 .andExpect(status().isUnauthorized());
     }
+
+    @Test
+    void shouldAllowStudentToExportTheirRecordAsText() throws Exception {
+        mockMvc.perform(get("/api/student-records/" + student.getStudentId() + "/text")
+                .header("Authorization", "Bearer " + generateToken(student)))
+                .andExpect(status().isOk())
+                .andExpect(result -> {
+                    String content = result.getResponse().getContentAsString();
+                    // Verify essential content without being strict about formatting
+                    assert content.contains("Student User");
+                    assert content.contains(String.valueOf(student.getStudentId()));
+                    assert content.contains(course.getCourseTag());
+                    assert content.contains(course.getCourseName());
+                    assert content.contains(course.getCourseNumber());
+                    assert content.contains(course.getTerm());
+                    assert content.contains("86"); // Grade
+                    assert content.contains("3.9"); // GPA
+                });
+    }
+
+    @Test
+    void shouldAllowAdminToExportStudentRecordAsText() throws Exception {
+        mockMvc.perform(get("/api/student-records/" + student.getStudentId() + "/text")
+                .header("Authorization", "Bearer " + generateToken(admin)))
+                .andExpect(status().isOk())
+                .andExpect(result -> {
+                    String content = result.getResponse().getContentAsString();
+                    // Verify essential content without being strict about formatting
+                    assert content.contains("Student User");
+                    assert content.contains(String.valueOf(student.getStudentId()));
+                    assert content.contains(course.getCourseTag());
+                    assert content.contains(course.getCourseName());
+                    assert content.contains(course.getCourseNumber());
+                    assert content.contains(course.getTerm());
+                    assert content.contains("86"); // Grade
+                    assert content.contains("3.9"); // GPA
+                });
+    }
+
+    @Test
+    void shouldAllowStudentToExportTheirRecordAsCsv() throws Exception {
+        mockMvc.perform(get("/api/student-records/" + student.getStudentId() + "/csv")
+                .header("Authorization", "Bearer " + generateToken(student)))
+                .andExpect(status().isOk())
+                .andExpect(result -> {
+                    String content = result.getResponse().getContentAsString();
+                    // Verify essential content without being strict about formatting
+                    assert content.contains("Student User");
+                    assert content.contains(String.valueOf(student.getStudentId()));
+                    assert content.contains(course.getCourseTag());
+                    assert content.contains(course.getCourseName());
+                    assert content.contains(course.getCourseNumber());
+                    assert content.contains(course.getTerm());
+                    assert content.contains("86"); // Grade
+                    assert content.contains("3.9"); // GPA
+                });
+    }
+
+    @Test
+    void shouldAllowAdminToExportStudentRecordAsCsv() throws Exception {
+        mockMvc.perform(get("/api/student-records/" + student.getStudentId() + "/csv")
+                .header("Authorization", "Bearer " + generateToken(admin)))
+                .andExpect(status().isOk())
+                .andExpect(result -> {
+                    String content = result.getResponse().getContentAsString();
+                    // Verify essential content without being strict about formatting
+                    assert content.contains("Student User");
+                    assert content.contains(String.valueOf(student.getStudentId()));
+                    assert content.contains(course.getCourseTag());
+                    assert content.contains(course.getCourseName());
+                    assert content.contains(course.getCourseNumber());
+                    assert content.contains(course.getTerm());
+                    assert content.contains("86"); // Grade
+                    assert content.contains("3.9"); // GPA
+                });
+    }
+
+    @Test
+    void shouldNotAllowStudentToExportOtherStudentRecord() throws Exception {
+        // Create another student
+        User otherStudent = new User("Other", "Student", "other@example.com", passwordEncoder.encode("otherPass"), Role.STUDENT, 456L);
+        otherStudent = userRepository.save(otherStudent);
+
+        mockMvc.perform(get("/api/student-records/" + otherStudent.getStudentId() + "/text")
+                .header("Authorization", "Bearer " + generateToken(student)))
+                .andExpect(status().isForbidden());
+
+        mockMvc.perform(get("/api/student-records/" + otherStudent.getStudentId() + "/csv")
+                .header("Authorization", "Bearer " + generateToken(student)))
+                .andExpect(status().isForbidden());
+    }
 }
