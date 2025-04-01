@@ -71,6 +71,8 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     @Autowired
     private RoleBasedAccessVerification roleBasedAccessVerification;
 
+    private static final int MAX_ENROLLMENTS_PER_TERM = 6;
+
     private EnrollmentResponseDto convertToResponseDto(Enrollment enrollment) {
         CourseResponseDto courseDto = courseService.getCourseById(enrollment.getCourse().getId());
         StudentSummaryDto studentDto = new StudentSummaryDto(
@@ -119,6 +121,10 @@ public class EnrollmentServiceImpl implements EnrollmentService {
             return convertToResponseDto(updateEnrollment(existingEnrollment, enrollmentDto.getLabSectionId(), currentEnrollments));
         }
 
+        if (currentEnrollments.size() >= MAX_ENROLLMENTS_PER_TERM) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Student has reached the maximum number of enrollments per term.");
+        }
+
         // Check for schedule conflicts
         if (ScheduleConflictChecker.hasScheduleConflict(currentEnrollments, course, null)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Schedule conflict detected with course section.");
@@ -127,8 +133,8 @@ public class EnrollmentServiceImpl implements EnrollmentService {
         // Check course capacity
         if (course.getCurrentEnroll() >= course.getEnrollLimit()) {
             // Query the waitlist repository for a waitlist associated with the course
-            Waitlist waitlist = waitlistRepository.findByCourseId(course.getId());
-            if (waitlist != null) {
+            if (course.isWaitlistAvailable()) {
+                Waitlist waitlist = waitlistRepository.findByCourseId(course.getId());
                 // Proceed with waitlist logic
                 List<WaitlistEnrollment> waitlistEnrollments = waitlistEnrollmentRepository.findByWaitlistId(waitlist.getId());
                 if (waitlistEnrollments.size() < waitlist.getWaitlistLimit()) {

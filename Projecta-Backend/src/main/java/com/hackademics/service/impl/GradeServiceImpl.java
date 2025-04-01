@@ -4,8 +4,10 @@ import java.util.List;
 import java.util.stream.Collectors;
  
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.hackademics.dto.RequestDto.GradeDto;
 import com.hackademics.dto.ResponseDto.GradeResponseDto;
@@ -40,14 +42,18 @@ public class GradeServiceImpl implements GradeService {
     public GradeResponseDto saveGrade(GradeDto gradeDto, UserDetails currentUser) {
         
         if (!roleBasedAccessVerification.isAdmin(currentUser)) {
-            throw new RuntimeException("Access denied. Only admins can create grades.");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied. Only admins can create grades.");
+        }
+
+        if (gradeDto.getGrade() < 0 || gradeDto.getGrade() > 100) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid grade. Grade must be between 0 and 100.");
         }
 
         User student = userRepository.findByStudentId(gradeDto.getStudentId())
-                .orElseThrow(() -> new RuntimeException("Student not found with ID: " + gradeDto.getStudentId()));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found with ID: " + gradeDto.getStudentId()));
         
         Course course = courseRepository.findById(gradeDto.getCourseId())
-                .orElseThrow(() -> new RuntimeException("Course not found with ID: " + gradeDto.getCourseId()));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Course not found with ID: " + gradeDto.getCourseId()));
         
         Grade grade = new Grade(student, course, gradeDto.getGrade());
         return ConvertToResponseDto.convertToGradeResponseDto(gradeRepository.save(grade));
@@ -57,7 +63,7 @@ public class GradeServiceImpl implements GradeService {
     public List<GradeResponseDto> getAllGrades(UserDetails currentUser) {
         
         if (!roleBasedAccessVerification.isAdmin(currentUser)) {
-            throw new RuntimeException("Access denied. Only admins can view all grades.");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied. Only admins can view all grades.");
         }
         
         return gradeRepository.findAll().stream()
@@ -69,11 +75,11 @@ public class GradeServiceImpl implements GradeService {
     public GradeResponseDto getGradeById(Long id, UserDetails currentUser) {
         
         Grade grade = gradeRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Grade not found with ID: " + id));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Grade not found with ID: " + id));
         
         // Allow access if user is admin or if the grade belongs to the user
         if (!roleBasedAccessVerification.isCurrentUserRequestedStudentOrAdmin(currentUser, grade.getStudent().getStudentId())) {
-            throw new RuntimeException("Access denied. You can only view your own grades.");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied. You can only view your own grades.");
         }
         
         return ConvertToResponseDto.convertToGradeResponseDto(grade);
@@ -83,7 +89,7 @@ public class GradeServiceImpl implements GradeService {
     public GradeResponseDto updateGrade(Long id, GradeUpdateDto gradeUpdateDto, UserDetails currentUser) {
         
         if (!roleBasedAccessVerification.isAdmin(currentUser)) {
-            throw new RuntimeException("Access denied. Only admins can update grades.");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied. Only admins can update grades.");
         }
         
         Grade grade = gradeRepository.findById(id)
@@ -97,7 +103,7 @@ public class GradeServiceImpl implements GradeService {
     public void deleteGrade(Long id, UserDetails currentUser) {
         
         if (!roleBasedAccessVerification.isAdmin(currentUser)) {
-            throw new RuntimeException("Access denied. Only admins can delete grades.");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied. Only admins can delete grades.");
         }
         
         gradeRepository.deleteById(id);
@@ -108,7 +114,7 @@ public class GradeServiceImpl implements GradeService {
         
         // Allow access if user is admin or if the grades belong to the user
         if (!roleBasedAccessVerification.isCurrentUserRequestedStudentOrAdmin(currentUser, studentId)) {
-            throw new RuntimeException("Access denied. You can only view your own grades.");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied. You can only view your own grades.");
         }
         
         return gradeRepository.findAll().stream()

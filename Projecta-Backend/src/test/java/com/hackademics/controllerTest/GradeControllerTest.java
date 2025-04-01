@@ -141,7 +141,7 @@ class GradeControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(gradeDto))
                 .header("Authorization", "Bearer " + generateToken(student1)))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isForbidden());
     }
 
     @Test
@@ -164,7 +164,7 @@ class GradeControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(gradeUpdateDto))
                 .header("Authorization", "Bearer " + generateToken(student1)))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isForbidden());
     }
 
     @Test
@@ -181,7 +181,7 @@ class GradeControllerTest {
     void shouldNotAllowStudentToViewOtherStudentGrade() throws Exception {
         mockMvc.perform(get("/api/grades/" + grade.getId())
                 .header("Authorization", "Bearer " + generateToken(student2)))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isForbidden());
     }
 
     @Test
@@ -205,7 +205,7 @@ class GradeControllerTest {
     void shouldNotAllowStudentToDeleteGrade() throws Exception {
         mockMvc.perform(delete("/api/grades/" + grade.getId())
                 .header("Authorization", "Bearer " + generateToken(student1)))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isForbidden());
     }
 
     @Test
@@ -221,7 +221,7 @@ class GradeControllerTest {
     void shouldNotAllowStudentToViewOtherStudentGrades() throws Exception {
         mockMvc.perform(get("/api/grades/student/" + student2.getStudentId())
                 .header("Authorization", "Bearer " + generateToken(student1)))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isForbidden());
     }
 
     @Test
@@ -245,6 +245,101 @@ class GradeControllerTest {
     void shouldNotAllowStudentToGetAllGrades() throws Exception {
         mockMvc.perform(get("/api/grades")
                 .header("Authorization", "Bearer " + generateToken(student1)))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isForbidden());
+    }
+
+    // New test cases for grade validation and GPA calculation
+    @Test
+    void shouldReturn400ForGradeBelowZero() throws Exception {
+        GradeDto gradeDto = new GradeDto(student1.getStudentId(), course.getId(), -1.0);
+
+        mockMvc.perform(post("/api/grades")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(gradeDto))
+                .header("Authorization", "Bearer " + generateToken(admin)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void shouldReturn400ForGradeAbove100() throws Exception {
+        GradeDto gradeDto = new GradeDto(student1.getStudentId(), course.getId(), 101.0);
+
+        mockMvc.perform(post("/api/grades")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(gradeDto))
+                .header("Authorization", "Bearer " + generateToken(admin)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void shouldCalculateGPAWithMultipleGrades() throws Exception {
+        // Create another course and grade
+        Course course2 = new Course(
+            admin,
+            subject,
+            "Data Structures",
+            LocalDateTime.now().plusDays(1),
+            LocalDateTime.now().plusMonths(4),
+            50,
+            "201",
+            1,
+            LocalTime.of(11, 0),
+            LocalTime.of(12, 30)
+        );
+        course2 = courseRepository.save(course2);
+
+        // Create second grade
+        GradeDto gradeDto2 = new GradeDto(student1.getStudentId(), course2.getId(), 95.0);
+        mockMvc.perform(post("/api/grades")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(gradeDto2))
+                .header("Authorization", "Bearer " + generateToken(admin)))
+                .andExpect(status().isOk());
+
+        // Verify student's grades
+        mockMvc.perform(get("/api/grades/student/" + student1.getStudentId())
+                .header("Authorization", "Bearer " + generateToken(student1)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(2))
+                .andExpect(jsonPath("$[0].grade").value(85.0))
+                .andExpect(jsonPath("$[1].grade").value(95.0));
+    }
+
+    @Test
+    void shouldUpdateGradeAndAffectGPA() throws Exception {
+        // Update grade from 85 to 95
+        GradeUpdateDto gradeUpdateDto = new GradeUpdateDto(95.0);
+
+        mockMvc.perform(put("/api/grades/" + grade.getId())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(gradeUpdateDto))
+                .header("Authorization", "Bearer " + generateToken(admin)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.grade").value(95.0));
+
+        // Verify the update
+        mockMvc.perform(get("/api/grades/" + grade.getId())
+                .header("Authorization", "Bearer " + generateToken(student1)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.grade").value(95.0));
+    }
+
+    @Test
+    void shouldDeleteGradeAndAffectGPA() throws Exception {
+        // Delete the grade
+        mockMvc.perform(delete("/api/grades/" + grade.getId())
+                .header("Authorization", "Bearer " + generateToken(admin)))
+                .andExpect(status().isOk());
+
+        // Verify the grade is deleted
+        mockMvc.perform(get("/api/grades/" + grade.getId())
+                .header("Authorization", "Bearer " + generateToken(student1)))
+                .andExpect(status().isNotFound());
+
+        // Verify student's grades are empty
+        mockMvc.perform(get("/api/grades/student/" + student1.getStudentId())
+                .header("Authorization", "Bearer " + generateToken(student1)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(0));
     }
 }

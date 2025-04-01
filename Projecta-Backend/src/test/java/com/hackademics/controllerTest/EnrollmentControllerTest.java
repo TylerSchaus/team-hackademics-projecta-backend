@@ -33,7 +33,6 @@ import com.hackademics.repository.EnrollmentRepository;
 import com.hackademics.repository.LabSectionRepository;
 import com.hackademics.repository.SubjectRepository;
 import com.hackademics.repository.UserRepository;
-import com.hackademics.service.EnrollmentService;
 import com.hackademics.service.JwtService;
 import com.hackademics.util.TermDeterminator;
 
@@ -71,9 +70,6 @@ class EnrollmentControllerTest {
 
     @Autowired
     private JwtService jwtService;
-
-    @Autowired
-    private EnrollmentService enrollmentService;
 
     private User admin;
     private User student1;
@@ -331,9 +327,100 @@ class EnrollmentControllerTest {
                 .andExpect(status().isForbidden());
     }
 
-    // Helper method to generate next lab section ID
-    private Long generateNextLabSectionId(Long courseId) {
-        Long maxLabSectionId = labSectionRepository.findMaxLabSectionIdForCourse(courseId);
-        return (maxLabSectionId != null) ? maxLabSectionId + 1L : 1L;
+    // New test cases for enrollment validation
+    @Test
+    void shouldReturn400ForScheduleConflict() throws Exception {
+        // Create a course that overlaps with the existing course's time
+        Course conflictingCourse = new Course(
+            admin,
+            subject,
+            "Conflicting Course",
+            LocalDateTime.now().plusDays(1),
+            LocalDateTime.now().plusMonths(4),
+            50,
+            "102",
+            1,
+            LocalTime.of(9, 30), // Overlaps with existing course (9:00-10:30)
+            LocalTime.of(11, 0)
+        );
+        conflictingCourse = courseRepository.save(conflictingCourse);
+
+        // Try to enroll in the conflicting course
+        EnrollmentDto enrollmentDto = new EnrollmentDto(student1.getStudentId(), conflictingCourse.getId(), null);
+        mockMvc.perform(post("/api/enrollments")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(enrollmentDto))
+                .header("Authorization", "Bearer " + generateToken(student1)))
+                .andExpect(status().isBadRequest());
     }
+
+    @Test
+    void shouldReturn400WhenCourseIsAtCapacity() throws Exception {
+        // Set course capacity to current enrollment count
+        course.setEnrollLimit(1);
+        course.setCurrentEnroll(1); // Set current enrollment to match limit
+        courseRepository.save(course);
+
+        // Try to enroll another student
+        EnrollmentDto enrollmentDto = new EnrollmentDto(student2.getStudentId(), course.getId(), null);
+        mockMvc.perform(post("/api/enrollments")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(enrollmentDto))
+                .header("Authorization", "Bearer " + generateToken(student2)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void shouldReturn400WhenExceedingMaxClassesPerTerm() throws Exception {
+        // Create 6 courses in the same term
+        for (int i = 0; i < 5; i++) {
+            Course newCourse = new Course(
+                admin,
+                subject,
+                "Course " + (i + 1),
+                LocalDateTime.now().plusDays(1),
+                LocalDateTime.now().plusMonths(4),
+                50,
+                "10" + (i + 1),
+                i,
+                LocalTime.of(11, 0 + (i * 2)), // Stagger the times to avoid conflicts
+                LocalTime.of(12, 30 + (i * 2))
+            );
+            newCourse.setId(Long.valueOf(i + 10));
+            newCourse.setTerm(course.getTerm());
+            newCourse = courseRepository.save(newCourse);
+
+            // Enroll student in each course
+            EnrollmentDto enrollmentDto = new EnrollmentDto(student1.getStudentId(), newCourse.getId(), null);
+            mockMvc.perform(post("/api/enrollments")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(enrollmentDto))
+                    .header("Authorization", "Bearer " + generateToken(student1)))
+                    .andExpect(status().isCreated());
+        }
+
+        // Try to enroll in a 7th course
+        Course seventhCourse = new Course(
+            admin,
+            subject,
+            "Seventh Course",
+            LocalDateTime.now().plusDays(1),
+            LocalDateTime.now().plusMonths(4),
+            50,
+            "107",
+            1,
+            LocalTime.of(21, 0),
+            LocalTime.of(22, 30)
+        );
+        seventhCourse = courseRepository.save(seventhCourse);
+
+        EnrollmentDto enrollmentDto = new EnrollmentDto(student1.getStudentId(), seventhCourse.getId(), null);
+        mockMvc.perform(post("/api/enrollments")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(enrollmentDto))
+                .header("Authorization", "Bearer " + generateToken(student1)))
+                .andExpect(status().isBadRequest());
+    }
+
+
 }
