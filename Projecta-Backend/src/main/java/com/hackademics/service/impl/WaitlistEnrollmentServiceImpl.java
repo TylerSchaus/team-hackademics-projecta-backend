@@ -10,12 +10,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import com.hackademics.dto.RequestDto.WaitlistEnrollmentDto;
-import com.hackademics.dto.ResponseDto.AdminSummaryDto;
-import com.hackademics.dto.ResponseDto.CourseResponseDto;
-import com.hackademics.dto.ResponseDto.StudentSummaryDto;
-import com.hackademics.dto.ResponseDto.SubjectResponseDto;
 import com.hackademics.dto.ResponseDto.WaitlistEnrollmentResponseDto;
-import com.hackademics.dto.ResponseDto.WaitlistResponseDto;
 import com.hackademics.model.User;
 import com.hackademics.model.Waitlist;
 import com.hackademics.model.WaitlistEnrollment;
@@ -23,6 +18,7 @@ import com.hackademics.repository.UserRepository;
 import com.hackademics.repository.WaitlistEnrollmentRepository;
 import com.hackademics.repository.WaitlistRepository;
 import com.hackademics.service.WaitlistEnrollmentService;
+import com.hackademics.util.ConvertToResponseDto;
 import com.hackademics.util.EmailSender;
 import com.hackademics.util.RoleBasedAccessVerification;
 
@@ -47,49 +43,6 @@ public class WaitlistEnrollmentServiceImpl implements WaitlistEnrollmentService 
     @Value("${email.sending.enabled:true}")
     private boolean emailSendingEnabled;
 
-    private WaitlistEnrollmentResponseDto convertToResponseDto(WaitlistEnrollment enrollment) {
-        return new WaitlistEnrollmentResponseDto(
-            enrollment.getId(),
-            enrollment.getWaitlistPosition(),
-            new WaitlistResponseDto(
-                enrollment.getWaitlist().getId(),
-                enrollment.getWaitlist().getWaitlistLimit(),
-                new CourseResponseDto(
-                    enrollment.getWaitlist().getCourse().getId(),
-                    new AdminSummaryDto(
-                        enrollment.getWaitlist().getCourse().getAdmin().getId(),
-                        enrollment.getWaitlist().getCourse().getAdmin().getFirstName(),
-                        enrollment.getWaitlist().getCourse().getAdmin().getLastName(),
-                        enrollment.getWaitlist().getCourse().getAdmin().getAdminId()
-                    ),
-                    new SubjectResponseDto(
-                        enrollment.getWaitlist().getCourse().getSubject().getId(),
-                        enrollment.getWaitlist().getCourse().getSubject().getSubjectName(),
-                        enrollment.getWaitlist().getCourse().getSubject().getSubjectTag()
-                    ),
-                    enrollment.getWaitlist().getCourse().getCourseName(),
-                    enrollment.getWaitlist().getCourse().getStartDate().toLocalDate(),
-                    enrollment.getWaitlist().getCourse().getEndDate().toLocalDate(),
-                    enrollment.getWaitlist().getCourse().getEnrollLimit(),
-                    enrollment.getWaitlist().getCourse().getCurrentEnroll(),
-                    enrollment.getWaitlist().getCourse().getCourseNumber(),
-                    enrollment.getWaitlist().getCourse().getCourseTag(),
-                    enrollment.getWaitlist().getCourse().getTerm(),
-                    enrollment.getWaitlist().getCourse().getDays(),
-                    enrollment.getWaitlist().getCourse().getStartTime(),
-                    enrollment.getWaitlist().getCourse().getEndTime(),
-                    enrollment.getWaitlist().getCourse().getNumLabSections()
-                )
-            ),
-            new StudentSummaryDto(
-                enrollment.getStudent().getId(),
-                enrollment.getStudent().getFirstName(),
-                enrollment.getStudent().getLastName(),
-                enrollment.getStudent().getStudentId()
-            ),
-            enrollment.getTerm()
-        );
-    }
 
     @Override
     public WaitlistEnrollmentResponseDto saveWaitlistEnrollment(WaitlistEnrollmentDto waitlistEnrollmentDto, UserDetails currentUser) {
@@ -120,7 +73,7 @@ public class WaitlistEnrollmentServiceImpl implements WaitlistEnrollmentService 
         if (emailSendingEnabled) {
             emailSender.sendWaitlistEmail(enrollment);
         }
-        return convertToResponseDto(waitlistEnrollmentRepository.save(enrollment));
+        return ConvertToResponseDto.convertToWaitlistEnrollmentResponseDto(waitlistEnrollmentRepository.save(enrollment));
     }
 
     @Override
@@ -150,7 +103,7 @@ public class WaitlistEnrollmentServiceImpl implements WaitlistEnrollmentService 
         }
         
         return waitlistEnrollmentRepository.findByStudentId(studentId).stream()
-                .map(this::convertToResponseDto)
+                .map(ConvertToResponseDto::convertToWaitlistEnrollmentResponseDto)
                 .collect(Collectors.toList());
     }
 

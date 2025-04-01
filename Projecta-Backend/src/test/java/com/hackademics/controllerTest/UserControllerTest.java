@@ -80,7 +80,7 @@ class UserControllerTest {
     }
 
     @Test
-    void shouldNotAllowStudentToUpdateOwnName() throws Exception {
+    void shouldAllowStudentToUpdateOwnName() throws Exception {
         UserUpdateDto updateDto = new UserUpdateDto();
         updateDto.setFirstName("NewName");
 
@@ -88,7 +88,8 @@ class UserControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(updateDto))
                 .header("Authorization", "Bearer " + generateToken(student)))
-                .andExpect(status().isForbidden()); // Expecting 403 Forbidden
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.firstName").value("NewName"));
     }
 
     @Test

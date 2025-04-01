@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service;
 
 import com.hackademics.dto.RequestDto.GradeDto;
 import com.hackademics.dto.ResponseDto.GradeResponseDto;
-import com.hackademics.dto.ResponseDto.StudentSummaryDto;
 import com.hackademics.dto.UpdateDto.GradeUpdateDto;
 import com.hackademics.model.Course;
 import com.hackademics.model.Grade;
@@ -17,16 +16,13 @@ import com.hackademics.model.User;
 import com.hackademics.repository.CourseRepository;
 import com.hackademics.repository.GradeRepository;
 import com.hackademics.repository.UserRepository;
-import com.hackademics.service.CourseService;
 import com.hackademics.service.GradeService;
+import com.hackademics.util.ConvertToResponseDto;
 import com.hackademics.util.RoleBasedAccessVerification;
 
 @Service
 public class GradeServiceImpl implements GradeService {
 
-    @Autowired
-    private CourseService courseService;
-    
     @Autowired
     private GradeRepository gradeRepository;
 
@@ -39,14 +35,6 @@ public class GradeServiceImpl implements GradeService {
     @Autowired
     private RoleBasedAccessVerification roleBasedAccessVerification;
 
-    private GradeResponseDto convertToGradeResponseDto(Grade grade) {
-        return new GradeResponseDto(
-            grade.getId(),
-            grade.getGrade(),
-            new StudentSummaryDto(grade.getStudent().getId(), grade.getStudent().getFirstName(), grade.getStudent().getLastName(), grade.getStudentId()),
-            courseService.convertToResponseDto(grade.getCourse())
-        );
-    }
 
     @Override
     public GradeResponseDto saveGrade(GradeDto gradeDto, UserDetails currentUser) {
@@ -62,7 +50,7 @@ public class GradeServiceImpl implements GradeService {
                 .orElseThrow(() -> new RuntimeException("Course not found with ID: " + gradeDto.getCourseId()));
         
         Grade grade = new Grade(student, course, gradeDto.getGrade());
-        return convertToGradeResponseDto(gradeRepository.save(grade));
+        return ConvertToResponseDto.convertToGradeResponseDto(gradeRepository.save(grade));
     }
 
     @Override
@@ -73,7 +61,7 @@ public class GradeServiceImpl implements GradeService {
         }
         
         return gradeRepository.findAll().stream()
-                .map(this::convertToGradeResponseDto)
+                .map(ConvertToResponseDto::convertToGradeResponseDto)
                 .collect(Collectors.toList());
     }
 
@@ -88,7 +76,7 @@ public class GradeServiceImpl implements GradeService {
             throw new RuntimeException("Access denied. You can only view your own grades.");
         }
         
-        return convertToGradeResponseDto(grade);
+        return ConvertToResponseDto.convertToGradeResponseDto(grade);
     }
 
     @Override
@@ -102,7 +90,7 @@ public class GradeServiceImpl implements GradeService {
                 .orElseThrow(() -> new RuntimeException("Grade not found with ID: " + id));
         
         grade.setGrade(gradeUpdateDto.getGrade());
-        return convertToGradeResponseDto(gradeRepository.save(grade));
+        return ConvertToResponseDto.convertToGradeResponseDto(gradeRepository.save(grade));
     }
 
     @Override
@@ -125,7 +113,7 @@ public class GradeServiceImpl implements GradeService {
         
         return gradeRepository.findAll().stream()
                 .filter(grade -> grade.getStudent().getStudentId().equals(studentId))
-                .map(this::convertToGradeResponseDto)
+                .map(ConvertToResponseDto::convertToGradeResponseDto)
                 .collect(Collectors.toList());
     }
 }

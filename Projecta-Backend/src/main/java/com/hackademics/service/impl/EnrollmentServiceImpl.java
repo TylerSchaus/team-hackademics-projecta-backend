@@ -88,7 +88,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
                 studentDto,
                 labSectionDto
         );
-    
+
         return responseDto;
     }
 
@@ -312,7 +312,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
 
     @Override
     public void deleteEnrollment(Long id, UserDetails currentUser) {
-           
+
         Enrollment enrollment = enrollmentRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Enrollment not found"));
 
@@ -336,7 +336,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
 
     @Override
     public List<EnrollmentResponseDto> getCurrentEnrollmentByStudentId(UserDetails currentUser, Long studentId, String term) {
-    
+
         if (!roleBasedAccessVerification.isCurrentUserRequestedStudentOrAdmin(currentUser, studentId)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Students can only view their own enrollments.");
         }

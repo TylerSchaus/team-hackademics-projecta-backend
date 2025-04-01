@@ -1,17 +1,17 @@
 package com.hackademics.dto.ResponseDto;
 
-public class WaitlistResponseDto {
+public class WaitlistSummaryDto {
     private Long waitlistId;
     private Integer capacity;
-    private CourseSummaryDto course;
+    private Integer currentEnroll;
 
-    public WaitlistResponseDto() {
+    public WaitlistSummaryDto() {
     }
 
-    public WaitlistResponseDto(Long waitlistId, Integer capacity, CourseSummaryDto course) {
+    public WaitlistSummaryDto(Long waitlistId, Integer capacity, Integer currentEnroll) {
         this.waitlistId = waitlistId;
         this.capacity = capacity;
-        this.course = course;
+        this.currentEnroll = currentEnroll;
     }
 
     public Long getWaitlistId() {
@@ -30,11 +30,12 @@ public class WaitlistResponseDto {
         this.capacity = capacity;
     }
 
-    public CourseSummaryDto getCourse() {
-        return course;
+    public Integer getCurrentEnroll() {
+        return currentEnroll;
     }
-
-    public void setCourse(CourseSummaryDto course) {
-        this.course = course;
+    
+    public void setCurrentEnroll(Integer currentEnroll) {
+        this.currentEnroll = currentEnroll;
     }
+    
 } 

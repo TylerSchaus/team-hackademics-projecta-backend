@@ -7,10 +7,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import com.hackademics.dto.RequestDto.WaitlistDto;
 import com.hackademics.dto.ResponseDto.WaitlistResponseDto;
 import com.hackademics.dto.UpdateDto.WaitlistUpdateDto;
-import com.hackademics.model.Waitlist;
 
 public interface WaitlistService {
-    WaitlistResponseDto convertToResponseDto(Waitlist waitlist);
     WaitlistResponseDto saveWaitlist(WaitlistDto waitlistDto, UserDetails currentUser);
     List<WaitlistResponseDto> getAllWaitlists(UserDetails currentUser);
     WaitlistResponseDto getWaitlistById(Long id, UserDetails currentUser);

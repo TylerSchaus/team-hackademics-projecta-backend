@@ -18,6 +18,7 @@ import com.hackademics.model.Role;
 import com.hackademics.model.User;
 import com.hackademics.repository.UserRepository;
 import com.hackademics.service.UserService;
+import com.hackademics.util.ConvertToResponseDto;
 import com.hackademics.util.RoleBasedAccessVerification;
 
 @Service
@@ -32,20 +33,6 @@ public class UserServiceImpl implements UserService {
     @Autowired
     private RoleBasedAccessVerification roleBasedAccessVerification;
 
-    private UserResponseDTO convertToResponseDto(User user) {
-        return new UserResponseDTO(
-                user.getId(),
-                user.getFirstName(),
-                user.getLastName(),
-                user.getEmail(),
-                user.getRole().toString(),
-                user.getStudentId(),
-                user.getEnrollStartDate() != null ? user.getEnrollStartDate().toLocalDate() : null,
-                user.getExpectGraduationDate() != null ? user.getExpectGraduationDate().toLocalDate() : null,
-                user.getAdminId()
-        );
-    }
-
     @Override
     public List<UserResponseDTO> getUsersByRole(Role role, UserDetails currentUser) {
         if (!roleBasedAccessVerification.isAdmin(currentUser)) {
@@ -53,25 +40,25 @@ public class UserServiceImpl implements UserService {
         }
 
         return userRepository.findByRole(role).stream()
-                .map(this::convertToResponseDto)
+                .map(ConvertToResponseDto::convertToUserResponseDto)
                 .collect(Collectors.toList());
     }
 
     @Override
     public Optional<UserResponseDTO> getUserByEmail(String email) {
         return userRepository.findByEmail(email)
-                .map(this::convertToResponseDto);
+                .map(ConvertToResponseDto::convertToUserResponseDto);
     }
 
     @Override
     public Optional<UserResponseDTO> getUserById(Long id) {
         return userRepository.findById(id)
-                .map(this::convertToResponseDto);
+                .map(ConvertToResponseDto::convertToUserResponseDto);
     }
 
     @Override
     public UserResponseDTO saveUser(User user) {
-        return convertToResponseDto(userRepository.save(user)); // Reference from auth service for saving and dto conversion.
+        return ConvertToResponseDto.convertToUserResponseDto(userRepository.save(user)); // Reference from auth service for saving and dto conversion.
     }
 
     @Override
@@ -117,16 +104,24 @@ public class UserServiceImpl implements UserService {
                 userToUpdate.setStudentId(userUpdateDto.getStudentId());
             }
         } // Regular users cannot modify restricted fields
-        else if (userUpdateDto.getStudentId() != null || userUpdateDto.getFirstName() != null || userUpdateDto.getLastName() != null) {
+        else if (userUpdateDto.getStudentId() != null) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You do not have permission to update this information.");
         }
 
-        // Both admin & self-update users can change their email
+        // Both admins and students themselves can change their email, first name, and last name.
         if (userUpdateDto.getEmail() != null) {
             userToUpdate.setEmail(userUpdateDto.getEmail());
         }
 
-        return convertToResponseDto(userRepository.save(userToUpdate));
+        if (userUpdateDto.getFirstName() != null) {
+            userToUpdate.setFirstName(userUpdateDto.getFirstName());
+        }
+
+        if (userUpdateDto.getLastName() != null) {
+            userToUpdate.setLastName(userUpdateDto.getLastName());
+        }
+
+        return ConvertToResponseDto.convertToUserResponseDto(userRepository.save(userToUpdate));
     }
 
     @Override
@@ -156,7 +151,7 @@ public class UserServiceImpl implements UserService {
         }
         return userRepository.findByRole(Role.STUDENT).stream()
                 .filter(student -> student.getFirstName().startsWith(prefix))
-                .map(this::convertToResponseDto)
+                .map(ConvertToResponseDto::convertToUserResponseDto)
                 .collect(Collectors.toList());
     }
 
@@ -172,7 +167,7 @@ public class UserServiceImpl implements UserService {
                     double avgGrade = computeGradeAverage(student);
                     return avgGrade >= low && avgGrade <= high;
                 })
-                .map(this::convertToResponseDto)
+                .map(ConvertToResponseDto::convertToUserResponseDto)
                 .collect(Collectors.toList());
     }
 
