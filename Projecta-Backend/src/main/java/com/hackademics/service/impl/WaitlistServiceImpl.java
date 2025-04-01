@@ -14,13 +14,11 @@ import com.hackademics.dto.WaitlistDto;
 import com.hackademics.dto.WaitlistResponseDto;
 import com.hackademics.dto.WaitlistUpdateDto;
 import com.hackademics.model.Course;
-import com.hackademics.model.Role;
-import com.hackademics.model.User;
 import com.hackademics.model.Waitlist;
 import com.hackademics.repository.CourseRepository;
-import com.hackademics.repository.UserRepository;
 import com.hackademics.repository.WaitlistRepository;
 import com.hackademics.service.WaitlistService;
+import com.hackademics.util.RoleBasedAccessVerification;
 
 @Service
 public class WaitlistServiceImpl implements WaitlistService {
@@ -29,10 +27,10 @@ public class WaitlistServiceImpl implements WaitlistService {
     private WaitlistRepository waitlistRepository;
 
     @Autowired
-    private UserRepository userRepository;
+    private CourseRepository courseRepository;
 
     @Autowired
-    private CourseRepository courseRepository;
+    private RoleBasedAccessVerification roleBasedAccessVerification;
 
     private CourseResponseDto convertCourseToResponseDto(Course course) {
         AdminSummaryDto adminDto = new AdminSummaryDto(
@@ -78,10 +76,8 @@ public class WaitlistServiceImpl implements WaitlistService {
 
     @Override
     public WaitlistResponseDto saveWaitlist(WaitlistDto waitlistDto, UserDetails currentUser) {
-        User user = userRepository.findByEmail(currentUser.getUsername())
-                .orElseThrow(() -> new RuntimeException("User not found"));
         
-        if (user.getRole() != Role.ADMIN) {
+        if (!roleBasedAccessVerification.isAdmin(currentUser)) {
             throw new RuntimeException("Access denied. Only admins can create waitlists.");
         }
 
@@ -95,10 +91,8 @@ public class WaitlistServiceImpl implements WaitlistService {
 
     @Override
     public List<WaitlistResponseDto> getAllWaitlists(UserDetails currentUser) {
-        User user = userRepository.findByEmail(currentUser.getUsername())
-                .orElseThrow(() -> new RuntimeException("User not found"));
         
-        if (user.getRole() != Role.ADMIN) {
+        if (!roleBasedAccessVerification.isAdmin(currentUser)) {
             throw new RuntimeException("Access denied. Only admins can view all waitlists.");
         }
         
@@ -109,14 +103,12 @@ public class WaitlistServiceImpl implements WaitlistService {
 
     @Override
     public WaitlistResponseDto getWaitlistById(Long id, UserDetails currentUser) {
-        User user = userRepository.findByEmail(currentUser.getUsername())
-                .orElseThrow(() -> new RuntimeException("User not found"));
         
         Waitlist waitlist = waitlistRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Waitlist not found with ID: " + id));
         
         // Allow access if user is admin or if the waitlist belongs to the user's course
-        if (user.getRole() != Role.ADMIN) {
+        if (!roleBasedAccessVerification.isAdmin(currentUser)) {
             throw new RuntimeException("Access denied. Only admins can view waitlists.");
         }
         
@@ -125,10 +117,8 @@ public class WaitlistServiceImpl implements WaitlistService {
 
     @Override
     public WaitlistResponseDto updateWaitlist(Long id, WaitlistUpdateDto waitlistUpdateDto, UserDetails currentUser) {
-        User user = userRepository.findByEmail(currentUser.getUsername())
-                .orElseThrow(() -> new RuntimeException("User not found"));
         
-        if (user.getRole() != Role.ADMIN) {
+        if (!roleBasedAccessVerification.isAdmin(currentUser)) {
             throw new RuntimeException("Access denied. Only admins can update waitlists.");
         }
         
@@ -141,10 +131,8 @@ public class WaitlistServiceImpl implements WaitlistService {
 
     @Override
     public void deleteWaitlist(Long id, UserDetails currentUser) {
-        User user = userRepository.findByEmail(currentUser.getUsername())
-                .orElseThrow(() -> new RuntimeException("User not found"));
         
-        if (user.getRole() != Role.ADMIN) {
+        if (!roleBasedAccessVerification.isAdmin(currentUser)) {
             throw new RuntimeException("Access denied. Only admins can delete waitlists.");
         }
         
@@ -155,4 +143,6 @@ public class WaitlistServiceImpl implements WaitlistService {
         courseRepository.save(waitlist.getCourse());
         waitlistRepository.deleteById(id);
     }
+
+  
 }

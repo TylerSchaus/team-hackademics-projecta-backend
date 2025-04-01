@@ -16,10 +16,10 @@ import com.hackademics.dto.StudentRecordDto.AcademicPerformanceDto;
 import com.hackademics.dto.StudentRecordDto.CompletedCourseDto;
 import com.hackademics.dto.StudentRecordDto.CurrentEnrollmentDto;
 import com.hackademics.model.Grade;
-import com.hackademics.model.Role;
 import com.hackademics.model.User;
 import com.hackademics.repository.UserRepository;
 import com.hackademics.service.StudentRecordsService;
+import com.hackademics.util.RoleBasedAccessVerification;
 
 import jakarta.transaction.Transactional;
 
@@ -30,13 +30,13 @@ public class StudentRecordsServiceImpl implements StudentRecordsService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private RoleBasedAccessVerification roleBasedAccessVerification;
+
     @Override
     public StudentRecordDto getStudentRecord(Long studentId, UserDetails currentUser) {
 
-        User authenticatedUser = userRepository.findByEmail(currentUser.getUsername())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized"));
-
-        if (authenticatedUser.getRole() == Role.STUDENT && !authenticatedUser.getStudentId().equals(studentId)) {
+        if (!roleBasedAccessVerification.isCurrentUserRequestedStudentOrAdmin(currentUser, studentId)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Students can only view their own records.");
         }
 
