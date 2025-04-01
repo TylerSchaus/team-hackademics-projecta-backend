@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -21,7 +22,9 @@ import com.hackademics.model.WaitlistEnrollment;
 import com.hackademics.repository.UserRepository;
 import com.hackademics.repository.WaitlistEnrollmentRepository;
 import com.hackademics.repository.WaitlistRepository;
+import com.hackademics.service.MailService;
 import com.hackademics.service.WaitlistEnrollmentService;
+import com.hackademics.util.EmailSender;
 import com.hackademics.util.RoleBasedAccessVerification;
 
 @Service
@@ -38,6 +41,15 @@ public class WaitlistEnrollmentServiceImpl implements WaitlistEnrollmentService 
 
     @Autowired
     private RoleBasedAccessVerification roleBasedAccessVerification;
+
+    @Autowired
+    private MailService mailService;
+
+    @Autowired
+    private EmailSender emailSender;
+
+    @Value("${email.sending.enabled:true}")
+    private boolean emailSendingEnabled;
 
     private WaitlistEnrollmentResponseDto convertToResponseDto(WaitlistEnrollment enrollment) {
         return new WaitlistEnrollmentResponseDto(
@@ -109,6 +121,9 @@ public class WaitlistEnrollmentServiceImpl implements WaitlistEnrollmentService 
         
         // Create and save the enrollment
         WaitlistEnrollment enrollment = new WaitlistEnrollment(currentEnrollments.size() + 1, waitlist, student);
+        if (emailSendingEnabled) {
+            emailSender.sendWaitlistEmail(enrollment);
+        }
         return convertToResponseDto(waitlistEnrollmentRepository.save(enrollment));
     }
 
@@ -126,6 +141,9 @@ public class WaitlistEnrollmentServiceImpl implements WaitlistEnrollmentService 
         // Delete the enrollment and update the waitlist positions
         waitlistEnrollmentRepository.deleteById(id);
         updateWaitlistPositions(enrollment.getWaitlist().getId());
+        if (emailSendingEnabled) {
+            emailSender.sendWaitlistRemovalEmail(enrollment);
+        }
     }
 
     @Override
@@ -152,4 +170,5 @@ public class WaitlistEnrollmentServiceImpl implements WaitlistEnrollmentService 
         }
     }
 
+    
 }

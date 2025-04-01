@@ -31,6 +31,7 @@ import com.hackademics.service.CourseService;
 import com.hackademics.service.EnrollmentService;
 import com.hackademics.service.LabSectionService;
 import com.hackademics.service.MailService;
+import com.hackademics.util.EmailSender;
 import com.hackademics.util.RoleBasedAccessVerification;
 import com.hackademics.util.ScheduleConflictChecker;
 import com.hackademics.util.TermDeterminator;
@@ -65,6 +66,9 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     @Autowired
     private MailService mailService;
 
+    @Autowired
+    private EmailSender emailSender;
+
     @Value("${email.sending.enabled:true}")
     private boolean emailSendingEnabled;
 
@@ -88,19 +92,8 @@ public class EnrollmentServiceImpl implements EnrollmentService {
                 studentDto,
                 labSectionDto
         );
-        if (emailSendingEnabled) {
-            System.out.println("Sending email...");
-            sendEmail(responseDto);
-        }
+    
         return responseDto;
-    }
-
-    private void sendEmail(EnrollmentResponseDto enrollmentResponseDto){
-        User student = userRepository.findByStudentId(enrollmentResponseDto.getStudent().getStudentId())
-        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found"));
-
-        mailService.sendEnrollmentEmail(enrollmentResponseDto, student);
-
     }
 
     @Override
@@ -150,6 +143,9 @@ public class EnrollmentServiceImpl implements EnrollmentService {
                             student
                     );
                     waitlistEnrollmentRepository.save(waitlistEnrollment);
+                    if (emailSendingEnabled) {
+                        emailSender.sendWaitlistEmail(waitlistEnrollment);
+                    }
                     throw new ResponseStatusException(HttpStatus.OK, "Student added to the waitlist.");
                 } else {
                     throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Course is at capacity and the waitlist is full.");
@@ -203,6 +199,11 @@ public class EnrollmentServiceImpl implements EnrollmentService {
         if (labSection != null) {
             labSection.setCurrentEnroll(labSection.getCurrentEnroll() + 1);
             labSectionRepository.save(labSection);
+        }
+
+        if (emailSendingEnabled) {
+            System.out.println("Sending email...");
+            emailSender.sendEnrollmentEmail(enrollment);
         }
 
         return convertToResponseDto(savedEnrollment);
@@ -331,6 +332,10 @@ public class EnrollmentServiceImpl implements EnrollmentService {
             course.setCurrentEnroll(course.getCurrentEnroll() - 1);
             courseRepository.save(course);
         }
+
+        if (emailSendingEnabled) {
+            emailSender.sendEnrollmentRemovalEmail(enrollment);
+        }
     }
 
     @Override
@@ -357,4 +362,5 @@ public class EnrollmentServiceImpl implements EnrollmentService {
                 .map(this::convertToResponseDto)
                 .collect(Collectors.toList());
     }
+
 }

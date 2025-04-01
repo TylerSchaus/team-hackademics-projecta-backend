@@ -7,10 +7,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
-import com.hackademics.dto.GradeDto;
-import com.hackademics.dto.GradeResponseDto;
-import com.hackademics.dto.GradeUpdateDto;
-import com.hackademics.dto.StudentSummaryDto;
+import com.hackademics.dto.RequestDto.GradeDto;
+import com.hackademics.dto.ResponseDto.GradeResponseDto;
+import com.hackademics.dto.ResponseDto.StudentSummaryDto;
+import com.hackademics.dto.UpdateDto.GradeUpdateDto;
 import com.hackademics.model.Course;
 import com.hackademics.model.Grade;
 import com.hackademics.model.User;

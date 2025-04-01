@@ -1,14 +1,12 @@
 package com.hackademics.service;
 
-import com.hackademics.dto.ResponseDto.EnrollmentResponseDto;
-import com.hackademics.dto.ResponseDto.WaitlistEnrollmentResponseDto;
-import com.hackademics.model.User;
-
+import com.hackademics.model.Enrollment;
+import com.hackademics.model.WaitlistEnrollment;
 
 public interface MailService {
     
-    void sendEnrollmentEmail(EnrollmentResponseDto enrollmentResponseDto, User student); 
-    void sendWaitlistEmail(WaitlistEnrollmentResponseDto waitlistEnrollmentResponseDto, User student);
-    void sendEnrollmentRemovalEmail(EnrollmentResponseDto enrollmentResponseDto, User student);
-    void sendWaitlistRemovalEmail(WaitlistEnrollmentResponseDto waitlistEnrollmentResponseDto, User student);
+    void sendEnrollmentEmail(Enrollment enrollment); 
+    void sendWaitlistEmail(WaitlistEnrollment waitlistEnrollment);
+    void sendEnrollmentRemovalEmail(Enrollment enrollment);
+    void sendWaitlistRemovalEmail(WaitlistEnrollment waitlistEnrollment);
 }
