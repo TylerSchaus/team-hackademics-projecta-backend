@@ -8,18 +8,18 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import com.hackademics.dto.GradeDto;
-import com.hackademics.dto.GradeUpdateDto;
 import com.hackademics.dto.GradeResponseDto;
+import com.hackademics.dto.GradeUpdateDto;
 import com.hackademics.dto.StudentSummaryDto;
 import com.hackademics.model.Course;
 import com.hackademics.model.Grade;
-import com.hackademics.model.Role;
 import com.hackademics.model.User;
 import com.hackademics.repository.CourseRepository;
 import com.hackademics.repository.GradeRepository;
 import com.hackademics.repository.UserRepository;
-import com.hackademics.service.GradeService;
 import com.hackademics.service.CourseService;
+import com.hackademics.service.GradeService;
+import com.hackademics.util.RoleBasedAccessVerification;
 
 @Service
 public class GradeServiceImpl implements GradeService {
@@ -36,6 +36,9 @@ public class GradeServiceImpl implements GradeService {
     @Autowired
     private CourseRepository courseRepository;
 
+    @Autowired
+    private RoleBasedAccessVerification roleBasedAccessVerification;
+
     private GradeResponseDto convertToGradeResponseDto(Grade grade) {
         return new GradeResponseDto(
             grade.getId(),
@@ -47,10 +50,8 @@ public class GradeServiceImpl implements GradeService {
 
     @Override
     public GradeResponseDto saveGrade(GradeDto gradeDto, UserDetails currentUser) {
-        User user = userRepository.findByEmail(currentUser.getUsername())
-                .orElseThrow(() -> new RuntimeException("User not found"));
         
-        if (user.getRole() != Role.ADMIN) {
+        if (!roleBasedAccessVerification.isAdmin(currentUser)) {
             throw new RuntimeException("Access denied. Only admins can create grades.");
         }
 
@@ -66,10 +67,8 @@ public class GradeServiceImpl implements GradeService {
 
     @Override
     public List<GradeResponseDto> getAllGrades(UserDetails currentUser) {
-        User user = userRepository.findByEmail(currentUser.getUsername())
-                .orElseThrow(() -> new RuntimeException("User not found"));
         
-        if (user.getRole() != Role.ADMIN) {
+        if (!roleBasedAccessVerification.isAdmin(currentUser)) {
             throw new RuntimeException("Access denied. Only admins can view all grades.");
         }
         
@@ -80,14 +79,12 @@ public class GradeServiceImpl implements GradeService {
 
     @Override
     public GradeResponseDto getGradeById(Long id, UserDetails currentUser) {
-        User user = userRepository.findByEmail(currentUser.getUsername())
-                .orElseThrow(() -> new RuntimeException("User not found"));
         
         Grade grade = gradeRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Grade not found with ID: " + id));
         
         // Allow access if user is admin or if the grade belongs to the user
-        if (user.getRole() != Role.ADMIN && !grade.getStudent().getId().equals(user.getId())) {
+        if (!roleBasedAccessVerification.isCurrentUserRequestedStudentOrAdmin(currentUser, grade.getStudent().getStudentId())) {
             throw new RuntimeException("Access denied. You can only view your own grades.");
         }
         
@@ -96,10 +93,8 @@ public class GradeServiceImpl implements GradeService {
 
     @Override
     public GradeResponseDto updateGrade(Long id, GradeUpdateDto gradeUpdateDto, UserDetails currentUser) {
-        User user = userRepository.findByEmail(currentUser.getUsername())
-                .orElseThrow(() -> new RuntimeException("User not found"));
         
-        if (user.getRole() != Role.ADMIN) {
+        if (!roleBasedAccessVerification.isAdmin(currentUser)) {
             throw new RuntimeException("Access denied. Only admins can update grades.");
         }
         
@@ -112,10 +107,8 @@ public class GradeServiceImpl implements GradeService {
 
     @Override
     public void deleteGrade(Long id, UserDetails currentUser) {
-        User user = userRepository.findByEmail(currentUser.getUsername())
-                .orElseThrow(() -> new RuntimeException("User not found"));
         
-        if (user.getRole() != Role.ADMIN) {
+        if (!roleBasedAccessVerification.isAdmin(currentUser)) {
             throw new RuntimeException("Access denied. Only admins can delete grades.");
         }
         
@@ -124,11 +117,9 @@ public class GradeServiceImpl implements GradeService {
 
     @Override
     public List<GradeResponseDto> getGradesByStudentId(Long studentId, UserDetails currentUser) {
-        User user = userRepository.findByEmail(currentUser.getUsername())
-                .orElseThrow(() -> new RuntimeException("User not found"));
         
         // Allow access if user is admin or if the grades belong to the user
-        if (user.getRole() != Role.ADMIN && !user.getStudentId().equals(studentId)) {
+        if (!roleBasedAccessVerification.isCurrentUserRequestedStudentOrAdmin(currentUser, studentId)) {
             throw new RuntimeException("Access denied. You can only view your own grades.");
         }
         

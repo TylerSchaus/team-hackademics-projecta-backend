@@ -13,12 +13,10 @@ import org.springframework.web.server.ResponseStatusException;
 import com.hackademics.dto.SubjectDto;
 import com.hackademics.dto.SubjectResponseDto;
 import com.hackademics.dto.SubjectUpdateDto;
-import com.hackademics.model.Role;
 import com.hackademics.model.Subject;
-import com.hackademics.model.User;
 import com.hackademics.repository.SubjectRepository;
-import com.hackademics.repository.UserRepository;
 import com.hackademics.service.SubjectService;
+import com.hackademics.util.RoleBasedAccessVerification;
 
 @Service
 public class SubjectServiceImpl implements SubjectService {
@@ -27,7 +25,7 @@ public class SubjectServiceImpl implements SubjectService {
     private SubjectRepository subjectRepository;
 
     @Autowired
-    private UserRepository userRepository;
+    private RoleBasedAccessVerification roleBasedAccessVerification;
 
     private SubjectResponseDto convertToResponseDto(Subject subject) {
         return new SubjectResponseDto(
@@ -52,10 +50,7 @@ public class SubjectServiceImpl implements SubjectService {
 
     @Override
     public SubjectResponseDto createSubject(SubjectDto subjectDto, UserDetails currentUser) {
-        User authenticatedUser = userRepository.findByEmail(currentUser.getUsername())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized"));
-
-        if (authenticatedUser.getRole() != Role.ADMIN) {
+        if (!roleBasedAccessVerification.isAdmin(currentUser)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only admins can create subjects.");
         }
 
@@ -75,10 +70,7 @@ public class SubjectServiceImpl implements SubjectService {
 
     @Override
     public Optional<SubjectResponseDto> updateSubject(Long id, SubjectUpdateDto updatedSubjectDto, UserDetails currentUser) {
-        User authenticatedUser = userRepository.findByEmail(currentUser.getUsername())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized"));
-
-        if (authenticatedUser.getRole() != Role.ADMIN) {
+        if (!roleBasedAccessVerification.isAdmin(currentUser)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only admins can update subjects.");
         }
 
@@ -97,10 +89,7 @@ public class SubjectServiceImpl implements SubjectService {
 
     @Override
     public boolean deleteSubject(Long id, UserDetails currentUser) {
-        User authenticatedUser = userRepository.findByEmail(currentUser.getUsername())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized"));
-
-        if (authenticatedUser.getRole() != Role.ADMIN) {
+        if (!roleBasedAccessVerification.isAdmin(currentUser)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only admins can delete subjects.");
         }
 

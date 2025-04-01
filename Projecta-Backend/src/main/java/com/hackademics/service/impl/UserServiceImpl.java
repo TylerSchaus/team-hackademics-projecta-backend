@@ -29,6 +29,9 @@ public class UserServiceImpl implements UserService {
     @Autowired
     PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private RoleBasedAccessVerification roleBasedAccessVerification;
+
     private UserResponseDTO convertToResponseDto(User user) {
         return new UserResponseDTO(
                 user.getId(),
@@ -45,11 +48,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<UserResponseDTO> getUsersByRole(Role role, UserDetails currentUser) {
-        User authenticatedUser = userRepository.findByEmail(currentUser.getUsername())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized"));
-
-        // Ensure the request is from an admin
-        if (authenticatedUser.getRole() != Role.ADMIN) {
+        if (!roleBasedAccessVerification.isAdmin(currentUser)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You do not have permission to view user data.");
         }
 
@@ -135,17 +134,14 @@ public class UserServiceImpl implements UserService {
         User authenticatedUser = userRepository.findByEmail(currentUser.getUsername())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized"));
 
-        // Ensure only admins can delete users
-        if (authenticatedUser.getRole() != Role.ADMIN) {
+        if (!roleBasedAccessVerification.isAdmin(currentUser)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only admins can delete users.");
         }
 
-        // Prevent an admin from deleting themselves
         if (authenticatedUser.getId().equals(id)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Admins cannot delete themselves.");
         }
 
-        // Check if the user exists before attempting deletion
         if (!userRepository.existsById(id)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found.");
         }
@@ -154,13 +150,10 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<UserResponseDTO> getStudentsByNamePrefix(String prefix,
-            UserDetails currentUser) {
-        // Ensure only admins can access this method
-        if (!RoleBasedAccessVerification.isAdmin(currentUser)) {
+    public List<UserResponseDTO> getStudentsByNamePrefix(String prefix, UserDetails currentUser) {
+        if (!roleBasedAccessVerification.isAdmin(currentUser)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only admins can access this method.");
         }
-        // Use findByRole to get all students and filter by prefix
         return userRepository.findByRole(Role.STUDENT).stream()
                 .filter(student -> student.getFirstName().startsWith(prefix))
                 .map(this::convertToResponseDto)
@@ -170,7 +163,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<UserResponseDTO> getStudentsByGradeRange(double low, double high, UserDetails currentUser) {
         // Ensure only admins can access this method
-        if (!RoleBasedAccessVerification.isAdmin(currentUser)) {
+        if (!roleBasedAccessVerification.isAdmin(currentUser)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only admins can access this method.");
         }
         // Use findByRole to get all students
@@ -184,7 +177,7 @@ public class UserServiceImpl implements UserService {
     }
 
     // Utility methods
-    
+
     private double computeGradeAverage(User student) {
         if (student.getGrades() == null
                 || student.getGrades().isEmpty()) {

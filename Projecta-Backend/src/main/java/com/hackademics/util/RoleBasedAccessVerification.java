@@ -14,14 +14,11 @@ import com.hackademics.repository.UserRepository;
 public class RoleBasedAccessVerification {
 
     @Autowired
-    private static UserRepository userRepository;
+    private UserRepository userRepository;
 
-    public static boolean isAdmin(UserDetails userDetails) {
-        // Assuming userRepository is injected or accessible here
-        User user
-                = userRepository.findByEmail(userDetails.getUsername())
-                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized"));
-        // Handle case where the role is null, if applicable
+    public boolean isAdmin(UserDetails userDetails) {
+        User user = userRepository.findByEmail(userDetails.getUsername())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized"));
         if (user.getRole() == null) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN,
                     "User role is not assigned.");
@@ -29,11 +26,12 @@ public class RoleBasedAccessVerification {
         return user.getRole() == Role.ADMIN;
     }
 
-    public static boolean isCurrentUserRequestedStudent(UserDetails userDetails, Long studentId) {
-        User user
-                = userRepository.findByEmail(userDetails.getUsername())
-                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized"));
-        // Return true only if user exists and the IDs match
+    public boolean isCurrentUserRequestedStudentOrAdmin(UserDetails userDetails, Long studentId) {
+        User user = userRepository.findByEmail(userDetails.getUsername())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized"));
+        if (user.getRole() == Role.ADMIN) {
+            return true;
+        }
         return user.getStudentId().equals(studentId);
     }
 }

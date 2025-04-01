@@ -17,7 +17,6 @@ import com.hackademics.dto.StudentSummaryDto;
 import com.hackademics.model.Course;
 import com.hackademics.model.Enrollment;
 import com.hackademics.model.LabSection;
-import com.hackademics.model.Role;
 import com.hackademics.model.User;
 import com.hackademics.model.Waitlist;
 import com.hackademics.model.WaitlistEnrollment;
@@ -30,6 +29,7 @@ import com.hackademics.repository.WaitlistRepository;
 import com.hackademics.service.CourseService;
 import com.hackademics.service.EnrollmentService;
 import com.hackademics.service.LabSectionService;
+import com.hackademics.util.RoleBasedAccessVerification;
 import com.hackademics.util.ScheduleConflictChecker;
 import com.hackademics.util.TermDeterminator;
 
@@ -60,6 +60,9 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     @Autowired
     private LabSectionService labSectionService;
 
+    @Autowired
+    private RoleBasedAccessVerification roleBasedAccessVerification;
+
     private EnrollmentResponseDto convertToResponseDto(Enrollment enrollment) {
         CourseResponseDto courseDto = courseService.getCourseById(enrollment.getCourse().getId());
         StudentSummaryDto studentDto = new StudentSummaryDto(
@@ -82,32 +85,21 @@ public class EnrollmentServiceImpl implements EnrollmentService {
 
     @Override
     public EnrollmentResponseDto saveEnrollment(EnrollmentDto enrollmentDto, UserDetails currentUser) {
-        System.out.println("Entered saveEnrollment"); 
-        // User verification
-        User authenticatedUser = userRepository.findByEmail(currentUser.getUsername())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized"));
 
         User student = userRepository.findByStudentId(enrollmentDto.getStudentId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found"));
 
-        if (authenticatedUser.getRole() != Role.ADMIN && !authenticatedUser.getStudentId().equals(student.getStudentId())) {
+        if (!roleBasedAccessVerification.isCurrentUserRequestedStudentOrAdmin(currentUser, student.getStudentId())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Students can only enroll themselves.");
         }
-
-        System.out.println("Got past RBA verfication. Still processing...");
 
         // Check that the course exists
         Course course = courseRepository.findById(enrollmentDto.getCourseId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Course not found"));
 
-        System.out.println("Course found. Still processing...");
-
         // Check if the student is already enrolled in the course
-        List<Enrollment> currentEnrollments = enrollmentRepository.findByTermAndStudentId(course.getTerm(),student.getStudentId());
+        List<Enrollment> currentEnrollments = enrollmentRepository.findByTermAndStudentId(course.getTerm(), student.getStudentId());
 
-        boolean existingEnrollmentsEmpty = currentEnrollments.isEmpty();
-        System.out.println("Existing enrollments empty? "+ existingEnrollmentsEmpty);
-        
         Enrollment existingEnrollment = currentEnrollments.stream()
                 .filter(e -> e.getCourse().getId().equals(course.getId()))
                 .findFirst()
@@ -115,24 +107,18 @@ public class EnrollmentServiceImpl implements EnrollmentService {
 
         if (existingEnrollment != null) {
             // Redirect to updateEnrollment if the student is already in the course
-            System.out.println("Existing enrollment found. Still processing...");
             return convertToResponseDto(updateEnrollment(existingEnrollment, enrollmentDto.getLabSectionId(), currentEnrollments));
         }
-
-        System.out.println("No existing enrollment found. Still processing...");
 
         // Check for schedule conflicts
         if (ScheduleConflictChecker.hasScheduleConflict(currentEnrollments, course, null)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Schedule conflict detected with course section.");
         }
 
-        System.out.println("No schedule conflicts with course found. Still processing...");
-
         // Check course capacity
         if (course.getCurrentEnroll() >= course.getEnrollLimit()) {
             // Query the waitlist repository for a waitlist associated with the course
             Waitlist waitlist = waitlistRepository.findByCourseId(course.getId());
-            System.out.println("Waitlist accquired. Still processing...");
             if (waitlist != null) {
                 // Proceed with waitlist logic
                 List<WaitlistEnrollment> waitlistEnrollments = waitlistEnrollmentRepository.findByWaitlistId(waitlist.getId());
@@ -185,7 +171,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
         }
 
         boolean labSectionFound = labSection != null;
-        System.out.println("Lab section found and okay? "+ labSectionFound);
+        System.out.println("Lab section found and okay? " + labSectionFound);
 
         // Create and save the enrollment
         Enrollment enrollment = new Enrollment(course, student, labSection);
@@ -227,8 +213,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
             if (!newLabSection.getCourse().getId().equals(existingEnrollment.getCourse().getId())) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Lab section does not correspond to the course.");
             }
-        }
-        else {
+        } else {
             // Auto-enroll in a lab section if none is provided
             List<LabSection> labSections = labSectionRepository.findByCourseId(course.getId());
             for (LabSection section : labSections) {
@@ -237,7 +222,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
                     break;
                 }
             }
-        }  
+        }
         // Update the lab section in the enrollment
         LabSection oldLabSection = existingEnrollment.getLabSection();
         existingEnrollment.setLabSection(newLabSection);
@@ -259,10 +244,8 @@ public class EnrollmentServiceImpl implements EnrollmentService {
 
     @Override
     public List<EnrollmentResponseDto> getAllEnrollments(UserDetails currentUser) {
-        User authenticatedUser = userRepository.findByEmail(currentUser.getUsername())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized"));
 
-        if (authenticatedUser.getRole() != Role.ADMIN) {
+        if (!roleBasedAccessVerification.isAdmin(currentUser)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only admins can view all enrollments.");
         }
 
@@ -273,14 +256,12 @@ public class EnrollmentServiceImpl implements EnrollmentService {
 
     @Override
     public List<EnrollmentResponseDto> getEnrollmentsByCourseId(Long courseId, UserDetails currentUser) {
-        User authenticatedUser = userRepository.findByEmail(currentUser.getUsername())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized"));
 
         if (!courseRepository.existsById(courseId)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Course not found.");
         }
 
-        if (authenticatedUser.getRole() != Role.ADMIN) {
+        if (!roleBasedAccessVerification.isAdmin(currentUser)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only admins can view enrollments for a course.");
         }
 
@@ -291,10 +272,8 @@ public class EnrollmentServiceImpl implements EnrollmentService {
 
     @Override
     public List<EnrollmentResponseDto> getEnrollmentsByStudentId(Long studentId, UserDetails currentUser) {
-        User authenticatedUser = userRepository.findByEmail(currentUser.getUsername())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized"));
 
-        if (authenticatedUser.getRole() == Role.STUDENT && !authenticatedUser.getStudentId().equals(studentId)) {
+        if (!roleBasedAccessVerification.isCurrentUserRequestedStudentOrAdmin(currentUser, studentId)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Students can only view their own enrollments.");
         }
 
@@ -305,13 +284,11 @@ public class EnrollmentServiceImpl implements EnrollmentService {
 
     @Override
     public EnrollmentResponseDto getEnrollmentById(Long id, UserDetails currentUser) {
-        User authenticatedUser = userRepository.findByEmail(currentUser.getUsername())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized"));
 
         Enrollment enrollment = enrollmentRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Enrollment not found"));
 
-        if (authenticatedUser.getRole() != Role.ADMIN) {
+        if (!roleBasedAccessVerification.isAdmin(currentUser)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only admins can view specific enrollments.");
         }
 
@@ -320,15 +297,13 @@ public class EnrollmentServiceImpl implements EnrollmentService {
 
     @Override
     public void deleteEnrollment(Long id, UserDetails currentUser) {
-        User authenticatedUser = userRepository.findByEmail(currentUser.getUsername())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized"));
-
+           
         Enrollment enrollment = enrollmentRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Enrollment not found"));
 
         Course course = enrollment.getCourse();
 
-        if (authenticatedUser.getRole() != Role.ADMIN && !authenticatedUser.getStudentId().equals(enrollment.getStudent().getStudentId())) {
+        if (!roleBasedAccessVerification.isCurrentUserRequestedStudentOrAdmin(currentUser, enrollment.getStudent().getStudentId())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Students can only delete their own enrollments.");
         }
 
@@ -342,10 +317,8 @@ public class EnrollmentServiceImpl implements EnrollmentService {
 
     @Override
     public List<EnrollmentResponseDto> getCurrentEnrollmentByStudentId(UserDetails currentUser, Long studentId, String term) {
-        User authenticatedUser = userRepository.findByEmail(currentUser.getUsername())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized"));
-
-        if (authenticatedUser.getRole() == Role.STUDENT && !authenticatedUser.getStudentId().equals(studentId)) {
+    
+        if (!roleBasedAccessVerification.isCurrentUserRequestedStudentOrAdmin(currentUser, studentId)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Students can only view their own enrollments.");
         }
 
