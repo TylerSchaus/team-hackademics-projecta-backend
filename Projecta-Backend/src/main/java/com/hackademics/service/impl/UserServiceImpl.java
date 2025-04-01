@@ -13,10 +13,12 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.hackademics.dto.UserResponseDTO;
 import com.hackademics.dto.UserUpdateDto;
+import com.hackademics.model.Grade;
 import com.hackademics.model.Role;
 import com.hackademics.model.User;
 import com.hackademics.repository.UserRepository;
 import com.hackademics.service.UserService;
+import com.hackademics.util.RoleBasedAccessVerification;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -29,15 +31,15 @@ public class UserServiceImpl implements UserService {
 
     private UserResponseDTO convertToResponseDto(User user) {
         return new UserResponseDTO(
-            user.getId(),
-            user.getFirstName(),
-            user.getLastName(),
-            user.getEmail(),
-            user.getRole().toString(),
+                user.getId(),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getEmail(),
+                user.getRole().toString(),
                 user.getStudentId(),
-            user.getEnrollStartDate() != null ? user.getEnrollStartDate().toLocalDate() : null,
-            user.getExpectGraduationDate() != null ? user.getExpectGraduationDate().toLocalDate() : null,
-            user.getAdminId()
+                user.getEnrollStartDate() != null ? user.getEnrollStartDate().toLocalDate() : null,
+                user.getExpectGraduationDate() != null ? user.getExpectGraduationDate().toLocalDate() : null,
+                user.getAdminId()
         );
     }
 
@@ -151,7 +153,49 @@ public class UserServiceImpl implements UserService {
         userRepository.deleteById(id);
     }
 
+    @Override
+    public List<UserResponseDTO> getStudentsByNamePrefix(String prefix,
+            UserDetails currentUser) {
+        // Ensure only admins can access this method
+        if (!RoleBasedAccessVerification.isAdmin(currentUser)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only admins can access this method.");
+        }
+        // Use findByRole to get all students and filter by prefix
+        return userRepository.findByRole(Role.STUDENT).stream()
+                .filter(student -> student.getFirstName().startsWith(prefix))
+                .map(this::convertToResponseDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<UserResponseDTO> getStudentsByGradeRange(double low, double high, UserDetails currentUser) {
+        // Ensure only admins can access this method
+        if (!RoleBasedAccessVerification.isAdmin(currentUser)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only admins can access this method.");
+        }
+        // Use findByRole to get all students
+        return userRepository.findByRole(Role.STUDENT).stream()
+                .filter(student -> {
+                    double avgGrade = computeGradeAverage(student);
+                    return avgGrade >= low && avgGrade <= high;
+                })
+                .map(this::convertToResponseDto)
+                .collect(Collectors.toList());
+    }
+
     // Utility methods
+    
+    private double computeGradeAverage(User student) {
+        if (student.getGrades() == null
+                || student.getGrades().isEmpty()) {
+            return 0; // Return 0 if no grades exist
+        }
+        return student.getGrades().stream()
+                .mapToDouble(Grade::getGrade) // Get the grade value from each Grade object
+                .average() // Calculate the average
+                .orElse(0); // Return 0 if no grades exist
+    }
+
     public void validateUniqueStudentId(Long studentId) {
         Optional<User> existingUser = userRepository.findByStudentId(studentId);
         if (existingUser.isPresent()) {
