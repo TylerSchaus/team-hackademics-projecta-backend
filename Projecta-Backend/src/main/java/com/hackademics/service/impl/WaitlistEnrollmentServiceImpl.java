@@ -22,7 +22,6 @@ import com.hackademics.model.WaitlistEnrollment;
 import com.hackademics.repository.UserRepository;
 import com.hackademics.repository.WaitlistEnrollmentRepository;
 import com.hackademics.repository.WaitlistRepository;
-import com.hackademics.service.MailService;
 import com.hackademics.service.WaitlistEnrollmentService;
 import com.hackademics.util.EmailSender;
 import com.hackademics.util.RoleBasedAccessVerification;
@@ -41,9 +40,6 @@ public class WaitlistEnrollmentServiceImpl implements WaitlistEnrollmentService 
 
     @Autowired
     private RoleBasedAccessVerification roleBasedAccessVerification;
-
-    @Autowired
-    private MailService mailService;
 
     @Autowired
     private EmailSender emailSender;

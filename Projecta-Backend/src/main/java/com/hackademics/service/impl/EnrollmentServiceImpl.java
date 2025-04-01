@@ -30,7 +30,6 @@ import com.hackademics.repository.WaitlistRepository;
 import com.hackademics.service.CourseService;
 import com.hackademics.service.EnrollmentService;
 import com.hackademics.service.LabSectionService;
-import com.hackademics.service.MailService;
 import com.hackademics.util.EmailSender;
 import com.hackademics.util.RoleBasedAccessVerification;
 import com.hackademics.util.ScheduleConflictChecker;
@@ -62,9 +61,6 @@ public class EnrollmentServiceImpl implements EnrollmentService {
 
     @Autowired
     private LabSectionService labSectionService;
-
-    @Autowired
-    private MailService mailService;
 
     @Autowired
     private EmailSender emailSender;

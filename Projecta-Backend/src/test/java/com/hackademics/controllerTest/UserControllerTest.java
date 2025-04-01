@@ -16,11 +16,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hackademics.dto.UpdateDto.UserUpdateDto;
 import com.hackademics.model.Role;
 import com.hackademics.model.User;
 import com.hackademics.repository.UserRepository;
 import com.hackademics.service.JwtService;
-import com.hackademics.dto.UpdateDto.UserUpdateDto;
 
 import jakarta.transaction.Transactional;
 

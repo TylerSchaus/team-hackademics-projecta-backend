@@ -1,15 +1,19 @@
 package com.hackademics.util;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import com.hackademics.model.Enrollment;
 import com.hackademics.model.WaitlistEnrollment;
 import com.hackademics.service.MailService;
 
+@Component
 public class EmailSender {
     
-    @Autowired
-    private MailService mailService;
+    private final MailService mailService;
+
+    public EmailSender(MailService mailService) {
+        this.mailService = mailService;
+    }
 
     public void sendEnrollmentEmail(Enrollment enrollment){
         mailService.sendEnrollmentEmail(enrollment);
