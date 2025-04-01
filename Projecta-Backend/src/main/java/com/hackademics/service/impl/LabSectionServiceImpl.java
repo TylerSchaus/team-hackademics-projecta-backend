@@ -54,6 +54,18 @@ public class LabSectionServiceImpl implements LabSectionService {
 
         Long sectionId = generateNextLabSectionId(labSectionDto.getCourseId());
 
+        if (labSectionDto.getEndDate().isBefore(labSectionDto.getStartDate())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "End date must be after start date.");
+        }
+
+        if (labSectionDto.getCapacity() <= 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Capacity must be greater than 0.");
+        }
+
+        if (labSectionDto.getStartTime().isAfter(labSectionDto.getEndTime())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Start time must be before end time.");
+        }
+
         // Use the constructor to create the LabSection
         LabSection labSection = new LabSection(
                 sectionId,
