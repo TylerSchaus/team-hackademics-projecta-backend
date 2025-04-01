@@ -11,6 +11,7 @@ import com.hackademics.model.Role;
 import com.hackademics.model.User;
 
 public interface UserService {
+
     List<UserResponseDTO> getUsersByRole(Role role, UserDetails currentUser);
 
     Optional<UserResponseDTO> getUserByEmail(String email);
@@ -22,6 +23,11 @@ public interface UserService {
     User createUser(User user); // Only used for testing. All real users should go through authentication.
 
     UserResponseDTO updateUser(Long id, UserUpdateDto userUpdateDto, UserDetails currentUser);
+
+    List<UserResponseDTO> getStudentsByNamePrefix(String prefix,
+            UserDetails currentUser);
+
+    List<UserResponseDTO> getStudentsByGradeRange(double low, double high, UserDetails currentUser);
 
     void deleteUser(Long userId, UserDetails currentUser);
 }

@@ -15,13 +15,11 @@ import com.hackademics.dto.ResponseDto.LabSectionResponseDto;
 import com.hackademics.dto.UpdateDto.LabSectionUpdateDto;
 import com.hackademics.model.Course;
 import com.hackademics.model.LabSection;
-import com.hackademics.model.Role;
-import com.hackademics.model.User;
 import com.hackademics.repository.CourseRepository;
 import com.hackademics.repository.LabSectionRepository;
-import com.hackademics.repository.UserRepository;
 import com.hackademics.service.CourseService;
 import com.hackademics.service.LabSectionService;
+import com.hackademics.util.RoleBasedAccessVerification;
 
 @Service
 public class LabSectionServiceImpl implements LabSectionService {
@@ -33,10 +31,10 @@ public class LabSectionServiceImpl implements LabSectionService {
     private CourseRepository courseRepository;
 
     @Autowired
-    private UserRepository userRepository;
+    private CourseService courseService;
 
     @Autowired
-    private CourseService courseService;
+    private RoleBasedAccessVerification roleBasedAccessVerification;
 
     private LabSectionResponseDto convertToResponseDto(LabSection labSection) {
         CourseResponseDto courseDto = courseService.getCourseById(labSection.getCourse().getId());
@@ -67,11 +65,8 @@ public class LabSectionServiceImpl implements LabSectionService {
     }
 
     @Override
-    public LabSectionResponseDto createLabSection(LabSectionDto labSectionDto, UserDetails userDetails) {
-        User authenticatedUser = userRepository.findByEmail(userDetails.getUsername())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized"));
-
-        if (authenticatedUser.getRole() != Role.ADMIN) {
+    public LabSectionResponseDto createLabSection(LabSectionDto labSectionDto, UserDetails currentUser) {
+        if (!roleBasedAccessVerification.isAdmin(currentUser)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only admins can create lab sections.");
         }
 
@@ -101,11 +96,8 @@ public class LabSectionServiceImpl implements LabSectionService {
     }
 
     @Override
-    public LabSectionResponseDto updateLabSection(LabSectionUpdateDto labSectionUpdateDto, UserDetails userDetails) {
-        User authenticatedUser = userRepository.findByEmail(userDetails.getUsername())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized"));
-
-        if (authenticatedUser.getRole() != Role.ADMIN) {
+    public LabSectionResponseDto updateLabSection(LabSectionUpdateDto labSectionUpdateDto, UserDetails currentUser) {
+        if (!roleBasedAccessVerification.isAdmin(currentUser)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only admins can update lab sections.");
         }
 

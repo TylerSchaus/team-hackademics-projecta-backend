@@ -109,4 +109,36 @@ public class UserController {
         userService.deleteUser(id, currentUser);
         return ResponseEntity.noContent().build();
     }
+
+    @Operation(summary = "Get students by grade range", description = "Retrieves students whose grades fall within the specified range")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successfully retrieved students",
+                    content = @Content(schema = @Schema(implementation = UserResponseDTO.class))),
+        @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token"),
+        @ApiResponse(responseCode = "403", description = "Forbidden - Insufficient permissions")
+    })
+    @GetMapping("/grade-range")
+    public ResponseEntity<List<UserResponseDTO>> getStudentsByGradeRange(
+            @Parameter(description = "Lower bound of grade range", required = true) 
+            @RequestParam double low,
+            @Parameter(description = "Upper bound of grade range", required = true) 
+            @RequestParam double high,
+            @AuthenticationPrincipal UserDetails currentUser) {
+        return ResponseEntity.ok(userService.getStudentsByGradeRange(low, high, currentUser));
+    }
+
+    @Operation(summary = "Get students by name prefix", description = "Retrieves students whose first names start with the specified prefix")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successfully retrieved students",
+                    content = @Content(schema = @Schema(implementation = UserResponseDTO.class))),
+        @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token"),
+        @ApiResponse(responseCode = "403", description = "Forbidden - Insufficient permissions")
+    })
+    @GetMapping("/name-prefix")
+    public ResponseEntity<List<UserResponseDTO>> getStudentsByNamePrefix(
+            @Parameter(description = "Prefix to search for in student names", required = true) 
+            @RequestParam String prefix,
+            @AuthenticationPrincipal UserDetails currentUser) {
+        return ResponseEntity.ok(userService.getStudentsByNamePrefix(prefix, currentUser));
+    }
 }

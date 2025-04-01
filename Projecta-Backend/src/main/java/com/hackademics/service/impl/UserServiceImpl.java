@@ -13,10 +13,12 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.hackademics.dto.ResponseDto.UserResponseDTO;
 import com.hackademics.dto.UpdateDto.UserUpdateDto;
+import com.hackademics.model.Grade;
 import com.hackademics.model.Role;
 import com.hackademics.model.User;
 import com.hackademics.repository.UserRepository;
 import com.hackademics.service.UserService;
+import com.hackademics.util.RoleBasedAccessVerification;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -27,27 +29,26 @@ public class UserServiceImpl implements UserService {
     @Autowired
     PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private RoleBasedAccessVerification roleBasedAccessVerification;
+
     private UserResponseDTO convertToResponseDto(User user) {
         return new UserResponseDTO(
-            user.getId(),
-            user.getFirstName(),
-            user.getLastName(),
-            user.getEmail(),
-            user.getRole().toString(),
+                user.getId(),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getEmail(),
+                user.getRole().toString(),
                 user.getStudentId(),
-            user.getEnrollStartDate() != null ? user.getEnrollStartDate().toLocalDate() : null,
-            user.getExpectGraduationDate() != null ? user.getExpectGraduationDate().toLocalDate() : null,
-            user.getAdminId()
+                user.getEnrollStartDate() != null ? user.getEnrollStartDate().toLocalDate() : null,
+                user.getExpectGraduationDate() != null ? user.getExpectGraduationDate().toLocalDate() : null,
+                user.getAdminId()
         );
     }
 
     @Override
     public List<UserResponseDTO> getUsersByRole(Role role, UserDetails currentUser) {
-        User authenticatedUser = userRepository.findByEmail(currentUser.getUsername())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized"));
-
-        // Ensure the request is from an admin
-        if (authenticatedUser.getRole() != Role.ADMIN) {
+        if (!roleBasedAccessVerification.isAdmin(currentUser)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You do not have permission to view user data.");
         }
 
@@ -133,17 +134,14 @@ public class UserServiceImpl implements UserService {
         User authenticatedUser = userRepository.findByEmail(currentUser.getUsername())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized"));
 
-        // Ensure only admins can delete users
-        if (authenticatedUser.getRole() != Role.ADMIN) {
+        if (!roleBasedAccessVerification.isAdmin(currentUser)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only admins can delete users.");
         }
 
-        // Prevent an admin from deleting themselves
         if (authenticatedUser.getId().equals(id)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Admins cannot delete themselves.");
         }
 
-        // Check if the user exists before attempting deletion
         if (!userRepository.existsById(id)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found.");
         }
@@ -151,7 +149,46 @@ public class UserServiceImpl implements UserService {
         userRepository.deleteById(id);
     }
 
+    @Override
+    public List<UserResponseDTO> getStudentsByNamePrefix(String prefix, UserDetails currentUser) {
+        if (!roleBasedAccessVerification.isAdmin(currentUser)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only admins can access this method.");
+        }
+        return userRepository.findByRole(Role.STUDENT).stream()
+                .filter(student -> student.getFirstName().startsWith(prefix))
+                .map(this::convertToResponseDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<UserResponseDTO> getStudentsByGradeRange(double low, double high, UserDetails currentUser) {
+        // Ensure only admins can access this method
+        if (!roleBasedAccessVerification.isAdmin(currentUser)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only admins can access this method.");
+        }
+        // Use findByRole to get all students
+        return userRepository.findByRole(Role.STUDENT).stream()
+                .filter(student -> {
+                    double avgGrade = computeGradeAverage(student);
+                    return avgGrade >= low && avgGrade <= high;
+                })
+                .map(this::convertToResponseDto)
+                .collect(Collectors.toList());
+    }
+
     // Utility methods
+
+    private double computeGradeAverage(User student) {
+        if (student.getGrades() == null
+                || student.getGrades().isEmpty()) {
+            return 0; // Return 0 if no grades exist
+        }
+        return student.getGrades().stream()
+                .mapToDouble(Grade::getGrade) // Get the grade value from each Grade object
+                .average() // Calculate the average
+                .orElse(0); // Return 0 if no grades exist
+    }
+
     public void validateUniqueStudentId(Long studentId) {
         Optional<User> existingUser = userRepository.findByStudentId(studentId);
         if (existingUser.isPresent()) {

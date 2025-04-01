@@ -181,4 +181,40 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.email").value(student.getEmail()));
     }
 
+    @Test
+    void shouldAllowAdminToGetStudentsByGradeRange() throws Exception {
+        mockMvc.perform(get("/api/users/grade-range")
+                .param("low", "70")
+                .param("high", "90")
+                .header("Authorization", "Bearer " + generateToken(admin)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray());
+    }
+
+    @Test
+    void shouldNotAllowStudentToGetStudentsByGradeRange() throws Exception {
+        mockMvc.perform(get("/api/users/grade-range")
+                .param("low", "70")
+                .param("high", "90")
+                .header("Authorization", "Bearer " + generateToken(student)))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void shouldAllowAdminToGetStudentsByNamePrefix() throws Exception {
+        mockMvc.perform(get("/api/users/name-prefix")
+                .param("prefix", "Stu")
+                .header("Authorization", "Bearer " + generateToken(admin)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$[0].firstName").value("Student"));
+    }
+
+    @Test
+    void shouldNotAllowStudentToGetStudentsByNamePrefix() throws Exception {
+        mockMvc.perform(get("/api/users/name-prefix")
+                .param("prefix", "Stu")
+                .header("Authorization", "Bearer " + generateToken(student)))
+                .andExpect(status().isForbidden());
+    }
 }

@@ -17,7 +17,6 @@ import com.hackademics.dto.ResponseDto.SubjectResponseDto;
 import com.hackademics.dto.ResponseDto.WaitlistResponseDto;
 import com.hackademics.dto.UpdateDto.CourseUpdateDto;
 import com.hackademics.model.Course;
-import com.hackademics.model.Role;
 import com.hackademics.model.Subject;
 import com.hackademics.model.User;
 import com.hackademics.model.Waitlist;
@@ -26,6 +25,7 @@ import com.hackademics.repository.SubjectRepository;
 import com.hackademics.repository.UserRepository;
 import com.hackademics.repository.WaitlistRepository;
 import com.hackademics.service.CourseService;
+import com.hackademics.util.RoleBasedAccessVerification;
 import com.hackademics.util.TermDeterminator;
 
 @Service
@@ -42,6 +42,9 @@ public class CourseServiceImpl implements CourseService {
 
     @Autowired
     private WaitlistRepository waitlistRepository;
+
+    @Autowired
+    private RoleBasedAccessVerification roleBasedAccessVerification;
 
     private WaitlistResponseDto convertWaitlistToResponseDto(Waitlist waitlist, CourseResponseDto courseResponseDto) {
         return new WaitlistResponseDto(
@@ -89,10 +92,8 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     public CourseResponseDto saveCourse(CourseDto courseDto, UserDetails currentUser) {
-        User authenticatedUser = userRepository.findByEmail(currentUser.getUsername())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized"));
 
-        if (authenticatedUser.getRole() != Role.ADMIN) {
+        if (!roleBasedAccessVerification.isAdmin(currentUser)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only admins can create courses.");
         }
         Course newCourse = new Course(
@@ -130,7 +131,7 @@ public class CourseServiceImpl implements CourseService {
         User authenticatedUser = userRepository.findByEmail(currentUser.getUsername())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized"));
 
-        if (authenticatedUser.getRole() != Role.ADMIN) {
+        if (!roleBasedAccessVerification.isAdmin(currentUser)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only admins can view their courses.");
         }
 
@@ -155,10 +156,8 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     public CourseResponseDto updateCourse(Long id, CourseUpdateDto courseUpdateDto, UserDetails currentUser) {
-        User authenticatedUser = userRepository.findByEmail(currentUser.getUsername())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized"));
 
-        if (authenticatedUser.getRole() != Role.ADMIN) {
+        if (!roleBasedAccessVerification.isAdmin(currentUser)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only admins can update courses.");
         }
 
@@ -217,10 +216,8 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     public void deleteCourse(Long id, UserDetails currentUser) {
-        User authenticatedUser = userRepository.findByEmail(currentUser.getUsername())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Unauthorized"));
 
-        if (authenticatedUser.getRole() != Role.ADMIN) {
+        if (!roleBasedAccessVerification.isAdmin(currentUser)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only admins can delete courses.");
         }
 

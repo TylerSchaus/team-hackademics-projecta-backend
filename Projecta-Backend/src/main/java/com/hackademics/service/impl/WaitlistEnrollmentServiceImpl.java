@@ -15,7 +15,6 @@ import com.hackademics.dto.ResponseDto.StudentSummaryDto;
 import com.hackademics.dto.ResponseDto.SubjectResponseDto;
 import com.hackademics.dto.ResponseDto.WaitlistEnrollmentResponseDto;
 import com.hackademics.dto.ResponseDto.WaitlistResponseDto;
-import com.hackademics.model.Role;
 import com.hackademics.model.User;
 import com.hackademics.model.Waitlist;
 import com.hackademics.model.WaitlistEnrollment;
@@ -23,6 +22,7 @@ import com.hackademics.repository.UserRepository;
 import com.hackademics.repository.WaitlistEnrollmentRepository;
 import com.hackademics.repository.WaitlistRepository;
 import com.hackademics.service.WaitlistEnrollmentService;
+import com.hackademics.util.RoleBasedAccessVerification;
 
 @Service
 public class WaitlistEnrollmentServiceImpl implements WaitlistEnrollmentService {
@@ -35,6 +35,9 @@ public class WaitlistEnrollmentServiceImpl implements WaitlistEnrollmentService 
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private RoleBasedAccessVerification roleBasedAccessVerification;
 
     private WaitlistEnrollmentResponseDto convertToResponseDto(WaitlistEnrollment enrollment) {
         return new WaitlistEnrollmentResponseDto(
@@ -82,8 +85,6 @@ public class WaitlistEnrollmentServiceImpl implements WaitlistEnrollmentService 
 
     @Override
     public WaitlistEnrollmentResponseDto saveWaitlistEnrollment(WaitlistEnrollmentDto waitlistEnrollmentDto, UserDetails currentUser) {
-        User user = userRepository.findByEmail(currentUser.getUsername())
-                .orElseThrow(() -> new RuntimeException("User not found"));
         
         // Get the waitlist
         Waitlist waitlist = waitlistRepository.findById(waitlistEnrollmentDto.getWaitlistId())
@@ -94,7 +95,7 @@ public class WaitlistEnrollmentServiceImpl implements WaitlistEnrollmentService 
                 .orElseThrow(() -> new RuntimeException("Student not found with ID: " + waitlistEnrollmentDto.getStudentId()));
         
         // Check if user is admin or the student themselves
-        if (user.getRole() != Role.ADMIN && !user.getStudentId().equals(student.getStudentId())) {
+        if (!roleBasedAccessVerification.isCurrentUserRequestedStudentOrAdmin(currentUser, student.getStudentId())) {
             throw new RuntimeException("Access denied. Only admins or the student themselves can create waitlist enrollments.");
         }
         
@@ -113,14 +114,12 @@ public class WaitlistEnrollmentServiceImpl implements WaitlistEnrollmentService 
 
     @Override
     public void deleteWaitlistEnrollment(Long id, UserDetails currentUser) {
-        User user = userRepository.findByEmail(currentUser.getUsername())
-                .orElseThrow(() -> new RuntimeException("User not found"));
         
         WaitlistEnrollment enrollment = waitlistEnrollmentRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("WaitlistEnrollment not found with ID: " + id));
         
         // Allow deletion if user is admin or if the enrollment belongs to the student
-        if (user.getRole() != Role.ADMIN && !user.getStudentId().equals(enrollment.getStudent().getStudentId())) {
+        if (!roleBasedAccessVerification.isCurrentUserRequestedStudentOrAdmin(currentUser, enrollment.getStudent().getStudentId())) {
             throw new RuntimeException("Access denied. You can only delete your own waitlist enrollments.");
         }
 
@@ -131,10 +130,8 @@ public class WaitlistEnrollmentServiceImpl implements WaitlistEnrollmentService 
 
     @Override
     public List<WaitlistEnrollmentResponseDto> getWaitlistEnrollmentsByStudentId(Long studentId, UserDetails currentUser) {
-        User user = userRepository.findByEmail(currentUser.getUsername())
-                .orElseThrow(() -> new RuntimeException("User not found"));
         
-        if (user.getRole() != Role.ADMIN && !user.getStudentId().equals(studentId)) {
+        if (!roleBasedAccessVerification.isCurrentUserRequestedStudentOrAdmin(currentUser, studentId)) {
             throw new RuntimeException("Access denied. Only admins or the student themselves can view waitlist enrollments.");
         }
         
