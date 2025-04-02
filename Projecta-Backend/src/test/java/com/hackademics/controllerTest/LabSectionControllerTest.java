@@ -118,9 +118,7 @@ class LabSectionControllerTest {
             25,
             1,
             LocalTime.of(14, 0),
-            LocalTime.of(15, 30),
-            LocalDateTime.now().plusDays(1),
-            LocalDateTime.now().plusMonths(4)
+            LocalTime.of(15, 30)
         );
 
         mockMvc.perform(post("/api/lab-sections")
@@ -139,9 +137,7 @@ class LabSectionControllerTest {
             25,
             1,
             LocalTime.of(14, 0),
-            LocalTime.of(15, 30),
-            LocalDateTime.now().plusDays(1),
-            LocalDateTime.now().plusMonths(4)
+            LocalTime.of(15, 30)
         );
 
         mockMvc.perform(post("/api/lab-sections")
@@ -192,9 +188,7 @@ class LabSectionControllerTest {
             -1, // Invalid capacity
             1,
             LocalTime.of(14, 0),
-            LocalTime.of(15, 30),
-            LocalDateTime.now().plusDays(1),
-            LocalDateTime.now().plusMonths(4)
+            LocalTime.of(15, 30)
         );
 
         mockMvc.perform(post("/api/lab-sections")
@@ -211,9 +205,7 @@ class LabSectionControllerTest {
             25,
             1,
             LocalTime.of(15, 30), // End time before start time
-            LocalTime.of(14, 0),
-            LocalDateTime.now().plusDays(1),
-            LocalDateTime.now().plusMonths(4)
+            LocalTime.of(14, 0)
         );
 
         mockMvc.perform(post("/api/lab-sections")
@@ -223,22 +215,4 @@ class LabSectionControllerTest {
                 .andExpect(status().isBadRequest());
     }
 
-    @Test
-    void shouldReturn400ForInvalidDateRange() throws Exception {
-        LabSectionDto labSectionDto = new LabSectionDto(
-            course.getId(),
-            25,
-            1,
-            LocalTime.of(14, 0),
-            LocalTime.of(15, 30),
-            LocalDateTime.now().plusMonths(4), // End date before start date
-            LocalDateTime.now().plusDays(1)
-        );
-
-        mockMvc.perform(post("/api/lab-sections")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(labSectionDto))
-                .header("Authorization", "Bearer " + generateToken(admin)))
-                .andExpect(status().isBadRequest());
-    }
 } 
