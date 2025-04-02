@@ -131,7 +131,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
         }
 
         // Check course capacity
-        if (course.getCurrentEnroll() >= course.getEnrollLimit()) {
+        if (course.getCurrentEnroll() >= course.getEnrollLimit()) { // Should generally not happen. Only will happen if the user registers just before another user and takes the final spot in the course. Therefore this is more of a safety net.
             // Query the waitlist repository for a waitlist associated with the course
             if (course.isWaitlistAvailable()) {
                 Waitlist waitlist = waitlistRepository.findByCourseId(course.getId());
@@ -148,7 +148,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
                     if (emailSendingEnabled) {
                         emailSender.sendWaitlistEmail(waitlistEnrollment);
                     }
-                    throw new ResponseStatusException(HttpStatus.OK, "Student added to the waitlist.");
+                    throw new ResponseStatusException(HttpStatus.OK, "Student added to the waitlist."); 
                 } else {
                     throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Course is at capacity and the waitlist is full.");
                 }
