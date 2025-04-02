@@ -387,7 +387,6 @@ class EnrollmentControllerTest {
                 LocalTime.of(12, 30 + (i * 2))
             );
             newCourse.setId(Long.valueOf(i + 10));
-            newCourse.setTerm(course.getTerm());
             newCourse = courseRepository.save(newCourse);
 
             // Enroll student in each course

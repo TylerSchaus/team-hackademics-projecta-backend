@@ -111,6 +111,11 @@ public class EnrollmentServiceImpl implements EnrollmentService {
         // Check if the student is already enrolled in the course
         List<Enrollment> currentEnrollments = enrollmentRepository.findByTermAndStudentId(course.getTerm(), student.getStudentId());
 
+        
+        if (currentEnrollments.size() >= MAX_ENROLLMENTS_PER_TERM) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Student has reached the maximum number of enrollments per term.");
+        }
+
         Enrollment existingEnrollment = currentEnrollments.stream()
                 .filter(e -> e.getCourse().getId().equals(course.getId()))
                 .findFirst()
@@ -119,10 +124,6 @@ public class EnrollmentServiceImpl implements EnrollmentService {
         if (existingEnrollment != null) {
             // Redirect to updateEnrollment if the student is already in the course
             return convertToResponseDto(updateEnrollment(existingEnrollment, enrollmentDto.getLabSectionId(), currentEnrollments));
-        }
-
-        if (currentEnrollments.size() >= MAX_ENROLLMENTS_PER_TERM) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Student has reached the maximum number of enrollments per term.");
         }
 
         // Check for schedule conflicts
