@@ -311,8 +311,8 @@ public class EnrollmentServiceImpl implements EnrollmentService {
         Enrollment enrollment = enrollmentRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Enrollment not found"));
 
-        if (!roleBasedAccessVerification.isAdmin(currentUser)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only admins can view specific enrollments.");
+        if (!roleBasedAccessVerification.isCurrentUserRequestedStudentOrAdmin(currentUser, enrollment.getStudent().getStudentId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only admins and the student themselves can view specific enrollments.");
         }
 
         return convertToResponseDto(enrollment);
