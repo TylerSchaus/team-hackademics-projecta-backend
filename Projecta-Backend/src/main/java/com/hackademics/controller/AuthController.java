@@ -89,4 +89,5 @@ public class AuthController {
                     .body("Authentication failed: " + e.getMessage());
         }
     }
+
 }

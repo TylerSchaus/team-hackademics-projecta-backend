@@ -12,12 +12,13 @@ public class UserResponseDTO {
     private LocalDate enrollStartDate;
     private LocalDate expectGraduationDate;
     private Long adminId;
+    private String major;
 
     public UserResponseDTO() {
     }
 
     public UserResponseDTO(Long id, String firstName, String lastName, String email, String role, 
-            Long studentId, LocalDate enrollStartDate, LocalDate expectGraduationDate, Long adminId) {
+            Long studentId, LocalDate enrollStartDate, LocalDate expectGraduationDate, Long adminId, String major) {
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -27,6 +28,7 @@ public class UserResponseDTO {
         this.enrollStartDate = enrollStartDate;
         this.expectGraduationDate = expectGraduationDate;
         this.adminId = adminId;
+        this.major = major;
     }
 
     public Long getId() {
@@ -99,5 +101,13 @@ public class UserResponseDTO {
 
     public void setAdminId(Long adminId) {
         this.adminId = adminId;
+    }
+
+    public String getMajor() {
+        return major;
+    }
+
+    public void setMajor(String major) {
+        this.major = major;
     }
 } 

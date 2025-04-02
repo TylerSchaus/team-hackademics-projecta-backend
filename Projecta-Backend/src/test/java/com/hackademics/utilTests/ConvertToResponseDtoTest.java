@@ -43,11 +43,11 @@ class ConvertToResponseDtoTest {
     @BeforeEach
     void setUp() {
         // Create test admin
-        admin = new User("Admin", "User", "admin@example.com", "password", Role.ADMIN, 100L);
+        admin = new User("Admin", "User", "admin@example.com", "2317658909", "password", Role.ADMIN, 100L);
         admin.setId(1L);
 
         // Create test student
-        student = new User("Student", "User", "student@example.com", "password", Role.STUDENT, 200L);
+        student = new User("Student", "User", "student@example.com", "2317658909", "password", Role.STUDENT, 200L);
         student.setId(2L);
 
         // Create test subject

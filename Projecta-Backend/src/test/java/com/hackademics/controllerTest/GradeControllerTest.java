@@ -85,13 +85,13 @@ class GradeControllerTest {
         userRepository.deleteAll();
 
         // Create test users
-        admin = new User("Admin", "User", "admin@example.com", passwordEncoder.encode("adminPass"), Role.ADMIN, 100L);
+        admin = new User("Admin", "User", "admin@example.com", "2317658909", passwordEncoder.encode("adminPass"), Role.ADMIN, 100L);
         admin = userRepository.save(admin);
 
-        student1 = new User("Student1", "User", "student1@example.com", passwordEncoder.encode("studentPass"), Role.STUDENT, 123L);
+        student1 = new User("Student1", "User", "student1@example.com", "2317658909", passwordEncoder.encode("studentPass"), Role.STUDENT, 123L);
         student1 = userRepository.save(student1);
 
-        student2 = new User("Student2", "User", "student2@example.com", passwordEncoder.encode("studentPass"), Role.STUDENT, 456L);
+        student2 = new User("Student2", "User", "student2@example.com", "2317658909", passwordEncoder.encode("studentPass"), Role.STUDENT, 456L);
         student2 = userRepository.save(student2);
 
         // Create test subject

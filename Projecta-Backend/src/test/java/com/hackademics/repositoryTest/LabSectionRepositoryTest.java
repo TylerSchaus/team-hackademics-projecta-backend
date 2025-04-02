@@ -47,7 +47,7 @@ private Course course1;
     @BeforeEach
     void setUp() {
 
-        User admin = userRepository.save(new User("Test", "Admin", "admin@example.com", "password", Role.ADMIN, 500L));
+        User admin = userRepository.save(new User("Test", "Admin", "admin@example.com", "2317658909","password", Role.ADMIN, 500L));
 
         // Create subjects
         Subject testSubject = subjectRepository.save(new Subject("TestSubject", "TEST"));

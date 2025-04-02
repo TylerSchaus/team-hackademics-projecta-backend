@@ -81,10 +81,10 @@ class StudentRecordsControllerTest {
         gradeRepository.deleteAll();
 
         // Create test users
-        admin = new User("Admin", "User", "admin@example.com", passwordEncoder.encode("adminPass"), Role.ADMIN, 100L);
+        admin = new User("Admin", "User", "admin@example.com", "2317658909", passwordEncoder.encode("adminPass"), Role.ADMIN, 100L);
         admin = userRepository.save(admin);
 
-        student = new User("Student", "User", "student@example.com", passwordEncoder.encode("studentPass"), Role.STUDENT, 123L);
+        student = new User("Student", "User", "student@example.com", "2317658909", passwordEncoder.encode("studentPass"), Role.STUDENT, 123L);
         student = userRepository.save(student);
 
         // Create test subject
@@ -173,7 +173,7 @@ class StudentRecordsControllerTest {
     @Test
     void shouldNotAllowStudentToViewOtherStudentRecord() throws Exception {
         // Create another student
-        User otherStudent = new User("Other", "Student", "other@example.com", passwordEncoder.encode("otherPass"), Role.STUDENT, 456L);
+        User otherStudent = new User("Other", "Student", "other@example.com", "2317658909", passwordEncoder.encode("otherPass"), Role.STUDENT, 456L);
         otherStudent = userRepository.save(otherStudent);
 
         mockMvc.perform(get("/api/student-records/" + otherStudent.getStudentId())
@@ -273,7 +273,7 @@ class StudentRecordsControllerTest {
     @Test
     void shouldNotAllowStudentToExportOtherStudentRecord() throws Exception {
         // Create another student
-        User otherStudent = new User("Other", "Student", "other@example.com", passwordEncoder.encode("otherPass"), Role.STUDENT, 456L);
+        User otherStudent = new User("Other", "Student", "other@example.com", "2317658909", passwordEncoder.encode("otherPass"), Role.STUDENT, 456L);
         otherStudent = userRepository.save(otherStudent);
 
         mockMvc.perform(get("/api/student-records/" + otherStudent.getStudentId() + "/text")

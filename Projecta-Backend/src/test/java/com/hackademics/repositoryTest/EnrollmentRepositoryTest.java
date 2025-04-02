@@ -49,7 +49,7 @@ class EnrollmentRepositoryTest {
     @BeforeEach
     void setUp() {
 
-        admin = userRepository.save(new User("Test", "Admin", "admin@example.com", "password", Role.ADMIN, 500L));
+        admin = userRepository.save(new User("Test", "Admin", "admin@example.com", "2317658909","password", Role.ADMIN, 500L));
 
         // Create subjects
         testSubject = subjectRepository.save(new Subject("TestSubject", "TEST"));
@@ -61,8 +61,8 @@ class EnrollmentRepositoryTest {
         courseRepository.save(course2);
 
         // Create students
-        User student1 = userRepository.save(new User("Alice", "Example", "alice@example.com", "password", Role.STUDENT, 1001L));
-        User student2 = userRepository.save(new User("Bob", "Student", "bob@example.com", "password", Role.STUDENT, 1002L));
+        User student1 = userRepository.save(new User("Alice", "Example", "alice@example.com", "2317658909","password", Role.STUDENT, 1001L));
+        User student2 = userRepository.save(new User("Bob", "Student", "bob@example.com", "2317658909","password", Role.STUDENT, 1002L));
 
         // Create enrollments
         enrollment1 = new Enrollment(course1, student1, null);

@@ -51,7 +51,7 @@ class WaitlistRepositoryTest {
     @BeforeEach
     void setUp() {
          // Create a test admin 
-        testAdmin = userRepository.save(new User("Test", "Admin", "test@test.com", "testpassword", Role.ADMIN, 500L));
+        testAdmin = userRepository.save(new User("Test", "Admin", "test@test.com", "2317658909","password", Role.ADMIN, 500L));
 
         // Create a test subject
         testSubject = subjectRepository.save(new Subject("TestSubject", "TEST"));

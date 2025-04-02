@@ -11,6 +11,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.hackademics.dto.RequestDto.AdminSignUpDto;
 import com.hackademics.dto.ResponseDto.UserResponseDTO;
 import com.hackademics.dto.UpdateDto.UserUpdateDto;
 import com.hackademics.model.Grade;
@@ -108,7 +109,7 @@ public class UserServiceImpl implements UserService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You do not have permission to update this information.");
         }
 
-        // Both admins and students themselves can change their email, first name, and last name.
+        // Both admins and students themselves can change their email, phone number, first name, last name, and major.
         if (userUpdateDto.getEmail() != null) {
             userToUpdate.setEmail(userUpdateDto.getEmail());
         }
@@ -119,6 +120,14 @@ public class UserServiceImpl implements UserService {
 
         if (userUpdateDto.getLastName() != null) {
             userToUpdate.setLastName(userUpdateDto.getLastName());
+        }
+
+        if (userUpdateDto.getMajor() != null) {
+            userToUpdate.setMajor(userUpdateDto.getMajor());
+        }
+
+        if (userUpdateDto.getPhoneNumber() != null) {
+            userToUpdate.setPhoneNumber(userUpdateDto.getPhoneNumber());
         }
 
         return ConvertToResponseDto.convertToUserResponseDto(userRepository.save(userToUpdate));
@@ -169,6 +178,16 @@ public class UserServiceImpl implements UserService {
                 })
                 .map(ConvertToResponseDto::convertToUserResponseDto)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public UserResponseDTO signupUserFromAdminPortal(AdminSignUpDto input, UserDetails currentUser) {
+        if (!roleBasedAccessVerification.isAdmin(currentUser)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only admins can access this method.");
+        }
+        Long specialId = input.getRole() == Role.ADMIN ? generateNextAdminId() : generateNextStudentId(); 
+        User newUser = new User(input.getFirstName(), input.getLastName(), input.getEmail(), input.getPhoneNumber(), passwordEncoder.encode("tempPassword"), input.getRole(), specialId);
+        return saveUser(newUser);
     }
 
     // Utility methods

@@ -39,6 +39,9 @@ public class User implements UserDetails {
     @Column(length = 100, unique = true, nullable = false)
     private String email;
 
+    @Column(length = 100)
+    private String phoneNumber;
+
     @Column(length = 255, nullable = false)
     private String password;
 
@@ -50,6 +53,9 @@ public class User implements UserDetails {
 
     @Column(name = "student_id")
     private Long studentId;
+
+    @Column(name ="major")
+    private String major;
 
     private LocalDateTime enrollStartDate;
 
@@ -79,10 +85,11 @@ public class User implements UserDetails {
     }
 
     // Constructor with parameters
-    public User(String firstName, String lastName, String email, String password, Role role, Long specialId) {
+    public User(String firstName, String lastName, String email, String phoneNumber, String password, Role role, Long specialId) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
+        this.phoneNumber = phoneNumber;
         this.password = password;
         this.role = role;
         if (this.role == Role.ADMIN) {
@@ -92,6 +99,7 @@ public class User implements UserDetails {
             this.enrollStartDate = LocalDateTime.now();
             this.expectGraduationDate = LocalDateTime.now().plusYears(4);
         }
+        this.major = null;
     }
 
     // Getters and Setters
@@ -235,5 +243,21 @@ public class User implements UserDetails {
     @Override
     public boolean isEnabled() {
         return true;
+    }
+
+    public String getMajor() {
+        return major;
+    }
+
+    public void setMajor(String major) {
+        this.major = major;
+    }
+
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+    
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
     }
 }

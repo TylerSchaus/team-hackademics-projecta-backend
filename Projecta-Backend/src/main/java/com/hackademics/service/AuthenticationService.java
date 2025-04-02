@@ -7,6 +7,5 @@ import com.hackademics.model.User;
 
 public interface AuthenticationService {
     UserResponseDTO signupUser(SignUpDto input);
-
     User authenticate(LoginDto input);
 }

@@ -5,6 +5,8 @@ public class UserUpdateDto {
     private String lastName;
     private String email;
     private Long studentId;
+    private String major;
+    private String phoneNumber;
 
     // Getters and Setters
 
@@ -38,6 +40,22 @@ public class UserUpdateDto {
 
     public void setStudentId(Long studentId) {
         this.studentId = studentId;
+    }
+
+    public String getMajor() {
+        return major;
+    }
+
+    public void setMajor(String major) {
+        this.major = major;
+    }
+
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
     }
 }
 

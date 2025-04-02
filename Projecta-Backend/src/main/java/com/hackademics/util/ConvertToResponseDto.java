@@ -3,6 +3,7 @@ package com.hackademics.util;
 import com.hackademics.dto.ResponseDto.AdminSummaryDto;
 import com.hackademics.dto.ResponseDto.CourseResponseDto;
 import com.hackademics.dto.ResponseDto.CourseSummaryDto;
+import com.hackademics.dto.ResponseDto.EnrollmentResponseDto;
 import com.hackademics.dto.ResponseDto.GradeResponseDto;
 import com.hackademics.dto.ResponseDto.LabSectionResponseDto;
 import com.hackademics.dto.ResponseDto.StudentSummaryDto;
@@ -12,6 +13,7 @@ import com.hackademics.dto.ResponseDto.WaitlistEnrollmentResponseDto;
 import com.hackademics.dto.ResponseDto.WaitlistResponseDto;
 import com.hackademics.dto.ResponseDto.WaitlistSummaryDto;
 import com.hackademics.model.Course;
+import com.hackademics.model.Enrollment;
 import com.hackademics.model.Grade;
 import com.hackademics.model.LabSection;
 import com.hackademics.model.Subject;
@@ -39,7 +41,8 @@ public class ConvertToResponseDto {
             student.getId(),
             student.getFirstName(),
             student.getLastName(),
-            student.getStudentId()
+            student.getStudentId(),
+            student.getMajor()
         );
     }
 
@@ -149,7 +152,8 @@ public class ConvertToResponseDto {
                 user.getStudentId(),
                 user.getEnrollStartDate() != null ? user.getEnrollStartDate().toLocalDate() : null,
                 user.getExpectGraduationDate() != null ? user.getExpectGraduationDate().toLocalDate() : null,
-                user.getAdminId()
+                user.getAdminId(),
+                user.getMajor()
         );
     }
 
@@ -162,4 +166,22 @@ public class ConvertToResponseDto {
             enrollment.getTerm()
         );
     }
+
+    public static EnrollmentResponseDto convertToResponseDto(Enrollment enrollment) {
+        CourseResponseDto courseDto = convertToCourseResponseDto(enrollment.getCourse(), null);
+        StudentSummaryDto studentDto = convertStudentToStudentSummaryDto(enrollment.getStudent());
+        LabSectionResponseDto labSectionDto = enrollment.getLabSection() != null
+                ? convertToLabSectionResponseDto(enrollment.getLabSection()) : null;
+
+        EnrollmentResponseDto responseDto = new EnrollmentResponseDto(
+                enrollment.getId(),
+                courseDto,
+                studentDto,
+                labSectionDto
+        );
+
+        return responseDto;
+    }
+
+
 }

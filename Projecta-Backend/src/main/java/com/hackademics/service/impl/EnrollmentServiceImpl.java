@@ -11,10 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.hackademics.dto.RequestDto.EnrollmentDto;
-import com.hackademics.dto.ResponseDto.CourseResponseDto;
 import com.hackademics.dto.ResponseDto.EnrollmentResponseDto;
-import com.hackademics.dto.ResponseDto.LabSectionResponseDto;
-import com.hackademics.dto.ResponseDto.StudentSummaryDto;
 import com.hackademics.model.Course;
 import com.hackademics.model.Enrollment;
 import com.hackademics.model.LabSection;
@@ -27,9 +24,8 @@ import com.hackademics.repository.LabSectionRepository;
 import com.hackademics.repository.UserRepository;
 import com.hackademics.repository.WaitlistEnrollmentRepository;
 import com.hackademics.repository.WaitlistRepository;
-import com.hackademics.service.CourseService;
 import com.hackademics.service.EnrollmentService;
-import com.hackademics.service.LabSectionService;
+import com.hackademics.util.ConvertToResponseDto;
 import com.hackademics.util.EmailSender;
 import com.hackademics.util.RoleBasedAccessVerification;
 import com.hackademics.util.ScheduleConflictChecker;
@@ -57,12 +53,6 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     private CourseRepository courseRepository;
 
     @Autowired
-    private CourseService courseService;
-
-    @Autowired
-    private LabSectionService labSectionService;
-
-    @Autowired
     private EmailSender emailSender;
 
     @Value("${email.sending.enabled:true}")
@@ -73,26 +63,6 @@ public class EnrollmentServiceImpl implements EnrollmentService {
 
     private static final int MAX_ENROLLMENTS_PER_TERM = 6;
 
-    private EnrollmentResponseDto convertToResponseDto(Enrollment enrollment) {
-        CourseResponseDto courseDto = courseService.getCourseById(enrollment.getCourse().getId());
-        StudentSummaryDto studentDto = new StudentSummaryDto(
-                enrollment.getStudent().getId(),
-                enrollment.getStudent().getFirstName(),
-                enrollment.getStudent().getLastName(),
-                enrollment.getStudent().getStudentId()
-        );
-        LabSectionResponseDto labSectionDto = enrollment.getLabSection() != null
-                ? labSectionService.getLabSectionById(enrollment.getLabSection().getId()) : null;
-
-        EnrollmentResponseDto responseDto = new EnrollmentResponseDto(
-                enrollment.getId(),
-                courseDto,
-                studentDto,
-                labSectionDto
-        );
-
-        return responseDto;
-    }
 
     @Override
     public EnrollmentResponseDto saveEnrollment(EnrollmentDto enrollmentDto, UserDetails currentUser) {
@@ -118,7 +88,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
 
         if (existingEnrollment != null) {
             // Redirect to updateEnrollment if the student is already in the course
-            return convertToResponseDto(updateEnrollment(existingEnrollment, enrollmentDto.getLabSectionId(), currentEnrollments));
+            return ConvertToResponseDto.convertToResponseDto(updateEnrollment(existingEnrollment, enrollmentDto.getLabSectionId(), currentEnrollments));
         }
 
         // Check enrollment limit only for new enrollments
@@ -210,7 +180,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
             emailSender.sendEnrollmentEmail(enrollment);
         }
 
-        return convertToResponseDto(savedEnrollment);
+        return ConvertToResponseDto.convertToResponseDto(savedEnrollment);
     }
 
     private Enrollment updateEnrollment(Enrollment existingEnrollment, Long labSectionId, List<Enrollment> currentEnrollments) {
@@ -273,7 +243,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
         }
 
         return enrollmentRepository.findAll().stream()
-                .map(this::convertToResponseDto)
+                .map(ConvertToResponseDto::convertToResponseDto)
                 .collect(Collectors.toList());
     }
 
@@ -289,7 +259,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
         }
 
         return enrollmentRepository.findByCourseId(courseId).stream()
-                .map(this::convertToResponseDto)
+                .map(ConvertToResponseDto::convertToResponseDto)    
                 .collect(Collectors.toList());
     }
 
@@ -301,7 +271,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
         }
 
         return enrollmentRepository.findByStudentId(studentId).stream()
-                .map(this::convertToResponseDto)
+                .map(ConvertToResponseDto::convertToResponseDto)
                 .collect(Collectors.toList());
     }
 
@@ -315,7 +285,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only admins and the student themselves can view specific enrollments.");
         }
 
-        return convertToResponseDto(enrollment);
+        return ConvertToResponseDto.convertToResponseDto(enrollment);
     }
 
     @Override
@@ -363,7 +333,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
         }
 
         return enrollmentRepository.findByTermAndStudentId(currentTerm, studentId).stream()
-                .map(this::convertToResponseDto)
+                .map(ConvertToResponseDto::convertToResponseDto)
                 .collect(Collectors.toList());
     }
 

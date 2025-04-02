@@ -96,13 +96,13 @@ class EnrollmentControllerTest {
         userRepository.deleteAll();
 
         // Create test users
-        admin = new User("Admin", "User", "admin@example.com", passwordEncoder.encode("adminPass"), Role.ADMIN, 100L);
+        admin = new User("Admin", "User", "admin@example.com", "2317658909", passwordEncoder.encode("adminPass"), Role.ADMIN, 100L);
         admin = userRepository.save(admin);
 
-        student1 = new User("Student1", "User", "student1@example.com", passwordEncoder.encode("studentPass"), Role.STUDENT, 123L);
+        student1 = new User("Student1", "User", "student1@example.com", "2317658909", passwordEncoder.encode("studentPass"), Role.STUDENT, 123L);
         student1 = userRepository.save(student1);
 
-        student2 = new User("Student2", "User", "student2@example.com", passwordEncoder.encode("studentPass"), Role.STUDENT, 456L);
+        student2 = new User("Student2", "User", "student2@example.com", "2317658909", passwordEncoder.encode("studentPass"), Role.STUDENT, 456L);
         student2 = userRepository.save(student2);
 
         // Create test subject
@@ -187,7 +187,7 @@ class EnrollmentControllerTest {
     void shouldNotAllowEnrollmentInFullLabSection() throws Exception {
         // Fill up labSection1 to capacity
         for (int i = 0; i < labSection1.getCapacity(); i++) {
-            User newStudent = new User("Test", "Student" + i, "test" + i + "@example.com",
+            User newStudent = new User("Test", "Student" + i, "test" + i + "@example.com", "2317658909",
                     passwordEncoder.encode("password"), Role.STUDENT, 1000L + i);
             userRepository.save(newStudent);
 
