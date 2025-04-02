@@ -18,12 +18,14 @@ import com.hackademics.model.LabSection;
 import com.hackademics.model.User;
 import com.hackademics.model.Waitlist;
 import com.hackademics.model.WaitlistEnrollment;
+import com.hackademics.model.WaitlistRequest;
 import com.hackademics.repository.CourseRepository;
 import com.hackademics.repository.EnrollmentRepository;
 import com.hackademics.repository.LabSectionRepository;
 import com.hackademics.repository.UserRepository;
 import com.hackademics.repository.WaitlistEnrollmentRepository;
 import com.hackademics.repository.WaitlistRepository;
+import com.hackademics.repository.WaitlistRequestRepository;
 import com.hackademics.service.EnrollmentService;
 import com.hackademics.util.ConvertToResponseDto;
 import com.hackademics.util.EmailSender;
@@ -46,6 +48,9 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     @Autowired
     private EnrollmentRepository enrollmentRepository;
 
+    @Autowired
+    private WaitlistRequestRepository waitlistRequestRepository;
+    
     @Autowired
     private UserRepository userRepository;
 
@@ -111,14 +116,13 @@ public class EnrollmentServiceImpl implements EnrollmentService {
                 List<WaitlistEnrollment> waitlistEnrollments = waitlistEnrollmentRepository.findByWaitlistId(waitlist.getId());
                 if (waitlistEnrollments.size() < waitlist.getWaitlistLimit()) {
                     // Add the student to the waitlist
-                    WaitlistEnrollment waitlistEnrollment = new WaitlistEnrollment(
-                            waitlistEnrollments.size() + 1, // Next position in the waitlist
+                    WaitlistRequest waitlistRequest = new WaitlistRequest(
                             waitlist,
                             student
                     );
-                    waitlistEnrollmentRepository.save(waitlistEnrollment);
+                    waitlistRequestRepository.save(waitlistRequest);
                     if (emailSendingEnabled) {
-                        emailSender.sendWaitlistEmail(waitlistEnrollment);
+                        emailSender.sendWaitlistRequestEmail(waitlistRequest);
                     }
                     throw new ResponseStatusException(HttpStatus.OK, "Student added to the waitlist."); 
                 } else {

@@ -10,6 +10,7 @@ import com.hackademics.dto.ResponseDto.StudentSummaryDto;
 import com.hackademics.dto.ResponseDto.SubjectResponseDto;
 import com.hackademics.dto.ResponseDto.UserResponseDTO;
 import com.hackademics.dto.ResponseDto.WaitlistEnrollmentResponseDto;
+import com.hackademics.dto.ResponseDto.WaitlistRequestResponseDto;
 import com.hackademics.dto.ResponseDto.WaitlistResponseDto;
 import com.hackademics.dto.ResponseDto.WaitlistSummaryDto;
 import com.hackademics.model.Course;
@@ -20,6 +21,7 @@ import com.hackademics.model.Subject;
 import com.hackademics.model.User;
 import com.hackademics.model.Waitlist;
 import com.hackademics.model.WaitlistEnrollment;
+import com.hackademics.model.WaitlistRequest;
 
 public class ConvertToResponseDto {
     
@@ -182,6 +184,18 @@ public class ConvertToResponseDto {
         );
 
         return responseDto;
+    }
+
+    public static WaitlistRequestResponseDto convertToWaitlistRequestResponseDto(WaitlistRequest request) {
+        return new WaitlistRequestResponseDto(
+            request.getId(),
+            new WaitlistSummaryDto(
+                request.getWaitlist().getId(),
+                request.getWaitlist().getWaitlistLimit(),
+                request.getWaitlist().getWaitlistEnrollments().size()
+            ),
+            convertStudentToStudentSummaryDto(request.getStudent())
+        );
     }
 
 
