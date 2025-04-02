@@ -33,4 +33,6 @@ public interface UserService {
     void deleteUser(Long userId, UserDetails currentUser);
 
     UserResponseDTO signupUserFromAdminPortal(AdminSignUpDto input, UserDetails currentUser);
+
+    UserResponseDTO getUserInfoById(Long id, UserDetails currentUser);
 }

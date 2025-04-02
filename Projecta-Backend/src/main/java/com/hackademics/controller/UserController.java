@@ -172,5 +172,22 @@ public class UserController {
                     .body("An error occurred while registering the user");
         }
     }
+
+    @Operation(summary = "Get user by Id", description = "Retrieves the user's information by their ID")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Successfully retrieved user information",
+                    content = @Content(schema = @Schema(implementation = UserResponseDTO.class))),
+        @ApiResponse(responseCode = "401", description = "Unauthorized - Not authenticated"),
+        @ApiResponse(responseCode = "403", description = "Forbidden - Insufficient permissions"),
+        @ApiResponse(responseCode = "404", description = "User not found")
+    })
+    @GetMapping("/{id}")
+    public ResponseEntity<UserResponseDTO> getUserById(
+            @Parameter(description = "ID of the user", required = true) 
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserDetails currentUser) {
+        return ResponseEntity.ok(userService.getUserInfoById(id, currentUser));
+    }
+
     
 }

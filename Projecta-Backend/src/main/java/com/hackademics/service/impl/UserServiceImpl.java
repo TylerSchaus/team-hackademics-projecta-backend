@@ -190,6 +190,23 @@ public class UserServiceImpl implements UserService {
         return saveUser(newUser);
     }
 
+    @Override
+    public UserResponseDTO getUserInfoById(Long id, UserDetails currentUser) {
+
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+
+        if (user == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
+        }
+        
+        if (!roleBasedAccessVerification.isCurrentUserRequestedStudentOrAdmin(currentUser, user.getStudentId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only admins and the student themselves can view specific enrollments.");
+        }
+
+        return ConvertToResponseDto.convertToUserResponseDto(user);
+    }
+
     // Helper methods
 
     private void validateUniqueStudentId(Long studentId) {

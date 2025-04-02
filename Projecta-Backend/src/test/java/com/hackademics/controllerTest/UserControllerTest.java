@@ -303,4 +303,41 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.role").value("ADMIN"))
                 .andExpect(jsonPath("$.adminId").exists());
     }
+
+    @Test
+    void shouldAllowUserToGetUserById() throws Exception {
+        mockMvc.perform(get("/api/users/" + student.getId())
+                .header("Authorization", "Bearer " + generateToken(student)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(student.getId()))
+                .andExpect(jsonPath("$.email").value(student.getEmail()))
+                .andExpect(jsonPath("$.firstName").value(student.getFirstName()))
+                .andExpect(jsonPath("$.lastName").value(student.getLastName()))
+                .andExpect(jsonPath("$.role").value("STUDENT"));
+    }
+
+    @Test
+    void shouldReturn404ForNonExistentUserId() throws Exception {
+        mockMvc.perform(get("/api/users/999999")
+                .header("Authorization", "Bearer " + generateToken(student)))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturn401ForUnauthorizedAccess() throws Exception {
+        mockMvc.perform(get("/api/users/" + student.getId()))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void shouldAllowAdminToGetAnyUserById() throws Exception {
+        mockMvc.perform(get("/api/users/" + student.getId())
+                .header("Authorization", "Bearer " + generateToken(admin)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").exists())
+                .andExpect(jsonPath("$.email").value(student.getEmail()))
+                .andExpect(jsonPath("$.firstName").value(student.getFirstName()))
+                .andExpect(jsonPath("$.lastName").value(student.getLastName()))
+                .andExpect(jsonPath("$.role").value("STUDENT"));
+    }
 }
