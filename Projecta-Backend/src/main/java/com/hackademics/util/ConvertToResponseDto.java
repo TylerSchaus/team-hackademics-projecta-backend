@@ -77,8 +77,8 @@ public class ConvertToResponseDto {
     }
 
     public static CourseResponseDto convertToCourseResponseDto(Course course, Waitlist waitlist) {
-        AdminSummaryDto adminDto = convertAdminToAdminSummaryDto(course.getAdmin());
-        SubjectResponseDto subjectDto = convertToSubjectResponseDto(course.getSubject());
+        AdminSummaryDto adminDto = course.getAdmin() != null ? convertAdminToAdminSummaryDto(course.getAdmin()) : null;
+        SubjectResponseDto subjectDto = course.getSubject() != null ? convertToSubjectResponseDto(course.getSubject()) : null;
 
         CourseResponseDto responseDto = new CourseResponseDto(
                 course.getId(),
@@ -100,7 +100,7 @@ public class ConvertToResponseDto {
 
         // Handle waitlist logic directly here
         if (waitlist != null && course.getCurrentEnroll() >= course.getEnrollLimit() && Boolean.TRUE.equals(course.isWaitlistAvailable())) {
-            if (waitlist.getWaitlistEnrollments().size() < waitlist.getWaitlistLimit()) {
+            if (waitlist.getWaitlistEnrollments() != null && waitlist.getWaitlistEnrollments().size() < waitlist.getWaitlistLimit()) {
                 responseDto.setWaitlist(new WaitlistSummaryDto(
                     waitlist.getId(),
                     waitlist.getWaitlistLimit(),
@@ -121,11 +121,16 @@ public class ConvertToResponseDto {
     }
 
     public static GradeResponseDto convertToGradeResponseDto(Grade grade) {
+        StudentSummaryDto studentDto = convertStudentToStudentSummaryDto(grade.getStudent());
+        CourseResponseDto courseDto = convertToCourseResponseDto(grade.getCourse(), null);
+
+        System.out.println("studentDto: " + studentDto);
+        System.out.println("courseDto: " + courseDto);
         return new GradeResponseDto(
             grade.getId(),
             grade.getGrade(),
-            convertStudentToStudentSummaryDto(grade.getStudent()),
-            convertToCourseResponseDto(grade.getCourse(), null) // No waitlist needed for grade view
+            studentDto,
+            courseDto
         );
     }
 

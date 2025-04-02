@@ -122,9 +122,9 @@ public class EnrollmentServiceImpl implements EnrollmentService {
                     );
                     waitlistRequestRepository.save(waitlistRequest);
                     if (emailSendingEnabled) {
-                        emailSender.sendWaitlistRequestEmail(waitlistRequest);
+                       emailSender.sendWaitlistRequestEmail(waitlistRequest);
                     }
-                    throw new ResponseStatusException(HttpStatus.OK, "Student added to the waitlist."); 
+                    throw new ResponseStatusException(HttpStatus.ACCEPTED, "Student added to the waitlist."); 
                 } else {
                     throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Course is at capacity and the waitlist is full.");
                 }

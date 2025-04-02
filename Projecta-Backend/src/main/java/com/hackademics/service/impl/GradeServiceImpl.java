@@ -61,9 +61,8 @@ public class GradeServiceImpl implements GradeService {
 
     @Override
     public List<GradeResponseDto> getAllGrades(UserDetails currentUser) {
-        
         if (!roleBasedAccessVerification.isAdmin(currentUser)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied. Only admins can view all grades.");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only admins can view all grades.");
         }
         
         return gradeRepository.findAll().stream()
@@ -73,9 +72,12 @@ public class GradeServiceImpl implements GradeService {
 
     @Override
     public GradeResponseDto getGradeById(Long id, UserDetails currentUser) {
-        
         Grade grade = gradeRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Grade not found with ID: " + id));
+        
+        // Force loading of associations
+        grade.getStudent().getId();
+        grade.getCourse().getId();
         
         // Allow access if user is admin or if the grade belongs to the user
         if (!roleBasedAccessVerification.isCurrentUserRequestedStudentOrAdmin(currentUser, grade.getStudent().getStudentId())) {
@@ -87,13 +89,16 @@ public class GradeServiceImpl implements GradeService {
 
     @Override
     public GradeResponseDto updateGrade(Long id, GradeUpdateDto gradeUpdateDto, UserDetails currentUser) {
-        
         if (!roleBasedAccessVerification.isAdmin(currentUser)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied. Only admins can update grades.");
         }
         
         Grade grade = gradeRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Grade not found with ID: " + id));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Grade not found with ID: " + id));
+        
+        // Force loading of associations
+        grade.getStudent().getId();
+        grade.getCourse().getId();
         
         grade.setGrade(gradeUpdateDto.getGrade());
         return ConvertToResponseDto.convertToGradeResponseDto(gradeRepository.save(grade));
@@ -111,15 +116,19 @@ public class GradeServiceImpl implements GradeService {
 
     @Override
     public List<GradeResponseDto> getGradesByStudentId(Long studentId, UserDetails currentUser) {
-        
         // Allow access if user is admin or if the grades belong to the user
         if (!roleBasedAccessVerification.isCurrentUserRequestedStudentOrAdmin(currentUser, studentId)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied. You can only view your own grades.");
         }
         
-        return gradeRepository.findAll().stream()
-                .filter(grade -> grade.getStudent().getStudentId().equals(studentId))
-                .map(ConvertToResponseDto::convertToGradeResponseDto)
+        List<Grade> grades = gradeRepository.findByStudentId(studentId);
+        return grades.stream()
+                .map(grade -> {
+                    // Force loading of associations
+                    grade.getStudent().getId();
+                    grade.getCourse().getId();
+                    return ConvertToResponseDto.convertToGradeResponseDto(grade);
+                })
                 .collect(Collectors.toList());
     }
 }

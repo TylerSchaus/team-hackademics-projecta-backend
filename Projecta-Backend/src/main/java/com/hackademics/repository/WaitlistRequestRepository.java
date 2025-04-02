@@ -11,4 +11,6 @@ import com.hackademics.model.WaitlistRequest;
 public interface WaitlistRequestRepository extends JpaRepository<WaitlistRequest, Long> {
     
     List<WaitlistRequest> findAll();
+
+    List<WaitlistRequest> findByWaitlistIdAndStudentId(Long waitlistId, Long studentId);
 }
