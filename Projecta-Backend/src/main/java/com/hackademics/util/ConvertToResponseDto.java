@@ -148,6 +148,7 @@ public class ConvertToResponseDto {
                 user.getFirstName(),
                 user.getLastName(),
                 user.getEmail(),
+                user.getPhoneNumber(),
                 user.getRole().toString(),
                 user.getStudentId(),
                 user.getEnrollStartDate() != null ? user.getEnrollStartDate().toLocalDate() : null,

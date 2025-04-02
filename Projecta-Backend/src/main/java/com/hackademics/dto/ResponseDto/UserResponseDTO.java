@@ -7,6 +7,7 @@ public class UserResponseDTO {
     private String firstName;
     private String lastName;
     private String email;
+    private String phoneNumber;
     private String role;
     private Long studentId;
     private LocalDate enrollStartDate;
@@ -14,15 +15,17 @@ public class UserResponseDTO {
     private Long adminId;
     private String major;
 
+
     public UserResponseDTO() {
     }
 
-    public UserResponseDTO(Long id, String firstName, String lastName, String email, String role, 
+    public UserResponseDTO(Long id, String firstName, String lastName, String email, String phoneNumber, String role, 
             Long studentId, LocalDate enrollStartDate, LocalDate expectGraduationDate, Long adminId, String major) {
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
+        this.phoneNumber = phoneNumber;
         this.role = role;
         this.studentId = studentId;
         this.enrollStartDate = enrollStartDate;
@@ -110,4 +113,13 @@ public class UserResponseDTO {
     public void setMajor(String major) {
         this.major = major;
     }
+
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
+    
 } 
