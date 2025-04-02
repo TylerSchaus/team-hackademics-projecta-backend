@@ -4,16 +4,17 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import com.hackademics.dto.CourseResponseDto;
-import com.hackademics.dto.EnrollmentDto;
-import com.hackademics.dto.EnrollmentResponseDto;
-import com.hackademics.dto.LabSectionResponseDto;
-import com.hackademics.dto.StudentSummaryDto;
+import com.hackademics.dto.RequestDto.EnrollmentDto;
+import com.hackademics.dto.ResponseDto.CourseResponseDto;
+import com.hackademics.dto.ResponseDto.EnrollmentResponseDto;
+import com.hackademics.dto.ResponseDto.LabSectionResponseDto;
+import com.hackademics.dto.ResponseDto.StudentSummaryDto;
 import com.hackademics.model.Course;
 import com.hackademics.model.Enrollment;
 import com.hackademics.model.LabSection;
@@ -29,6 +30,7 @@ import com.hackademics.repository.WaitlistRepository;
 import com.hackademics.service.CourseService;
 import com.hackademics.service.EnrollmentService;
 import com.hackademics.service.LabSectionService;
+import com.hackademics.util.EmailSender;
 import com.hackademics.util.RoleBasedAccessVerification;
 import com.hackademics.util.ScheduleConflictChecker;
 import com.hackademics.util.TermDeterminator;
@@ -61,7 +63,15 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     private LabSectionService labSectionService;
 
     @Autowired
+    private EmailSender emailSender;
+
+    @Value("${email.sending.enabled:true}")
+    private boolean emailSendingEnabled;
+
+    @Autowired
     private RoleBasedAccessVerification roleBasedAccessVerification;
+
+    private static final int MAX_ENROLLMENTS_PER_TERM = 6;
 
     private EnrollmentResponseDto convertToResponseDto(Enrollment enrollment) {
         CourseResponseDto courseDto = courseService.getCourseById(enrollment.getCourse().getId());
@@ -80,6 +90,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
                 studentDto,
                 labSectionDto
         );
+
         return responseDto;
     }
 
@@ -110,16 +121,22 @@ public class EnrollmentServiceImpl implements EnrollmentService {
             return convertToResponseDto(updateEnrollment(existingEnrollment, enrollmentDto.getLabSectionId(), currentEnrollments));
         }
 
+        // Check enrollment limit only for new enrollments
+        System.out.println("Current enrollments size: " + currentEnrollments.size());
+        if (currentEnrollments.size() >= MAX_ENROLLMENTS_PER_TERM) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Student has reached the maximum number of enrollments per term.");
+        }
+
         // Check for schedule conflicts
         if (ScheduleConflictChecker.hasScheduleConflict(currentEnrollments, course, null)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Schedule conflict detected with course section.");
         }
 
         // Check course capacity
-        if (course.getCurrentEnroll() >= course.getEnrollLimit()) {
+        if (course.getCurrentEnroll() >= course.getEnrollLimit()) { // Should generally not happen. Only will happen if the user registers just before another user and takes the final spot in the course. Therefore this is more of a safety net.
             // Query the waitlist repository for a waitlist associated with the course
-            Waitlist waitlist = waitlistRepository.findByCourseId(course.getId());
-            if (waitlist != null) {
+            if (course.isWaitlistAvailable()) {
+                Waitlist waitlist = waitlistRepository.findByCourseId(course.getId());
                 // Proceed with waitlist logic
                 List<WaitlistEnrollment> waitlistEnrollments = waitlistEnrollmentRepository.findByWaitlistId(waitlist.getId());
                 if (waitlistEnrollments.size() < waitlist.getWaitlistLimit()) {
@@ -130,7 +147,10 @@ public class EnrollmentServiceImpl implements EnrollmentService {
                             student
                     );
                     waitlistEnrollmentRepository.save(waitlistEnrollment);
-                    throw new ResponseStatusException(HttpStatus.OK, "Student added to the waitlist.");
+                    if (emailSendingEnabled) {
+                        emailSender.sendWaitlistEmail(waitlistEnrollment);
+                    }
+                    throw new ResponseStatusException(HttpStatus.OK, "Student added to the waitlist."); 
                 } else {
                     throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Course is at capacity and the waitlist is full.");
                 }
@@ -138,8 +158,6 @@ public class EnrollmentServiceImpl implements EnrollmentService {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Course is at capacity and does not have a waitlist.");
             }
         }
-
-        System.out.println("Course is not at capacity or waitlist enrollment successful/skipped. Still processing...");
 
         // Proceed with creating the enrollment
         LabSection labSection = null;
@@ -185,6 +203,11 @@ public class EnrollmentServiceImpl implements EnrollmentService {
         if (labSection != null) {
             labSection.setCurrentEnroll(labSection.getCurrentEnroll() + 1);
             labSectionRepository.save(labSection);
+        }
+
+        if (emailSendingEnabled) {
+            System.out.println("Sending email...");
+            emailSender.sendEnrollmentEmail(enrollment);
         }
 
         return convertToResponseDto(savedEnrollment);
@@ -297,7 +320,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
 
     @Override
     public void deleteEnrollment(Long id, UserDetails currentUser) {
-           
+
         Enrollment enrollment = enrollmentRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Enrollment not found"));
 
@@ -313,11 +336,15 @@ public class EnrollmentServiceImpl implements EnrollmentService {
             course.setCurrentEnroll(course.getCurrentEnroll() - 1);
             courseRepository.save(course);
         }
+
+        if (emailSendingEnabled) {
+            emailSender.sendEnrollmentRemovalEmail(enrollment);
+        }
     }
 
     @Override
     public List<EnrollmentResponseDto> getCurrentEnrollmentByStudentId(UserDetails currentUser, Long studentId, String term) {
-    
+
         if (!roleBasedAccessVerification.isCurrentUserRequestedStudentOrAdmin(currentUser, studentId)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Students can only view their own enrollments.");
         }
@@ -339,4 +366,5 @@ public class EnrollmentServiceImpl implements EnrollmentService {
                 .map(this::convertToResponseDto)
                 .collect(Collectors.toList());
     }
+
 }

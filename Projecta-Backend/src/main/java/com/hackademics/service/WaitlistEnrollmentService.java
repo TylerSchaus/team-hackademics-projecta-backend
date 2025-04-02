@@ -4,8 +4,8 @@ import java.util.List;
 
 import org.springframework.security.core.userdetails.UserDetails;
 
-import com.hackademics.dto.WaitlistEnrollmentDto;
-import com.hackademics.dto.WaitlistEnrollmentResponseDto;
+import com.hackademics.dto.RequestDto.WaitlistEnrollmentDto;
+import com.hackademics.dto.ResponseDto.WaitlistEnrollmentResponseDto;
 
 public interface WaitlistEnrollmentService {
     WaitlistEnrollmentResponseDto saveWaitlistEnrollment(WaitlistEnrollmentDto waitlistEnrollmentDto, UserDetails currentUser);

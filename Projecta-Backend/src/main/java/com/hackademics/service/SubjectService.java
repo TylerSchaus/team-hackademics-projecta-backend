@@ -5,9 +5,9 @@ import java.util.Optional;
 
 import org.springframework.security.core.userdetails.UserDetails;
 
-import com.hackademics.dto.SubjectDto;
-import com.hackademics.dto.SubjectResponseDto;
-import com.hackademics.dto.SubjectUpdateDto;
+import com.hackademics.dto.RequestDto.SubjectDto;
+import com.hackademics.dto.ResponseDto.SubjectResponseDto;
+import com.hackademics.dto.UpdateDto.SubjectUpdateDto;
 
 public interface SubjectService {
     List<SubjectResponseDto> getAllSubjects();

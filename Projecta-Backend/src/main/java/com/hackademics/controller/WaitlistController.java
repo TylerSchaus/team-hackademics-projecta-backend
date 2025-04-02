@@ -7,9 +7,9 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
-import com.hackademics.dto.WaitlistDto;
-import com.hackademics.dto.WaitlistUpdateDto;
-import com.hackademics.dto.WaitlistResponseDto;
+import com.hackademics.dto.RequestDto.WaitlistDto;
+import com.hackademics.dto.ResponseDto.WaitlistResponseDto;
+import com.hackademics.dto.UpdateDto.WaitlistUpdateDto;
 import com.hackademics.service.WaitlistService;
 
 import java.util.List;

@@ -15,8 +15,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hackademics.dto.LoginDto;
-import com.hackademics.dto.SignUpDto;
+import com.hackademics.dto.RequestDto.LoginDto;
+import com.hackademics.dto.RequestDto.SignUpDto;
 import com.hackademics.model.Role;
 import com.hackademics.model.User;
 import com.hackademics.repository.UserRepository;

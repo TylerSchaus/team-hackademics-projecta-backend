@@ -1,4 +1,4 @@
-package com.hackademics.dto;
+package com.hackademics.dto.ResponseDto;
 
 import java.time.LocalDate;
 

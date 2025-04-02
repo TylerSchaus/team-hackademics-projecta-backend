@@ -1,12 +1,10 @@
-package com.hackademics.dto;
+package com.hackademics.dto.ResponseDto;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 
-import com.hackademics.model.OfferingType;
 
-
-public class CourseResponseDto {
+public class CourseSummaryDto {
     private Long id;
     private AdminSummaryDto admin;
     private SubjectResponseDto subject;
@@ -22,13 +20,11 @@ public class CourseResponseDto {
     private LocalTime startTime;
     private LocalTime endTime;
     private Integer numLabSection;
-    private WaitlistResponseDto waitlist;
-    private OfferingType offeringType;
 
-    public CourseResponseDto() {
+    public CourseSummaryDto() {
     }
 
-    public CourseResponseDto(Long id, AdminSummaryDto admin, SubjectResponseDto subject, String courseName,
+    public CourseSummaryDto(Long id, AdminSummaryDto admin, SubjectResponseDto subject, String courseName,
             LocalDate startDate, LocalDate endDate, Integer enrollLimit, Integer currentEnroll,
             String courseNumber, String courseTag, String term, Integer days,
             LocalTime startTime, LocalTime endTime, Integer numLabSection) {
@@ -47,8 +43,6 @@ public class CourseResponseDto {
         this.startTime = startTime;
         this.endTime = endTime;
         this.numLabSection = numLabSection;
-        this.waitlist = null; 
-        this.offeringType = OfferingType.COURSE;
 
     }
 
@@ -172,24 +166,4 @@ public class CourseResponseDto {
         this.numLabSection = numLabSection;
     }
 
-    public WaitlistResponseDto getWaitlist() {
-        return waitlist;
-    }
-
-    public void setWaitlist(WaitlistResponseDto waitlist) {
-        this.waitlist = waitlist;
-        if (waitlist != null) {
-            this.offeringType = OfferingType.WAITLIST;
-        } else {
-            this.offeringType = OfferingType.COURSE;
-        }
-    }
-
-    public OfferingType getOfferingType() {
-        return offeringType;
-    }
-
-    public void setOfferingType(OfferingType offeringType) {
-        this.offeringType = offeringType;
-    }
 } 

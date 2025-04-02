@@ -1,8 +1,8 @@
 package com.hackademics.service;
 
-import com.hackademics.dto.LoginDto;
-import com.hackademics.dto.SignUpDto;
-import com.hackademics.dto.UserResponseDTO;
+import com.hackademics.dto.RequestDto.LoginDto;
+import com.hackademics.dto.RequestDto.SignUpDto;
+import com.hackademics.dto.ResponseDto.UserResponseDTO;
 import com.hackademics.model.User;
 
 public interface AuthenticationService {

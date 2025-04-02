@@ -4,8 +4,8 @@ import java.util.List;
 
 import org.springframework.security.core.userdetails.UserDetails;
 
-import com.hackademics.dto.EnrollmentDto;
-import com.hackademics.dto.EnrollmentResponseDto;
+import com.hackademics.dto.RequestDto.EnrollmentDto;
+import com.hackademics.dto.ResponseDto.EnrollmentResponseDto;
 
 public interface EnrollmentService {
     EnrollmentResponseDto saveEnrollment(EnrollmentDto enrollmentDto, UserDetails currentUser);

@@ -5,16 +5,12 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
-import com.hackademics.dto.AdminSummaryDto;
-import com.hackademics.dto.CourseResponseDto;
-import com.hackademics.dto.StudentSummaryDto;
-import com.hackademics.dto.SubjectResponseDto;
-import com.hackademics.dto.WaitlistEnrollmentDto;
-import com.hackademics.dto.WaitlistEnrollmentResponseDto;
-import com.hackademics.dto.WaitlistResponseDto;
+import com.hackademics.dto.RequestDto.WaitlistEnrollmentDto;
+import com.hackademics.dto.ResponseDto.WaitlistEnrollmentResponseDto;
 import com.hackademics.model.User;
 import com.hackademics.model.Waitlist;
 import com.hackademics.model.WaitlistEnrollment;
@@ -22,6 +18,8 @@ import com.hackademics.repository.UserRepository;
 import com.hackademics.repository.WaitlistEnrollmentRepository;
 import com.hackademics.repository.WaitlistRepository;
 import com.hackademics.service.WaitlistEnrollmentService;
+import com.hackademics.util.ConvertToResponseDto;
+import com.hackademics.util.EmailSender;
 import com.hackademics.util.RoleBasedAccessVerification;
 
 @Service
@@ -39,49 +37,12 @@ public class WaitlistEnrollmentServiceImpl implements WaitlistEnrollmentService 
     @Autowired
     private RoleBasedAccessVerification roleBasedAccessVerification;
 
-    private WaitlistEnrollmentResponseDto convertToResponseDto(WaitlistEnrollment enrollment) {
-        return new WaitlistEnrollmentResponseDto(
-            enrollment.getId(),
-            enrollment.getWaitlistPosition(),
-            new WaitlistResponseDto(
-                enrollment.getWaitlist().getId(),
-                enrollment.getWaitlist().getWaitlistLimit(),
-                new CourseResponseDto(
-                    enrollment.getWaitlist().getCourse().getId(),
-                    new AdminSummaryDto(
-                        enrollment.getWaitlist().getCourse().getAdmin().getId(),
-                        enrollment.getWaitlist().getCourse().getAdmin().getFirstName(),
-                        enrollment.getWaitlist().getCourse().getAdmin().getLastName(),
-                        enrollment.getWaitlist().getCourse().getAdmin().getAdminId()
-                    ),
-                    new SubjectResponseDto(
-                        enrollment.getWaitlist().getCourse().getSubject().getId(),
-                        enrollment.getWaitlist().getCourse().getSubject().getSubjectName(),
-                        enrollment.getWaitlist().getCourse().getSubject().getSubjectTag()
-                    ),
-                    enrollment.getWaitlist().getCourse().getCourseName(),
-                    enrollment.getWaitlist().getCourse().getStartDate().toLocalDate(),
-                    enrollment.getWaitlist().getCourse().getEndDate().toLocalDate(),
-                    enrollment.getWaitlist().getCourse().getEnrollLimit(),
-                    enrollment.getWaitlist().getCourse().getCurrentEnroll(),
-                    enrollment.getWaitlist().getCourse().getCourseNumber(),
-                    enrollment.getWaitlist().getCourse().getCourseTag(),
-                    enrollment.getWaitlist().getCourse().getTerm(),
-                    enrollment.getWaitlist().getCourse().getDays(),
-                    enrollment.getWaitlist().getCourse().getStartTime(),
-                    enrollment.getWaitlist().getCourse().getEndTime(),
-                    enrollment.getWaitlist().getCourse().getNumLabSections()
-                )
-            ),
-            new StudentSummaryDto(
-                enrollment.getStudent().getId(),
-                enrollment.getStudent().getFirstName(),
-                enrollment.getStudent().getLastName(),
-                enrollment.getStudent().getStudentId()
-            ),
-            enrollment.getTerm()
-        );
-    }
+    @Autowired
+    private EmailSender emailSender;
+
+    @Value("${email.sending.enabled:true}")
+    private boolean emailSendingEnabled;
+
 
     @Override
     public WaitlistEnrollmentResponseDto saveWaitlistEnrollment(WaitlistEnrollmentDto waitlistEnrollmentDto, UserDetails currentUser) {
@@ -109,7 +70,10 @@ public class WaitlistEnrollmentServiceImpl implements WaitlistEnrollmentService 
         
         // Create and save the enrollment
         WaitlistEnrollment enrollment = new WaitlistEnrollment(currentEnrollments.size() + 1, waitlist, student);
-        return convertToResponseDto(waitlistEnrollmentRepository.save(enrollment));
+        if (emailSendingEnabled) {
+            emailSender.sendWaitlistEmail(enrollment);
+        }
+        return ConvertToResponseDto.convertToWaitlistEnrollmentResponseDto(waitlistEnrollmentRepository.save(enrollment));
     }
 
     @Override
@@ -123,9 +87,12 @@ public class WaitlistEnrollmentServiceImpl implements WaitlistEnrollmentService 
             throw new RuntimeException("Access denied. You can only delete your own waitlist enrollments.");
         }
 
-        // Delete first, then update positions
+        // Delete the enrollment and update the waitlist positions
         waitlistEnrollmentRepository.deleteById(id);
         updateWaitlistPositions(enrollment.getWaitlist().getId());
+        if (emailSendingEnabled) {
+            emailSender.sendWaitlistRemovalEmail(enrollment);
+        }
     }
 
     @Override
@@ -136,7 +103,7 @@ public class WaitlistEnrollmentServiceImpl implements WaitlistEnrollmentService 
         }
         
         return waitlistEnrollmentRepository.findByStudentId(studentId).stream()
-                .map(this::convertToResponseDto)
+                .map(ConvertToResponseDto::convertToWaitlistEnrollmentResponseDto)
                 .collect(Collectors.toList());
     }
 
@@ -152,4 +119,5 @@ public class WaitlistEnrollmentServiceImpl implements WaitlistEnrollmentService 
         }
     }
 
+    
 }

@@ -16,7 +16,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hackademics.dto.UserUpdateDto;
+import com.hackademics.dto.UpdateDto.UserUpdateDto;
 import com.hackademics.model.Role;
 import com.hackademics.model.User;
 import com.hackademics.repository.UserRepository;
@@ -80,7 +80,7 @@ class UserControllerTest {
     }
 
     @Test
-    void shouldNotAllowStudentToUpdateOwnName() throws Exception {
+    void shouldAllowStudentToUpdateOwnName() throws Exception {
         UserUpdateDto updateDto = new UserUpdateDto();
         updateDto.setFirstName("NewName");
 
@@ -88,7 +88,8 @@ class UserControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(updateDto))
                 .header("Authorization", "Bearer " + generateToken(student)))
-                .andExpect(status().isForbidden()); // Expecting 403 Forbidden
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.firstName").value("NewName"));
     }
 
     @Test

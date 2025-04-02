@@ -17,8 +17,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hackademics.dto.WaitlistDto;
-import com.hackademics.dto.WaitlistUpdateDto;
+import com.hackademics.dto.RequestDto.WaitlistDto;
+import com.hackademics.dto.UpdateDto.WaitlistUpdateDto;
 import com.hackademics.model.Course;
 import com.hackademics.model.Role;
 import com.hackademics.model.Subject;
@@ -148,7 +148,7 @@ class WaitlistControllerTest {
                 .header("Authorization", "Bearer " + generateToken(student))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(waitlistDto)))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isForbidden());
     }
 
     @Test
@@ -165,7 +165,7 @@ class WaitlistControllerTest {
     void shouldNotAllowStudentToGetAllWaitlists() throws Exception {
         mockMvc.perform(get("/api/waitlists")
                 .header("Authorization", "Bearer " + generateToken(student)))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isForbidden());
     }
 
     @Test
@@ -181,7 +181,7 @@ class WaitlistControllerTest {
     void shouldNotAllowStudentToGetWaitlistById() throws Exception {
         mockMvc.perform(get("/api/waitlists/" + waitlist.getId())
                 .header("Authorization", "Bearer " + generateToken(student)))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isForbidden());
     }
 
     @Test
@@ -204,7 +204,7 @@ class WaitlistControllerTest {
                 .header("Authorization", "Bearer " + generateToken(student))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(waitlistUpdateDto)))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isForbidden());
     }
 
     @Test
@@ -218,6 +218,6 @@ class WaitlistControllerTest {
     void shouldNotAllowStudentToDeleteWaitlist() throws Exception {
         mockMvc.perform(delete("/api/waitlists/" + waitlist.getId())
                 .header("Authorization", "Bearer " + generateToken(student)))
-                .andExpect(status().isUnauthorized());
+                .andExpect(status().isForbidden());
     }
 }

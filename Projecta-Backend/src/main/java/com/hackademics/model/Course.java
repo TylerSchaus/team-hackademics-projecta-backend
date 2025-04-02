@@ -78,7 +78,7 @@ public class Course {
     private int numLabSections; 
 
     @Column(name = "waitlist_available")
-    private boolean waitlistAvailable;
+    private Boolean waitlistAvailable;
 
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
     @OnDelete(action = OnDeleteAction.CASCADE)
@@ -265,11 +265,11 @@ public class Course {
         return labSections;
     }
 
-    public boolean isWaitlistAvailable() {
+    public Boolean isWaitlistAvailable() {
         return waitlistAvailable;
     }
 
-    public void setWaitlistAvailable(boolean waitlistAvailable) {
+    public void setWaitlistAvailable(Boolean waitlistAvailable) {
         this.waitlistAvailable = waitlistAvailable;
     }
 }

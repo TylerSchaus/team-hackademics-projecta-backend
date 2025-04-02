@@ -1,4 +1,4 @@
-package com.hackademics.dto;
+package com.hackademics.dto.UpdateDto;
 
 import jakarta.validation.constraints.Size;
 

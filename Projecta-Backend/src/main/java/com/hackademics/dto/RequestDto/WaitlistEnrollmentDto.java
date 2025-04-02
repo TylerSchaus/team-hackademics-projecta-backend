@@ -1,4 +1,4 @@
-package com.hackademics.dto;
+package com.hackademics.dto.RequestDto;
 
 import jakarta.validation.constraints.NotNull;
 

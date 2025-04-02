@@ -9,10 +9,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.hackademics.dto.LoginDto;
-import com.hackademics.dto.LoginResponse;
-import com.hackademics.dto.SignUpDto;
-import com.hackademics.dto.UserResponseDTO;
+import com.hackademics.dto.RequestDto.LoginDto;
+import com.hackademics.dto.RequestDto.SignUpDto;
+import com.hackademics.dto.ResponseDto.LoginResponse;
+import com.hackademics.dto.ResponseDto.UserResponseDTO;
 import com.hackademics.model.User;
 import com.hackademics.service.AuthenticationService;
 import com.hackademics.service.JwtService;

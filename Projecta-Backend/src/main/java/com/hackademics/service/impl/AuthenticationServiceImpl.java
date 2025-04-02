@@ -7,9 +7,9 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.hackademics.dto.LoginDto;
-import com.hackademics.dto.SignUpDto;
-import com.hackademics.dto.UserResponseDTO;
+import com.hackademics.dto.RequestDto.LoginDto;
+import com.hackademics.dto.RequestDto.SignUpDto;
+import com.hackademics.dto.ResponseDto.UserResponseDTO;
 import com.hackademics.model.Role;
 import com.hackademics.model.User;
 import com.hackademics.repository.UserRepository;

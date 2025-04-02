@@ -10,12 +10,13 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import com.hackademics.dto.SubjectDto;
-import com.hackademics.dto.SubjectResponseDto;
-import com.hackademics.dto.SubjectUpdateDto;
+import com.hackademics.dto.RequestDto.SubjectDto;
+import com.hackademics.dto.ResponseDto.SubjectResponseDto;
+import com.hackademics.dto.UpdateDto.SubjectUpdateDto;
 import com.hackademics.model.Subject;
 import com.hackademics.repository.SubjectRepository;
 import com.hackademics.service.SubjectService;
+import com.hackademics.util.ConvertToResponseDto;
 import com.hackademics.util.RoleBasedAccessVerification;
 
 @Service
@@ -27,24 +28,16 @@ public class SubjectServiceImpl implements SubjectService {
     @Autowired
     private RoleBasedAccessVerification roleBasedAccessVerification;
 
-    private SubjectResponseDto convertToResponseDto(Subject subject) {
-        return new SubjectResponseDto(
-            subject.getId(),
-            subject.getSubjectName(),
-            subject.getSubjectTag()
-        );
-    }
-
     @Override
     public Optional<SubjectResponseDto> getSubjectById(Long id) {
         return subjectRepository.findById(id)
-            .map(this::convertToResponseDto);
+            .map(ConvertToResponseDto::convertToSubjectResponseDto);
     }
 
     @Override
     public List<SubjectResponseDto> getAllSubjects() {
         return subjectRepository.findAll().stream()
-            .map(this::convertToResponseDto)
+            .map(ConvertToResponseDto::convertToSubjectResponseDto)
             .collect(Collectors.toList());
     }
 
@@ -65,7 +58,7 @@ public class SubjectServiceImpl implements SubjectService {
         }
 
         Subject newSubject = new Subject(subjectDto.getSubjectName(), subjectDto.getSubjectTag());
-        return convertToResponseDto(subjectRepository.save(newSubject));
+        return ConvertToResponseDto.convertToSubjectResponseDto(subjectRepository.save(newSubject));
     }
 
     @Override
@@ -83,7 +76,7 @@ public class SubjectServiceImpl implements SubjectService {
                 subject.setSubjectTag(updatedSubjectDto.getSubjectTag());
             }
 
-            return convertToResponseDto(subjectRepository.save(subject));
+            return ConvertToResponseDto.convertToSubjectResponseDto(subjectRepository.save(subject));
         });
     }
 

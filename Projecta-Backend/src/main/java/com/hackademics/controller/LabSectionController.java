@@ -7,18 +7,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.hackademics.dto.LabSectionDto;
-import com.hackademics.dto.LabSectionResponseDto;
-import com.hackademics.dto.LabSectionUpdateDto;
+import com.hackademics.dto.RequestDto.LabSectionDto;
+import com.hackademics.dto.ResponseDto.LabSectionResponseDto;
 import com.hackademics.service.LabSectionService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -87,37 +84,4 @@ public class LabSectionController {
         return ResponseEntity.ok(labSectionService.findByCourseId(courseId));
     }
 
-    @Operation(summary = "Update lab section", description = "Updates an existing lab section")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Successfully updated lab section",
-                    content = @Content(schema = @Schema(implementation = LabSectionResponseDto.class))),
-        @ApiResponse(responseCode = "400", description = "Invalid input data"),
-        @ApiResponse(responseCode = "401", description = "Unauthorized - Invalid or missing token"),
-        @ApiResponse(responseCode = "403", description = "Forbidden - Insufficient permissions"),
-        @ApiResponse(responseCode = "404", description = "Lab section not found")
-    })
-    @PutMapping("/{id}")
-    public ResponseEntity<LabSectionResponseDto> updateLabSection(
-            @Parameter(description = "ID of the lab section to update", required = true) 
-            @PathVariable Long id,
-            @Parameter(description = "Updated lab section data", required = true) 
-            @Valid @RequestBody LabSectionUpdateDto labSectionUpdateDto,
-            @AuthenticationPrincipal UserDetails currentUser) {
-        labSectionUpdateDto.setCourseId(id);
-        LabSectionResponseDto updatedLabSection = labSectionService.updateLabSection(labSectionUpdateDto, currentUser);
-        return ResponseEntity.ok(updatedLabSection);
-    }
-
-    @Operation(summary = "Delete lab section", description = "Deletes a lab section")
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "204", description = "Successfully deleted lab section"),
-        @ApiResponse(responseCode = "404", description = "Lab section not found")
-    })
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteLabSection(
-            @Parameter(description = "ID of the lab section to delete", required = true) 
-            @PathVariable Long id) {
-        labSectionService.deleteLabSection(id);
-        return ResponseEntity.noContent().build();
-    }
 }

@@ -4,13 +4,11 @@ import java.util.List;
 
 import org.springframework.security.core.userdetails.UserDetails;
 
-import com.hackademics.dto.WaitlistDto;
-import com.hackademics.dto.WaitlistResponseDto;
-import com.hackademics.dto.WaitlistUpdateDto;
-import com.hackademics.model.Waitlist;
+import com.hackademics.dto.RequestDto.WaitlistDto;
+import com.hackademics.dto.ResponseDto.WaitlistResponseDto;
+import com.hackademics.dto.UpdateDto.WaitlistUpdateDto;
 
 public interface WaitlistService {
-    WaitlistResponseDto convertToResponseDto(Waitlist waitlist);
     WaitlistResponseDto saveWaitlist(WaitlistDto waitlistDto, UserDetails currentUser);
     List<WaitlistResponseDto> getAllWaitlists(UserDetails currentUser);
     WaitlistResponseDto getWaitlistById(Long id, UserDetails currentUser);

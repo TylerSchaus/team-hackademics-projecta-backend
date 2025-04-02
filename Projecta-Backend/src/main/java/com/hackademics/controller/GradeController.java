@@ -15,9 +15,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.hackademics.dto.GradeDto;
-import com.hackademics.dto.GradeUpdateDto;
-import com.hackademics.dto.GradeResponseDto;
+import com.hackademics.dto.RequestDto.GradeDto;
+import com.hackademics.dto.ResponseDto.GradeResponseDto;
+import com.hackademics.dto.UpdateDto.GradeUpdateDto;
 import com.hackademics.service.GradeService;
 
 import io.swagger.v3.oas.annotations.Operation;
