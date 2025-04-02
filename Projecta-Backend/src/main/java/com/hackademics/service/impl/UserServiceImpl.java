@@ -14,12 +14,12 @@ import org.springframework.web.server.ResponseStatusException;
 import com.hackademics.dto.RequestDto.AdminSignUpDto;
 import com.hackademics.dto.ResponseDto.UserResponseDTO;
 import com.hackademics.dto.UpdateDto.UserUpdateDto;
-import com.hackademics.model.Grade;
 import com.hackademics.model.Role;
 import com.hackademics.model.User;
 import com.hackademics.repository.UserRepository;
 import com.hackademics.service.UserService;
 import com.hackademics.util.ConvertToResponseDto;
+import com.hackademics.util.GpaCalculator;
 import com.hackademics.util.RoleBasedAccessVerification;
 
 @Service
@@ -173,7 +173,7 @@ public class UserServiceImpl implements UserService {
         // Use findByRole to get all students
         return userRepository.findByRole(Role.STUDENT).stream()
                 .filter(student -> {
-                    double avgGrade = computeGradeAverage(student);
+                    double avgGrade = GpaCalculator.computeGradeAverage(student);
                     return avgGrade >= low && avgGrade <= high;
                 })
                 .map(ConvertToResponseDto::convertToUserResponseDto)
@@ -190,20 +190,9 @@ public class UserServiceImpl implements UserService {
         return saveUser(newUser);
     }
 
-    // Utility methods
+    // Helper methods
 
-    private double computeGradeAverage(User student) {
-        if (student.getGrades() == null
-                || student.getGrades().isEmpty()) {
-            return 0; // Return 0 if no grades exist
-        }
-        return student.getGrades().stream()
-                .mapToDouble(Grade::getGrade) // Get the grade value from each Grade object
-                .average() // Calculate the average
-                .orElse(0); // Return 0 if no grades exist
-    }
-
-    public void validateUniqueStudentId(Long studentId) {
+    private void validateUniqueStudentId(Long studentId) {
         Optional<User> existingUser = userRepository.findByStudentId(studentId);
         if (existingUser.isPresent()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Student ID is already taken.");
@@ -219,4 +208,6 @@ public class UserServiceImpl implements UserService {
         Long maxAdminId = userRepository.findMaxAdminId();
         return (maxAdminId != null) ? maxAdminId + 1 : 1L;
     }
+
+    
 }

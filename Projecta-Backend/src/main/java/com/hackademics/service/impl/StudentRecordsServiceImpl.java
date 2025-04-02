@@ -15,10 +15,10 @@ import com.hackademics.dto.StudentRecordDto;
 import com.hackademics.dto.StudentRecordDto.AcademicPerformanceDto;
 import com.hackademics.dto.StudentRecordDto.CompletedCourseDto;
 import com.hackademics.dto.StudentRecordDto.CurrentEnrollmentDto;
-import com.hackademics.model.Grade;
 import com.hackademics.model.User;
 import com.hackademics.repository.UserRepository;
 import com.hackademics.service.StudentRecordsService;
+import com.hackademics.util.GpaCalculator;
 import com.hackademics.util.RoleBasedAccessVerification;
 
 import jakarta.transaction.Transactional;
@@ -60,11 +60,8 @@ public class StudentRecordsServiceImpl implements StudentRecordsService {
                 .collect(Collectors.toList());
 
         // Calculate academic performance
-        double totalGrade = student.getGrades().stream()
-                .mapToDouble(Grade::getGrade)
-                .sum();
-        double averageGrade = student.getGrades().isEmpty() ? 0 : totalGrade / student.getGrades().size();
-        double gpa = convertToGPA(averageGrade);
+        double averageGrade = GpaCalculator.computeGradeAverage(student);
+        double gpa = GpaCalculator.convertToGPA(averageGrade);
 
         AcademicPerformanceDto academicPerformance = new AcademicPerformanceDto(
                 student.getGrades().size(),
@@ -173,19 +170,6 @@ public class StudentRecordsServiceImpl implements StudentRecordsService {
 
     private String formatDate(LocalDateTime date) {
         return date.format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
-    }
-
-    private double convertToGPA(double percentage) {
-        double gpa;
-
-        if (percentage < 50) {
-            gpa = 0.0;
-        } else {
-            gpa = 1.0 + (percentage - 50) * (4.3 - 1.0) / (90 - 50);
-            gpa = Math.min(gpa, 4.3);
-        }
-
-        return Math.round(gpa * 10.0) / 10.0;
     }
 
 }
