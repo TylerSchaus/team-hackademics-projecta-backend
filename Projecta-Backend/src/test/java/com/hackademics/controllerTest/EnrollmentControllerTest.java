@@ -316,13 +316,6 @@ class EnrollmentControllerTest {
                 .andExpect(jsonPath("$[0].course.id").value(course.getId()));
     }
 
-    @Test
-    void shouldNotAllowStudentToGetEnrollmentsByCourseId() throws Exception {
-        mockMvc.perform(get("/api/enrollments/course/" + course.getId())
-                .header("Authorization", "Bearer " + generateToken(student1)))
-                .andExpect(status().isForbidden());
-    }
-
     // Less essential endpoints tests
     @Test
     void shouldAllowAdminToGetAllEnrollments() throws Exception {

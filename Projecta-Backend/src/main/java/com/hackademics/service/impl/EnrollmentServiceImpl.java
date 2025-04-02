@@ -254,10 +254,6 @@ public class EnrollmentServiceImpl implements EnrollmentService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Course not found.");
         }
 
-        if (!roleBasedAccessVerification.isAdmin(currentUser)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only admins can view enrollments for a course.");
-        }
-
         return enrollmentRepository.findByCourseId(courseId).stream()
                 .map(ConvertToResponseDto::convertToResponseDto)    
                 .collect(Collectors.toList());
