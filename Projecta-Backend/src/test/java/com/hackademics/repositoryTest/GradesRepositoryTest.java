@@ -122,8 +122,8 @@ public class GradesRepositoryTest {
 
         // Verify that the correct grade is found for student1
         assertEquals(1, grades.size(), "Should find exactly 1 grade for studentId " + studentId);
-        assertEquals(testCourse1.getCourseName(), grades.get(0).getCourse().getCourseName());
-        assertEquals(testStudent1.getId(), grades.get(0).getStudent().getId());
+        assertEquals(testCourse1.getCourseName(), grades.get(0).getCourseNameCopy());
+        assertEquals(testStudent1.getStudentId(), grades.get(0).getStudentId());
     }
 
     @Test
@@ -139,8 +139,8 @@ public class GradesRepositoryTest {
 
         // Verify that the correct grade is found for testCourse1
         assertEquals(1, grades.size(), "Should find exactly 1 grade for courseId " + courseId);
-        assertEquals(testCourse1.getCourseName(), grades.get(0).getCourse().getCourseName());
-        assertEquals(testStudent1.getId(), grades.get(0).getStudent().getId());
+        assertEquals(testCourse1.getCourseName(), grades.get(0).getCourseNameCopy());
+        assertEquals(testStudent1.getStudentId(), grades.get(0).getStudentId());
     }
 
 }

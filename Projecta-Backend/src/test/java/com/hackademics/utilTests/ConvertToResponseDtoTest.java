@@ -141,8 +141,8 @@ class ConvertToResponseDtoTest {
         
         assertEquals(grade.getId(), dto.getId());
         assertEquals(grade.getGrade(), dto.getGrade());
-        assertEquals(student.getId(), dto.getStudent().getId());
-        assertEquals(course.getId(), dto.getCourse().getId());
+        assertEquals(grade.getCourseNameCopy(), dto.getCourseName()); 
+        assertEquals(grade.getCourseTagCopy(), dto.getCourseTag());
     }
 
     @Test

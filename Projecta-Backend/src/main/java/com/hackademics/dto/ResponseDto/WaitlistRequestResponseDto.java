@@ -5,14 +5,16 @@ public class WaitlistRequestResponseDto {
     private Long id; 
     private WaitlistSummaryDto waitlist ; 
     private StudentSummaryDto student; 
+    private CourseSummaryDto course; 
     
     public WaitlistRequestResponseDto() {
     }
 
-    public WaitlistRequestResponseDto(Long id, WaitlistSummaryDto waitlist, StudentSummaryDto student) {
+    public WaitlistRequestResponseDto(Long id, WaitlistSummaryDto waitlist, StudentSummaryDto student, CourseSummaryDto course) {
         this.id = id;
         this.waitlist = waitlist;
         this.student = student;
+        this.course = course;
     }
 
     public Long getId() {
@@ -37,6 +39,14 @@ public class WaitlistRequestResponseDto {
     
     public void setStudent(StudentSummaryDto student) {
         this.student = student;
+    }
+
+    public void setCourse(CourseSummaryDto course) {
+        this.course = course;
+    }   
+
+    public CourseSummaryDto getCourse() {
+        return course;
     }
     
     

@@ -82,10 +82,6 @@ public class Course {
 
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
     @OnDelete(action = OnDeleteAction.CASCADE)
-    private final List<Grade> grades = new ArrayList<>();
-
-    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
-    @OnDelete(action = OnDeleteAction.CASCADE)
     private final List<Enrollment> enrollments = new ArrayList<>();
 
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -194,9 +190,6 @@ public class Course {
         this.courseTag = courseTag;
     }
 
-    public List<Grade> getGrades() {
-        return grades;
-    }
 
     public List<Enrollment> getEnrollments() {
         return enrollments;

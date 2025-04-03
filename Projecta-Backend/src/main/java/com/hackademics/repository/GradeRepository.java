@@ -11,5 +11,4 @@ import com.hackademics.model.Grade;
 public interface GradeRepository extends JpaRepository<Grade, Long> {
     List<Grade> findByCourseId(Long id);
     List<Grade> findByStudentId(Long id);
-
 }

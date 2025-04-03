@@ -121,16 +121,14 @@ public class ConvertToResponseDto {
     }
 
     public static GradeResponseDto convertToGradeResponseDto(Grade grade) {
-        StudentSummaryDto studentDto = convertStudentToStudentSummaryDto(grade.getStudent());
-        CourseResponseDto courseDto = convertToCourseResponseDto(grade.getCourse(), null);
-
-        System.out.println("studentDto: " + studentDto);
-        System.out.println("courseDto: " + courseDto);
+    
+        System.out.println("Trying to convert grade to response dto");
         return new GradeResponseDto(
             grade.getId(),
             grade.getGrade(),
-            studentDto,
-            courseDto
+            grade.getCourseNameCopy(),
+            grade.getCourseTagCopy(),
+            grade.getStudentId()
         );
     }
 
@@ -199,7 +197,8 @@ public class ConvertToResponseDto {
                 request.getWaitlist().getWaitlistLimit(),
                 request.getWaitlist().getWaitlistEnrollments().size()
             ),
-            convertStudentToStudentSummaryDto(request.getStudent())
+            convertStudentToStudentSummaryDto(request.getStudent()),
+            convertToCourseSummaryDto(request.getWaitlist().getCourse())
         );
     }
 

@@ -118,10 +118,6 @@ class StudentRecordsControllerTest {
         grade = new Grade(student, course, 85.5);
         grade = gradeRepository.save(grade);
         
-        // Set up bidirectional relationship for grade
-        student.getGrades().add(grade);
-        student = userRepository.save(student);
-
         // Force a refresh of the student to ensure collections are loaded
         student = userRepository.findByStudentId(student.getStudentId()).orElseThrow();
     }

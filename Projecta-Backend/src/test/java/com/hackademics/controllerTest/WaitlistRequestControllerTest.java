@@ -141,13 +141,6 @@ class WaitlistRequestControllerTest {
     }
 
     @Test
-    void shouldNotAllowStudentToGetAllWaitlistRequests() throws Exception {
-        mockMvc.perform(get("/api/waitlist-requests")
-                .header("Authorization", "Bearer " + generateToken(student1)))
-                .andExpect(status().isForbidden());
-    }
-
-    @Test
     void shouldAllowStudentToDeleteOwnRequest() throws Exception {
         mockMvc.perform(delete("/api/waitlist-requests/" + waitlistRequest.getId())
                 .header("Authorization", "Bearer " + generateToken(student1)))

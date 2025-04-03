@@ -1,5 +1,6 @@
 package com.hackademics.service.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
  
@@ -45,18 +46,28 @@ public class GradeServiceImpl implements GradeService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied. Only admins can create grades.");
         }
 
+        System.out.println("Made it passed roleBasedAccessVerification.isAdmin(currentUser)");
+
         if (gradeDto.getGrade() < 0 || gradeDto.getGrade() > 100) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid grade. Grade must be between 0 and 100.");
         }
 
+        System.out.println("Made it passed gradeDto.getGrade() < 0 || gradeDto.getGrade() > 100");
+
         User student = userRepository.findByStudentId(gradeDto.getStudentId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Student not found with ID: " + gradeDto.getStudentId()));
         
+        System.out.println("Made it passed userRepository.findByStudentId(gradeDto.getStudentId())");
+
         Course course = courseRepository.findById(gradeDto.getCourseId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Course not found with ID: " + gradeDto.getCourseId()));
         
+        System.out.println("Made it passed courseRepository.findById(gradeDto.getCourseId())");
+
         Grade grade = new Grade(student, course, gradeDto.getGrade());
-        return ConvertToResponseDto.convertToGradeResponseDto(gradeRepository.save(grade));
+        gradeRepository.save(grade);
+        
+        return ConvertToResponseDto.convertToGradeResponseDto(grade);
     }
 
     @Override
@@ -64,23 +75,31 @@ public class GradeServiceImpl implements GradeService {
         if (!roleBasedAccessVerification.isAdmin(currentUser)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only admins can view all grades.");
         }
+
+        System.out.println("Getting all grades, made it passed RBA");
         
-        return gradeRepository.findAll().stream()
-                .map(ConvertToResponseDto::convertToGradeResponseDto)
-                .collect(Collectors.toList());
+        List<Grade> grades = gradeRepository.findAll();
+
+        System.out.println("Got all grades, made it passed gradeRepository.findAll()");
+        List <GradeResponseDto> gradeResponseDtos = new ArrayList<>();
+
+        System.out.println("Got all grades, made it passed gradeRepository.findAll()");
+        grades.forEach(grade -> {
+            gradeResponseDtos.add(ConvertToResponseDto.convertToGradeResponseDto(grade));
+        });
+
+        System.out.println("Got all grades, made it passed gradeResponseDtos.add(ConvertToResponseDto.convertToGradeResponseDto(grade))");
+        return gradeResponseDtos;
     }
 
     @Override
     public GradeResponseDto getGradeById(Long id, UserDetails currentUser) {
         Grade grade = gradeRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Grade not found with ID: " + id));
-        
-        // Force loading of associations
-        grade.getStudent().getId();
-        grade.getCourse().getId();
+    
         
         // Allow access if user is admin or if the grade belongs to the user
-        if (!roleBasedAccessVerification.isCurrentUserRequestedStudentOrAdmin(currentUser, grade.getStudent().getStudentId())) {
+        if (!roleBasedAccessVerification.isCurrentUserRequestedStudentOrAdmin(currentUser, grade.getStudentId())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied. You can only view your own grades.");
         }
         
@@ -95,10 +114,6 @@ public class GradeServiceImpl implements GradeService {
         
         Grade grade = gradeRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Grade not found with ID: " + id));
-        
-        // Force loading of associations
-        grade.getStudent().getId();
-        grade.getCourse().getId();
         
         grade.setGrade(gradeUpdateDto.getGrade());
         return ConvertToResponseDto.convertToGradeResponseDto(gradeRepository.save(grade));
@@ -123,12 +138,7 @@ public class GradeServiceImpl implements GradeService {
         
         List<Grade> grades = gradeRepository.findByStudentId(studentId);
         return grades.stream()
-                .map(grade -> {
-                    // Force loading of associations
-                    grade.getStudent().getId();
-                    grade.getCourse().getId();
-                    return ConvertToResponseDto.convertToGradeResponseDto(grade);
-                })
+                .map(ConvertToResponseDto::convertToGradeResponseDto)
                 .collect(Collectors.toList());
     }
 }

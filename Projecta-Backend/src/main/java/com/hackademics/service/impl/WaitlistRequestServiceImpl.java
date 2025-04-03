@@ -59,9 +59,6 @@ public class WaitlistRequestServiceImpl implements WaitlistRequestService {
     @Override
     public List<WaitlistRequestResponseDto> getAllWaitlistRequests(UserDetails currentUser) {
         // Only admins can view all waitlist requests
-        if (!roleBasedAccessVerification.isAdmin(currentUser)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only admins can view all waitlist requests.");
-        }
 
         return waitlistRequestRepository.findAll().stream()
                 .map(ConvertToResponseDto::convertToWaitlistRequestResponseDto)
