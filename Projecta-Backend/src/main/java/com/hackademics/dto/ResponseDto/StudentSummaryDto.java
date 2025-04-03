@@ -5,15 +5,17 @@ public class StudentSummaryDto {
     private String firstName;
     private String lastName;
     private Long studentId;
+    private String major;
 
     public StudentSummaryDto() {
     }
 
-    public StudentSummaryDto(Long id, String firstName, String lastName, Long studentId) {
+    public StudentSummaryDto(Long id, String firstName, String lastName, Long studentId, String major) {
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
         this.studentId = studentId;
+        this.major = major;
     }
 
     public Long getId() {
@@ -46,5 +48,13 @@ public class StudentSummaryDto {
 
     public void setStudentId(Long studentId) {
         this.studentId = studentId;
+    }
+
+    public String getMajor() {
+        return major;
+    }
+    
+    public void setMajor(String major) {
+        this.major = major;
     }
 } 

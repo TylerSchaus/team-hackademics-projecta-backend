@@ -51,7 +51,7 @@ public class WaitlistEnrollmentRepositoryTest {
     @BeforeEach
     void setUp() {
 
-        User admin = userRepository.save(new User("Test", "Admin", "admin@example.com", "password", Role.ADMIN, 500L));
+        User admin = userRepository.save(new User("Test", "Admin", "admin@example.com", "2317658909","password", Role.ADMIN, 500L));
 
         // Create subjects
         Subject testSubject = subjectRepository.save(new Subject("TestSubject", "TEST"));
@@ -64,8 +64,8 @@ public class WaitlistEnrollmentRepositoryTest {
         courseRepository.save(course2);
 
         // Create students
-        User student1 = userRepository.save(new User("Alice", "Example", "alice@example.com", "password", Role.STUDENT, 1001L));
-        User student2 = userRepository.save(new User("Bob", "Student", "bob@example.com", "password", Role.STUDENT, 1002L));
+        User student1 = userRepository.save(new User("Alice", "Example", "alice@example.com", "2317658909","password", Role.STUDENT, 1001L));
+        User student2 = userRepository.save(new User("Bob", "Student", "bob@example.com", "2317658909","password", Role.STUDENT, 1002L));
 
         // Create waitlists
         Waitlist waitlist1 = waitlistRepository.save(new Waitlist(course1, 10));

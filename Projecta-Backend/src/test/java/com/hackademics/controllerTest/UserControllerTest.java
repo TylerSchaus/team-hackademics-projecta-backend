@@ -11,11 +11,13 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.hackademics.dto.RequestDto.AdminSignUpDto;
 import com.hackademics.dto.UpdateDto.UserUpdateDto;
 import com.hackademics.model.Role;
 import com.hackademics.model.User;
@@ -56,13 +58,13 @@ class UserControllerTest {
     void setUp() {
         userRepository.deleteAll(); // Clean database before each test
 
-        admin = new User("Admin", "User", "admin@example.com", passwordEncoder.encode("adminPass"), Role.ADMIN, 100L);
+        admin = new User("Admin", "User", "admin@example.com", "2317658909", passwordEncoder.encode("adminPass"), Role.ADMIN, 100L);
         admin = userRepository.save(admin);
 
-        student = new User("Student", "User", "student@example.com", passwordEncoder.encode("studentPass"), Role.STUDENT, 123L);
+        student = new User("Student", "User", "student@example.com", "2317658909", passwordEncoder.encode("studentPass"), Role.STUDENT, 123L);
         student = userRepository.save(student);
 
-        anotherStudent = new User("Another", "Student", "anotherstudent@example.com", passwordEncoder.encode("studentPass"), Role.STUDENT, 456L);
+        anotherStudent = new User("Another", "Student", "anotherstudent@example.com", "2317658909", passwordEncoder.encode("studentPass"), Role.STUDENT, 456L);
         anotherStudent = userRepository.save(anotherStudent);
     }
 
@@ -217,5 +219,125 @@ class UserControllerTest {
                 .param("prefix", "Stu")
                 .header("Authorization", "Bearer " + generateToken(student)))
                 .andExpect(status().isForbidden());
+    }
+
+    // Admin signup tests
+    @Test
+    void shouldAllowAdminToRegisterNewUser() throws Exception {
+        AdminSignUpDto signUpDto = new AdminSignUpDto(
+            "New", "User", "newuser@example.com", "2317658909", Role.STUDENT);
+
+        mockMvc.perform(post("/api/users/admin-signup")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(signUpDto))
+                .header("Authorization", "Bearer " + generateToken(admin)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.email").value("newuser@example.com"))
+                .andExpect(jsonPath("$.firstName").value("New"))
+                .andExpect(jsonPath("$.lastName").value("User"))
+                .andExpect(jsonPath("$.role").value("STUDENT"));
+    }
+
+    @Test
+    void shouldNotAllowStudentToRegisterNewUser() throws Exception {
+        AdminSignUpDto signUpDto = new AdminSignUpDto(
+            "New", "User", "newuser@example.com", "2317658909", Role.STUDENT);
+
+        mockMvc.perform(post("/api/users/admin-signup")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(signUpDto))
+                .header("Authorization", "Bearer " + generateToken(student)))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void shouldNotAllowRegistrationWithDuplicateEmail() throws Exception {
+        AdminSignUpDto signUpDto = new AdminSignUpDto(
+            "New", "User", "student@example.com", "2317658909", Role.STUDENT);
+
+        mockMvc.perform(post("/api/users/admin-signup")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(signUpDto))
+                .header("Authorization", "Bearer " + generateToken(admin)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$").value("Email is already in use"));
+    }
+
+    @Test
+    void shouldNotAllowRegistrationWithInvalidEmail() throws Exception {
+        AdminSignUpDto signUpDto = new AdminSignUpDto(
+            "New", "User", "invalid-email", "2317658909", Role.STUDENT);
+
+        mockMvc.perform(post("/api/users/admin-signup")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(signUpDto))
+                .header("Authorization", "Bearer " + generateToken(admin)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void shouldNotAllowRegistrationWithMissingRequiredFields() throws Exception {
+        AdminSignUpDto signUpDto = new AdminSignUpDto(
+            "", "", "", "2317658909", null);
+
+        mockMvc.perform(post("/api/users/admin-signup")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(signUpDto))
+                .header("Authorization", "Bearer " + generateToken(admin)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void shouldAllowAdminToRegisterAnotherAdmin() throws Exception {
+        AdminSignUpDto signUpDto = new AdminSignUpDto(
+            "New", "Admin", "newadmin@example.com", "2317658909", Role.ADMIN);
+
+        mockMvc.perform(post("/api/users/admin-signup")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(signUpDto))
+                .header("Authorization", "Bearer " + generateToken(admin)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.email").value("newadmin@example.com"))
+                .andExpect(jsonPath("$.firstName").value("New"))
+                .andExpect(jsonPath("$.lastName").value("Admin"))
+                .andExpect(jsonPath("$.role").value("ADMIN"))
+                .andExpect(jsonPath("$.adminId").exists());
+    }
+
+    @Test
+    void shouldAllowUserToGetUserById() throws Exception {
+        mockMvc.perform(get("/api/users/" + student.getId())
+                .header("Authorization", "Bearer " + generateToken(student)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(student.getId()))
+                .andExpect(jsonPath("$.email").value(student.getEmail()))
+                .andExpect(jsonPath("$.firstName").value(student.getFirstName()))
+                .andExpect(jsonPath("$.lastName").value(student.getLastName()))
+                .andExpect(jsonPath("$.role").value("STUDENT"));
+    }
+
+    @Test
+    void shouldReturn404ForNonExistentUserId() throws Exception {
+        mockMvc.perform(get("/api/users/999999")
+                .header("Authorization", "Bearer " + generateToken(student)))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturn401ForUnauthorizedAccess() throws Exception {
+        mockMvc.perform(get("/api/users/" + student.getId()))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void shouldAllowAdminToGetAnyUserById() throws Exception {
+        mockMvc.perform(get("/api/users/" + student.getId())
+                .header("Authorization", "Bearer " + generateToken(admin)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").exists())
+                .andExpect(jsonPath("$.email").value(student.getEmail()))
+                .andExpect(jsonPath("$.firstName").value(student.getFirstName()))
+                .andExpect(jsonPath("$.lastName").value(student.getLastName()))
+                .andExpect(jsonPath("$.role").value("STUDENT"));
     }
 }

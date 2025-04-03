@@ -6,9 +6,8 @@ import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 
-public class SignUpDto {
+public class AdminSignUpDto {
     
     @NotBlank(message = "First name is required")
     private String firstName;
@@ -20,10 +19,6 @@ public class SignUpDto {
     @NotBlank(message = "Email is required")
     private String email;
 
-    @NotBlank(message = "Password is required")
-    @Size(min = 8, message = "Password must be at least 8 characters long")
-    private String password;
-
     @NotNull(message = "Role is required")
     @Enumerated
     private Role role;
@@ -31,12 +26,11 @@ public class SignUpDto {
     private String phoneNumber;
 
     // Constructor
-    public SignUpDto(String firstName, String lastName, String email, String phoneNumber, String password, Role role) {
+    public AdminSignUpDto(String firstName, String lastName, String email, String phoneNumber, Role role) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
         this.phoneNumber = phoneNumber == null ? null : phoneNumber.replaceAll("[^0-9]", "");
-        this.password = password;
         this.role = role;
     }
 
@@ -64,14 +58,6 @@ public class SignUpDto {
 
     public void setEmail(String email) {
         this.email = email;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
     }
 
     public Role getRole() {

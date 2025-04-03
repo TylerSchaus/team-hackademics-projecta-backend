@@ -77,10 +77,10 @@ class CourseControllerTest {
         userRepository.deleteAll();
 
         // Create test users
-        admin = new User("Admin", "User", "admin@example.com", passwordEncoder.encode("adminPass"), Role.ADMIN, 100L);
+        admin = new User("Admin", "User", "admin@example.com", "2317658909", passwordEncoder.encode("adminPass"), Role.ADMIN, 100L);
         admin = userRepository.save(admin);
 
-        student = new User("Student", "User", "student@example.com", passwordEncoder.encode("studentPass"), Role.STUDENT, 123L);
+        student = new User("Student", "User", "student@example.com", "2317658909", passwordEncoder.encode("studentPass"), Role.STUDENT, 123L);
         student = userRepository.save(student);
 
         // Create test subject

@@ -3,21 +3,25 @@ package com.hackademics.util;
 import com.hackademics.dto.ResponseDto.AdminSummaryDto;
 import com.hackademics.dto.ResponseDto.CourseResponseDto;
 import com.hackademics.dto.ResponseDto.CourseSummaryDto;
+import com.hackademics.dto.ResponseDto.EnrollmentResponseDto;
 import com.hackademics.dto.ResponseDto.GradeResponseDto;
 import com.hackademics.dto.ResponseDto.LabSectionResponseDto;
 import com.hackademics.dto.ResponseDto.StudentSummaryDto;
 import com.hackademics.dto.ResponseDto.SubjectResponseDto;
 import com.hackademics.dto.ResponseDto.UserResponseDTO;
 import com.hackademics.dto.ResponseDto.WaitlistEnrollmentResponseDto;
+import com.hackademics.dto.ResponseDto.WaitlistRequestResponseDto;
 import com.hackademics.dto.ResponseDto.WaitlistResponseDto;
 import com.hackademics.dto.ResponseDto.WaitlistSummaryDto;
 import com.hackademics.model.Course;
+import com.hackademics.model.Enrollment;
 import com.hackademics.model.Grade;
 import com.hackademics.model.LabSection;
 import com.hackademics.model.Subject;
 import com.hackademics.model.User;
 import com.hackademics.model.Waitlist;
 import com.hackademics.model.WaitlistEnrollment;
+import com.hackademics.model.WaitlistRequest;
 
 public class ConvertToResponseDto {
     
@@ -39,7 +43,8 @@ public class ConvertToResponseDto {
             student.getId(),
             student.getFirstName(),
             student.getLastName(),
-            student.getStudentId()
+            student.getStudentId(),
+            student.getMajor()
         );
     }
 
@@ -72,8 +77,8 @@ public class ConvertToResponseDto {
     }
 
     public static CourseResponseDto convertToCourseResponseDto(Course course, Waitlist waitlist) {
-        AdminSummaryDto adminDto = convertAdminToAdminSummaryDto(course.getAdmin());
-        SubjectResponseDto subjectDto = convertToSubjectResponseDto(course.getSubject());
+        AdminSummaryDto adminDto = course.getAdmin() != null ? convertAdminToAdminSummaryDto(course.getAdmin()) : null;
+        SubjectResponseDto subjectDto = course.getSubject() != null ? convertToSubjectResponseDto(course.getSubject()) : null;
 
         CourseResponseDto responseDto = new CourseResponseDto(
                 course.getId(),
@@ -95,7 +100,7 @@ public class ConvertToResponseDto {
 
         // Handle waitlist logic directly here
         if (waitlist != null && course.getCurrentEnroll() >= course.getEnrollLimit() && Boolean.TRUE.equals(course.isWaitlistAvailable())) {
-            if (waitlist.getWaitlistEnrollments().size() < waitlist.getWaitlistLimit()) {
+            if (waitlist.getWaitlistEnrollments() != null && waitlist.getWaitlistEnrollments().size() < waitlist.getWaitlistLimit()) {
                 responseDto.setWaitlist(new WaitlistSummaryDto(
                     waitlist.getId(),
                     waitlist.getWaitlistLimit(),
@@ -116,11 +121,14 @@ public class ConvertToResponseDto {
     }
 
     public static GradeResponseDto convertToGradeResponseDto(Grade grade) {
+    
+        System.out.println("Trying to convert grade to response dto");
         return new GradeResponseDto(
             grade.getId(),
             grade.getGrade(),
-            convertStudentToStudentSummaryDto(grade.getStudent()),
-            convertToCourseResponseDto(grade.getCourse(), null) // No waitlist needed for grade view
+            grade.getCourseNameCopy(),
+            grade.getCourseTagCopy(),
+            grade.getStudentId()
         );
     }
 
@@ -145,11 +153,13 @@ public class ConvertToResponseDto {
                 user.getFirstName(),
                 user.getLastName(),
                 user.getEmail(),
+                user.getPhoneNumber(),
                 user.getRole().toString(),
                 user.getStudentId(),
                 user.getEnrollStartDate() != null ? user.getEnrollStartDate().toLocalDate() : null,
                 user.getExpectGraduationDate() != null ? user.getExpectGraduationDate().toLocalDate() : null,
-                user.getAdminId()
+                user.getAdminId(),
+                user.getMajor()
         );
     }
 
@@ -162,4 +172,35 @@ public class ConvertToResponseDto {
             enrollment.getTerm()
         );
     }
+
+    public static EnrollmentResponseDto convertToResponseDto(Enrollment enrollment) {
+        CourseResponseDto courseDto = convertToCourseResponseDto(enrollment.getCourse(), null);
+        StudentSummaryDto studentDto = convertStudentToStudentSummaryDto(enrollment.getStudent());
+        LabSectionResponseDto labSectionDto = enrollment.getLabSection() != null
+                ? convertToLabSectionResponseDto(enrollment.getLabSection()) : null;
+
+        EnrollmentResponseDto responseDto = new EnrollmentResponseDto(
+                enrollment.getId(),
+                courseDto,
+                studentDto,
+                labSectionDto
+        );
+
+        return responseDto;
+    }
+
+    public static WaitlistRequestResponseDto convertToWaitlistRequestResponseDto(WaitlistRequest request) {
+        return new WaitlistRequestResponseDto(
+            request.getId(),
+            new WaitlistSummaryDto(
+                request.getWaitlist().getId(),
+                request.getWaitlist().getWaitlistLimit(),
+                request.getWaitlist().getWaitlistEnrollments().size()
+            ),
+            convertStudentToStudentSummaryDto(request.getStudent()),
+            convertToCourseSummaryDto(request.getWaitlist().getCourse())
+        );
+    }
+
+
 }

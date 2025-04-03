@@ -11,25 +11,23 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.hackademics.dto.RequestDto.EnrollmentDto;
-import com.hackademics.dto.ResponseDto.CourseResponseDto;
 import com.hackademics.dto.ResponseDto.EnrollmentResponseDto;
-import com.hackademics.dto.ResponseDto.LabSectionResponseDto;
-import com.hackademics.dto.ResponseDto.StudentSummaryDto;
 import com.hackademics.model.Course;
 import com.hackademics.model.Enrollment;
 import com.hackademics.model.LabSection;
 import com.hackademics.model.User;
 import com.hackademics.model.Waitlist;
 import com.hackademics.model.WaitlistEnrollment;
+import com.hackademics.model.WaitlistRequest;
 import com.hackademics.repository.CourseRepository;
 import com.hackademics.repository.EnrollmentRepository;
 import com.hackademics.repository.LabSectionRepository;
 import com.hackademics.repository.UserRepository;
 import com.hackademics.repository.WaitlistEnrollmentRepository;
 import com.hackademics.repository.WaitlistRepository;
-import com.hackademics.service.CourseService;
+import com.hackademics.repository.WaitlistRequestRepository;
 import com.hackademics.service.EnrollmentService;
-import com.hackademics.service.LabSectionService;
+import com.hackademics.util.ConvertToResponseDto;
 import com.hackademics.util.EmailSender;
 import com.hackademics.util.RoleBasedAccessVerification;
 import com.hackademics.util.ScheduleConflictChecker;
@@ -51,16 +49,13 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     private EnrollmentRepository enrollmentRepository;
 
     @Autowired
+    private WaitlistRequestRepository waitlistRequestRepository;
+    
+    @Autowired
     private UserRepository userRepository;
 
     @Autowired
     private CourseRepository courseRepository;
-
-    @Autowired
-    private CourseService courseService;
-
-    @Autowired
-    private LabSectionService labSectionService;
 
     @Autowired
     private EmailSender emailSender;
@@ -73,26 +68,6 @@ public class EnrollmentServiceImpl implements EnrollmentService {
 
     private static final int MAX_ENROLLMENTS_PER_TERM = 6;
 
-    private EnrollmentResponseDto convertToResponseDto(Enrollment enrollment) {
-        CourseResponseDto courseDto = courseService.getCourseById(enrollment.getCourse().getId());
-        StudentSummaryDto studentDto = new StudentSummaryDto(
-                enrollment.getStudent().getId(),
-                enrollment.getStudent().getFirstName(),
-                enrollment.getStudent().getLastName(),
-                enrollment.getStudent().getStudentId()
-        );
-        LabSectionResponseDto labSectionDto = enrollment.getLabSection() != null
-                ? labSectionService.getLabSectionById(enrollment.getLabSection().getId()) : null;
-
-        EnrollmentResponseDto responseDto = new EnrollmentResponseDto(
-                enrollment.getId(),
-                courseDto,
-                studentDto,
-                labSectionDto
-        );
-
-        return responseDto;
-    }
 
     @Override
     public EnrollmentResponseDto saveEnrollment(EnrollmentDto enrollmentDto, UserDetails currentUser) {
@@ -118,7 +93,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
 
         if (existingEnrollment != null) {
             // Redirect to updateEnrollment if the student is already in the course
-            return convertToResponseDto(updateEnrollment(existingEnrollment, enrollmentDto.getLabSectionId(), currentEnrollments));
+            return ConvertToResponseDto.convertToResponseDto(updateEnrollment(existingEnrollment, enrollmentDto.getLabSectionId(), currentEnrollments));
         }
 
         // Check enrollment limit only for new enrollments
@@ -141,16 +116,15 @@ public class EnrollmentServiceImpl implements EnrollmentService {
                 List<WaitlistEnrollment> waitlistEnrollments = waitlistEnrollmentRepository.findByWaitlistId(waitlist.getId());
                 if (waitlistEnrollments.size() < waitlist.getWaitlistLimit()) {
                     // Add the student to the waitlist
-                    WaitlistEnrollment waitlistEnrollment = new WaitlistEnrollment(
-                            waitlistEnrollments.size() + 1, // Next position in the waitlist
+                    WaitlistRequest waitlistRequest = new WaitlistRequest(
                             waitlist,
                             student
                     );
-                    waitlistEnrollmentRepository.save(waitlistEnrollment);
+                    waitlistRequestRepository.save(waitlistRequest);
                     if (emailSendingEnabled) {
-                        emailSender.sendWaitlistEmail(waitlistEnrollment);
+                       emailSender.sendWaitlistRequestEmail(waitlistRequest);
                     }
-                    throw new ResponseStatusException(HttpStatus.OK, "Student added to the waitlist."); 
+                    throw new ResponseStatusException(HttpStatus.ACCEPTED, "Student added to the waitlist."); 
                 } else {
                     throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Course is at capacity and the waitlist is full.");
                 }
@@ -210,7 +184,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
             emailSender.sendEnrollmentEmail(enrollment);
         }
 
-        return convertToResponseDto(savedEnrollment);
+        return ConvertToResponseDto.convertToResponseDto(savedEnrollment);
     }
 
     private Enrollment updateEnrollment(Enrollment existingEnrollment, Long labSectionId, List<Enrollment> currentEnrollments) {
@@ -273,7 +247,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
         }
 
         return enrollmentRepository.findAll().stream()
-                .map(this::convertToResponseDto)
+                .map(ConvertToResponseDto::convertToResponseDto)
                 .collect(Collectors.toList());
     }
 
@@ -284,12 +258,8 @@ public class EnrollmentServiceImpl implements EnrollmentService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Course not found.");
         }
 
-        if (!roleBasedAccessVerification.isAdmin(currentUser)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only admins can view enrollments for a course.");
-        }
-
         return enrollmentRepository.findByCourseId(courseId).stream()
-                .map(this::convertToResponseDto)
+                .map(ConvertToResponseDto::convertToResponseDto)    
                 .collect(Collectors.toList());
     }
 
@@ -301,7 +271,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
         }
 
         return enrollmentRepository.findByStudentId(studentId).stream()
-                .map(this::convertToResponseDto)
+                .map(ConvertToResponseDto::convertToResponseDto)
                 .collect(Collectors.toList());
     }
 
@@ -311,11 +281,11 @@ public class EnrollmentServiceImpl implements EnrollmentService {
         Enrollment enrollment = enrollmentRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Enrollment not found"));
 
-        if (!roleBasedAccessVerification.isAdmin(currentUser)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only admins can view specific enrollments.");
+        if (!roleBasedAccessVerification.isCurrentUserRequestedStudentOrAdmin(currentUser, enrollment.getStudent().getStudentId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only admins and the student themselves can view specific enrollments.");
         }
 
-        return convertToResponseDto(enrollment);
+        return ConvertToResponseDto.convertToResponseDto(enrollment);
     }
 
     @Override
@@ -363,7 +333,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
         }
 
         return enrollmentRepository.findByTermAndStudentId(currentTerm, studentId).stream()
-                .map(this::convertToResponseDto)
+                .map(ConvertToResponseDto::convertToResponseDto)
                 .collect(Collectors.toList());
     }
 

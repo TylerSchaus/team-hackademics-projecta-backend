@@ -38,7 +38,7 @@ class CourseRepositoryTest {
     @BeforeEach
     void setUp() {
         // Create an admin user
-        User admin = userRepository.save(new User("Bob", "Admin", "bob@example.com", "password", Role.ADMIN, 500L));
+        User admin = userRepository.save(new User("Bob", "Admin", "bob@example.com", "2317658909", "password", Role.ADMIN, 500L));
 
         // Create subjects
         Subject subject1 = subjectRepository.save(new Subject("Mathematics", "MATH"));

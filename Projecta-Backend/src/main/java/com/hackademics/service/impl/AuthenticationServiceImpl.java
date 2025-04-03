@@ -34,7 +34,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Override
     public UserResponseDTO signupUser(SignUpDto input) {
         Long specialId = input.getRole() == Role.ADMIN ? generateNextAdminId() : generateNextStudentId(); 
-        User newUser = new User(input.getFirstName(), input.getLastName(), input.getEmail(), passwordEncoder.encode(input.getPassword()), input.getRole(), specialId);
+        User newUser = new User(input.getFirstName(), input.getLastName(), input.getEmail(), input.getPhoneNumber(), passwordEncoder.encode(input.getPassword()), input.getRole(), specialId);
         return userService.saveUser(newUser);
     }
 

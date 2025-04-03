@@ -11,11 +11,13 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.hackademics.dto.RequestDto.AdminSignUpDto;
 import com.hackademics.dto.ResponseDto.UserResponseDTO;
 import com.hackademics.dto.UpdateDto.UserUpdateDto;
 import com.hackademics.model.Grade;
 import com.hackademics.model.Role;
 import com.hackademics.model.User;
+import com.hackademics.repository.GradeRepository;
 import com.hackademics.repository.UserRepository;
 import com.hackademics.service.UserService;
 import com.hackademics.util.ConvertToResponseDto;
@@ -26,6 +28,9 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     UserRepository userRepository;
+
+    @Autowired
+    private GradeRepository gradeRepository;
 
     @Autowired
     PasswordEncoder passwordEncoder;
@@ -108,7 +113,7 @@ public class UserServiceImpl implements UserService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You do not have permission to update this information.");
         }
 
-        // Both admins and students themselves can change their email, first name, and last name.
+        // Both admins and students themselves can change their email, phone number, first name, last name, and major.
         if (userUpdateDto.getEmail() != null) {
             userToUpdate.setEmail(userUpdateDto.getEmail());
         }
@@ -119,6 +124,14 @@ public class UserServiceImpl implements UserService {
 
         if (userUpdateDto.getLastName() != null) {
             userToUpdate.setLastName(userUpdateDto.getLastName());
+        }
+
+        if (userUpdateDto.getMajor() != null) {
+            userToUpdate.setMajor(userUpdateDto.getMajor());
+        }
+
+        if (userUpdateDto.getPhoneNumber() != null) {
+            userToUpdate.setPhoneNumber(userUpdateDto.getPhoneNumber());
         }
 
         return ConvertToResponseDto.convertToUserResponseDto(userRepository.save(userToUpdate));
@@ -171,20 +184,36 @@ public class UserServiceImpl implements UserService {
                 .collect(Collectors.toList());
     }
 
-    // Utility methods
-
-    private double computeGradeAverage(User student) {
-        if (student.getGrades() == null
-                || student.getGrades().isEmpty()) {
-            return 0; // Return 0 if no grades exist
+    @Override
+    public UserResponseDTO signupUserFromAdminPortal(AdminSignUpDto input, UserDetails currentUser) {
+        if (!roleBasedAccessVerification.isAdmin(currentUser)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only admins can access this method.");
         }
-        return student.getGrades().stream()
-                .mapToDouble(Grade::getGrade) // Get the grade value from each Grade object
-                .average() // Calculate the average
-                .orElse(0); // Return 0 if no grades exist
+        Long specialId = input.getRole() == Role.ADMIN ? generateNextAdminId() : generateNextStudentId(); 
+        User newUser = new User(input.getFirstName(), input.getLastName(), input.getEmail(), input.getPhoneNumber(), passwordEncoder.encode("tempPassword"), input.getRole(), specialId);
+        return saveUser(newUser);
     }
 
-    public void validateUniqueStudentId(Long studentId) {
+    @Override
+    public UserResponseDTO getUserInfoById(Long id, UserDetails currentUser) {
+
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+
+        if (user == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found");
+        }
+        
+        if (!roleBasedAccessVerification.isCurrentUserRequestedStudentOrAdmin(currentUser, user.getStudentId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only admins and the student themselves can view specific enrollments.");
+        }
+
+        return ConvertToResponseDto.convertToUserResponseDto(user);
+    }
+
+    // Helper methods
+
+    private void validateUniqueStudentId(Long studentId) {
         Optional<User> existingUser = userRepository.findByStudentId(studentId);
         if (existingUser.isPresent()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Student ID is already taken.");
@@ -200,4 +229,18 @@ public class UserServiceImpl implements UserService {
         Long maxAdminId = userRepository.findMaxAdminId();
         return (maxAdminId != null) ? maxAdminId + 1 : 1L;
     }
+
+    public  double computeGradeAverage(User student) {
+        List<Grade> grades = gradeRepository.findByStudentId(student.getStudentId());
+        if (grades == null
+                || grades.isEmpty()) {
+            return 0; // Return 0 if no grades exist
+        }
+        return grades.stream()
+                .mapToDouble(Grade::getGrade) // Get the grade value from each Grade object
+                .average() // Calculate the average
+                .orElse(0); // Return 0 if no grades exist
+    }
+
+    
 }

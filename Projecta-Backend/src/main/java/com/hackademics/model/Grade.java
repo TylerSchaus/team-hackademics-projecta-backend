@@ -5,8 +5,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 
 @Entity
@@ -17,16 +15,11 @@ public class Grade {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "student_reference", nullable = false)
-    private User student;
-
     @Column(name = "student_id", nullable = false)
     private Long studentId;
 
-    @ManyToOne
-    @JoinColumn(name = "course_id", nullable = false)
-    private Course course;
+    @Column(name = "course_id", nullable = false)
+    private Long courseId;
 
     @Column(name = "grade", nullable = false)
     private Double grade;
@@ -37,11 +30,14 @@ public class Grade {
     @Column(name = "course_name_copy", nullable = false)
     private String courseNameCopy;
 
+    // Default constructor required by JPA
+    public Grade() {
+    }
+
     // Constructor
     public Grade(User student, Course course, Double grade) {
-        this.student = student;
         this.studentId = student.getStudentId();
-        this.course = course;
+        this.courseId = course.getId();
         this.grade = grade;
         this.courseTagCopy = course.getCourseTag(); 
         this.courseNameCopy = course.getCourseName();
@@ -57,20 +53,12 @@ public class Grade {
         this.id = id;
     }
 
-    public User getStudent() {
-        return student;
+    public Long getCourseId() {
+        return courseId;
     }
 
-    public void setStudent(User student) {
-        this.student = student;
-    }
-
-    public Course getCourse() {
-        return course;
-    }
-
-    public void setCourse(Course course) {
-        this.course = course;
+    public void setCourseId(Long courseId) {
+        this.courseId = courseId;
     }
 
     public Double getGrade() {

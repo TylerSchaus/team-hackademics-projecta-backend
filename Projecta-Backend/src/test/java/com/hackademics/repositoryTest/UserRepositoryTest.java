@@ -27,10 +27,10 @@ class UserRepositoryTest {
     @BeforeEach
     void setUp() {
         // Create a "student" user
-        studentUser = new User("Alice", "Example", "alice@example.com", "password", Role.STUDENT, 1001L);
+        studentUser = new User("Alice", "Example", "alice@example.com", "2317658909","password", Role.STUDENT, 1001L);
     
         // Create an "admin" user
-        adminUser = new User("Bob", "Admin", "bob@example.com", "password", Role.ADMIN, 5001L);
+        adminUser = new User("Bob", "Admin", "bob@example.com", "2317658909","password", Role.ADMIN, 5001L);
     }
 
     // Default JPA method.

@@ -57,7 +57,7 @@ public class GradesRepositoryTest {
     void setUp() {
 
         // Create a test admin 
-        testAdmin = userRepository.save(new User("Test", "Admin", "test@test.com", "testpassword", Role.ADMIN, 500L));
+        testAdmin = userRepository.save(new User("Test", "Admin", "test@test.com", "2317658909","password", Role.ADMIN, 500L));
 
         // Create a test subject
         testSubject = subjectRepository.save(new Subject("TestSubject", "TEST"));
@@ -67,8 +67,8 @@ public class GradesRepositoryTest {
         testCourse2 = courseRepository.save(new Course(testAdmin, testSubject, "TestCourse2", LocalDateTime.now(), LocalDateTime.now().plusMonths(6), 50, "101", null, null, null));
 
         // Create test students
-        testStudent1 = userRepository.save(new User("Test", "Student1", "student1@test.com", "testPassword", Role.STUDENT, 101L));
-        testStudent2 = userRepository.save(new User("Test", "Student2", "student12@test.com", "testPassword", Role.STUDENT, 102L));
+        testStudent1 = userRepository.save(new User("Test", "Student1", "student1@test.com", "2317658909","password", Role.STUDENT, 101L));
+        testStudent2 = userRepository.save(new User("Test", "Student2", "student12@test.com", "2317658909","password", Role.STUDENT, 102L));
 
         // Create a grade using the constructor
         grade1 = new Grade(testStudent1, testCourse1, 90.5);
@@ -122,8 +122,8 @@ public class GradesRepositoryTest {
 
         // Verify that the correct grade is found for student1
         assertEquals(1, grades.size(), "Should find exactly 1 grade for studentId " + studentId);
-        assertEquals(testCourse1.getCourseName(), grades.get(0).getCourse().getCourseName());
-        assertEquals(testStudent1.getId(), grades.get(0).getStudent().getId());
+        assertEquals(testCourse1.getCourseName(), grades.get(0).getCourseNameCopy());
+        assertEquals(testStudent1.getStudentId(), grades.get(0).getStudentId());
     }
 
     @Test
@@ -139,8 +139,8 @@ public class GradesRepositoryTest {
 
         // Verify that the correct grade is found for testCourse1
         assertEquals(1, grades.size(), "Should find exactly 1 grade for courseId " + courseId);
-        assertEquals(testCourse1.getCourseName(), grades.get(0).getCourse().getCourseName());
-        assertEquals(testStudent1.getId(), grades.get(0).getStudent().getId());
+        assertEquals(testCourse1.getCourseName(), grades.get(0).getCourseNameCopy());
+        assertEquals(testStudent1.getStudentId(), grades.get(0).getStudentId());
     }
 
 }

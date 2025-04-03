@@ -17,8 +17,10 @@ import com.hackademics.dto.StudentRecordDto.CompletedCourseDto;
 import com.hackademics.dto.StudentRecordDto.CurrentEnrollmentDto;
 import com.hackademics.model.Grade;
 import com.hackademics.model.User;
+import com.hackademics.repository.GradeRepository;
 import com.hackademics.repository.UserRepository;
 import com.hackademics.service.StudentRecordsService;
+import com.hackademics.util.GpaCalculator;
 import com.hackademics.util.RoleBasedAccessVerification;
 
 import jakarta.transaction.Transactional;
@@ -32,6 +34,9 @@ public class StudentRecordsServiceImpl implements StudentRecordsService {
 
     @Autowired
     private RoleBasedAccessVerification roleBasedAccessVerification;
+
+    @Autowired
+    private GradeRepository gradeRepository;
 
     @Override
     public StudentRecordDto getStudentRecord(Long studentId, UserDetails currentUser) {
@@ -52,7 +57,7 @@ public class StudentRecordsServiceImpl implements StudentRecordsService {
                 .collect(Collectors.toList());
 
         // Get completed courses
-        List<CompletedCourseDto> completedCourses = student.getGrades().stream()
+        List<CompletedCourseDto> completedCourses = gradeRepository.findByStudentId(studentId).stream()
                 .map(grade -> new CompletedCourseDto(
                 grade.getCourseTagCopy(),
                 grade.getCourseNameCopy(),
@@ -60,14 +65,11 @@ public class StudentRecordsServiceImpl implements StudentRecordsService {
                 .collect(Collectors.toList());
 
         // Calculate academic performance
-        double totalGrade = student.getGrades().stream()
-                .mapToDouble(Grade::getGrade)
-                .sum();
-        double averageGrade = student.getGrades().isEmpty() ? 0 : totalGrade / student.getGrades().size();
-        double gpa = convertToGPA(averageGrade);
+        double averageGrade = computeGradeAverage(student);
+        double gpa = GpaCalculator.convertToGPA(averageGrade);
 
         AcademicPerformanceDto academicPerformance = new AcademicPerformanceDto(
-                student.getGrades().size(),
+                completedCourses.size(),
                 gpa,
                 averageGrade);
 
@@ -175,17 +177,15 @@ public class StudentRecordsServiceImpl implements StudentRecordsService {
         return date.format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
     }
 
-    private double convertToGPA(double percentage) {
-        double gpa;
-
-        if (percentage < 50) {
-            gpa = 0.0;
-        } else {
-            gpa = 1.0 + (percentage - 50) * (4.3 - 1.0) / (90 - 50);
-            gpa = Math.min(gpa, 4.3);
+    public  double computeGradeAverage(User student) {
+        List<Grade> grades = gradeRepository.findByStudentId(student.getStudentId());
+        if (grades == null
+                || grades.isEmpty()) {
+            return 0; // Return 0 if no grades exist
         }
-
-        return Math.round(gpa * 10.0) / 10.0;
+        return grades.stream()
+                .mapToDouble(Grade::getGrade) // Get the grade value from each Grade object
+                .average() // Calculate the average
+                .orElse(0); // Return 0 if no grades exist
     }
-
 }

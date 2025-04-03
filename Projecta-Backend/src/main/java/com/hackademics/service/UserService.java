@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import org.springframework.security.core.userdetails.UserDetails;
 
+import com.hackademics.dto.RequestDto.AdminSignUpDto;
 import com.hackademics.dto.ResponseDto.UserResponseDTO;
 import com.hackademics.dto.UpdateDto.UserUpdateDto;
 import com.hackademics.model.Role;
@@ -30,4 +31,8 @@ public interface UserService {
     List<UserResponseDTO> getStudentsByGradeRange(double low, double high, UserDetails currentUser);
 
     void deleteUser(Long userId, UserDetails currentUser);
+
+    UserResponseDTO signupUserFromAdminPortal(AdminSignUpDto input, UserDetails currentUser);
+
+    UserResponseDTO getUserInfoById(Long id, UserDetails currentUser);
 }
