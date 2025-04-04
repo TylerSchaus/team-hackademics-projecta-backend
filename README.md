@@ -7,8 +7,7 @@ This is a Spring Boot Application. All files are found in the 'Projecta-Backend'
 ## Basic Information: 
 
 - The project skeleton is generated from the Spring Initializer at https://start.spring.io/.
-- The 5 folders (Model, Repository, Service, Controller, Config) defined in **src\main\java\com\hackademics** ... Will contain the implementation for most necessasry components of the application.
-- The database is currently hosted on Aiven, for security purposes I limited access to certain IPv4 addresses, the University address is permitted so you may only be able modify the database when runnning the backend on the University network.
+- The 6 folders (Model, Repository, Service, Controller, Config, Util) defined in **src\main\java\com\hackademics** ... Will contain the implementation for most necessasry components of the application.
 
 ### Make sure it works: 
 To make sure the project works, open your terminal in VSCode and navigate to the project directory. **By Default** it will open to the Repository Directory, make sure to navigate to the project directory first. Then in your terminal run: mvn **spring-boot:run** 
@@ -25,7 +24,7 @@ If you see this, the application is running. To terminate the application, in yo
 - JWT Authentication
 - MySQL Databases
 - Aiven
-- Fly.io
+- Render
 
 ## Group Members 
 - Tyler Schaus 
@@ -34,16 +33,14 @@ If you see this, the application is running. To terminate the application, in yo
 - Lexi Loudiadis
 - Aditi Bajaj
 
-## March 28 (Milestone 3) Update 
+## March 2 (Milestone 4) Update 
 
-Approx. 90% of Backend complete. 
-Endpoints are defined for Users, Subjects, Courses, Enrollments, Lab Sections, Waitlists, Waitlist Enrollments, and Grades allowing all functionality related to these entities. 
-Along with endpoints, their corresponding service, repository, and model implementations are complete. 
-JWT Authetnication is set up, and tested. 
+100% of Backend complete. 
 
-The only remaining core functionality is: 
-- Email notifcations for enrollment and unenrollment.
-- Improved filtering for students.
+All core functional requirements including the bonus are complete, tested, and functioning. 
+
+The Backend is now hosted publically on Render.com at:
+https://team-hackademics-projecta-backend.onrender.com
 
 Bug Report: 
 
@@ -52,22 +49,22 @@ Bug Report:
 - Issue #82 - Over enrollment possibility 
 - Issue #83 - Schedule conflict verification 
 
-All bugs are detailed in their descriptions in the respective issues, including their description, reproducibility, affected components, and severity level. 
+### Bug coverage: 
+Once we began connecting with the front end we realized the bugs that were more important to fix were actually #80 and #81. CSV formats are not consistently as expected, and **most** errors codes now accurately reflect what went wrong. We realized that the code was simply throwing runtime exceptions from some services layers when issues occured (i.e., When trying to create a course, the subject id provided did not exist... now properly throws a 404 not found). 
 
-As I continue testing to the APIs, I intend to add more bugs to this list whenever I identify them. 
-
-Bug #83 and #82 will be handled at the very least. 
-
-Coverage testing: 
+### Coverage testing: 
 
 The following documents demonstrate the system overall coverage from testing. 
 
+You will have to download the file from my Google Drive to view its contents. Our coverage testing reached 71% for service layers, 84% for utility classes, and 74% for model. I am happy with the coverage we recieved given the majority of non-covered would infrequently be hit, and was very similar to other thoroughly tested code. Furthermore, via Postman testing we were able to prove that all endpoints funcitoned as expected for all expectable use cases.
 
-[test-coverage.zip](https://github.com/user-attachments/files/19515951/test-coverage.zip)
+https://drive.google.com/file/d/1pBvJPjzdkEd7z-FY1ltk52hG9Z1004MT/view?usp=sharing
 
-I do want to clarify one thing about these reports.
+**Important Note:** 
 
-When developing the backend for this system (early - middle stages) ... I was under the impression that allowing administrators to create courses, subjects, lab sections, and waitlists was a requirement. However, upon discussing with the TA, I understand this is NOT a requirement. Therefore upon realizing this, I opted not to write testing for the endpoints and logic that involves this functionality. I intend to thoroughly go over the codebase to remove this now unnecessary code, and replace it with a preloader class that preloads the database this kind of data. Since this code is still there, but not tested, coverage lies around ~60%. I am confident that once we remove the code we do not need, it will improve to ~80. 
+I have already sent an email to the professor and explained the situation to our TA in our lab time but I wanted to restate it here. While implementing the email sending functionality, I forgot to omit this behaviour from tests as it was my first time implenting this kind of functionality. Therefore, when GitHub Actions Workflow tried to run my tests, it noticed I was attempting to send emails from it, and flagged my account as spam. As a result, my account got shadow banned, I cannot run a workflow, and my team members as well as anyone else completely lost access to my repositories. I believe my team coordinated the situation well to find a viable work around so that we could still complete the project in its entirety on time. 
+
+Given this, Lexi created an empty repository on her GitHub account and uploaded the final version of the project there so that you can still view the repository. It has the full commit history and all files, however it does not contain the PR history or issue board. I explained this to the TA already and he seemed to think it would be okay, but I am more than happy to come in to office hours or any other time on campus so you can view the original repository on my computer as I believe that is the only way you would be able to see it. 
 
 
 
